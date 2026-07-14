@@ -1,0 +1,35 @@
+"""
+TEMPLATE — copy this file to pages/<your_page>_page.py and adapt it.
+(The .template extension keeps it out of Python imports until you do.)
+
+A page object answers two questions about ONE page of your app:
+WHERE things are (locators) and WHAT a user can do there (methods).
+"""
+
+from playwright.sync_api import expect
+
+from pages.base_page import BasePage
+
+
+class ExamplePage(BasePage):
+    # The path of this page, relative to BASE_URL.
+    path = "/example"
+
+    # ------------------------------------------------------------------
+    # Actions — one method per thing a user can DO on this page.
+    # Prefer user-facing locators (get_by_role, get_by_label,
+    # get_by_text) over CSS selectors; they survive redesigns better.
+    # ------------------------------------------------------------------
+
+    def search(self, term: str):
+        self.page.get_by_role("textbox", name="Search").fill(term)
+        self.page.get_by_role("button", name="Search").click()
+
+    # ------------------------------------------------------------------
+    # Checks that belong to this page can live here too, when several
+    # tests need the same one. expect() waits automatically — never
+    # use time.sleep().
+    # ------------------------------------------------------------------
+
+    def expect_loaded(self):
+        expect(self.page.get_by_role("heading", name="Example")).to_be_visible()

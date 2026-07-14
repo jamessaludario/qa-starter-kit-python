@@ -1,74 +1,173 @@
-# Playwright + Python — Beginner Automation Tests
+# QA Automation Starter Kit — Python
 
-Beginner-friendly automated tests for the practice website
-[automationexercise.com](https://automationexercise.com), covering **all 26
-official test cases** from its [test cases page](https://automationexercise.com/test_cases).
+> Learn UI test automation from zero, then generate tests for any web app.
+> Playwright + Python (pytest) edition of the
+> [qa-starter-kit](https://github.com/jamessaludario/qa-starter-kit) (TypeScript).
 
-Every test file is heavily commented and maps 1-to-1 to a test case on the
-site: `test_tc09_...` is the site's "Test Case 9", and the numbered comments
-inside follow the site's official steps.
+---
 
-**New to test automation? Take the guided tour first:**
+## 🌱 New to QA automation? Start here
 
-```bash
-python tour.py
-```
-
-An interactive, menu-driven tour ([tour.py](tour.py)) that teaches by
-*showing*: it opens a real browser so you can watch a test drive the
-site in slow motion, lets you record your own script just by clicking
-around (Playwright's codegen), creates a starter test with guided
-TODOs for you to finish, and walks you through the reports. Take the
-chapters in order the first time; revisit any chapter any time.
-
-## Sharing this kit
-
-Everything is self-contained — to hand this to a colleague or student,
-just share the repository link. Their complete setup is:
+Don't read anything yet — **do** the guided tour. It opens a real
+browser so you can watch a test drive a website in slow motion, lets
+you record your own script just by clicking around, and walks you into
+writing your first test:
 
 ```bash
-git clone https://github.com/jamessaludario/sample-playwright-python.git
-cd sample-playwright-python
 pip install -r requirements.txt
 playwright install chromium
 python tour.py
 ```
 
-(Python 3.10+ required. The Allure report additionally needs Node.js —
-see the Test reports section — but everything else, including the tour
-and the quick HTML report, works without it.)
+About 15 minutes, fully hands-on, quit and resume any time.
 
-## How the kit is organized
+---
 
-The layout mirrors how professional UI test suites are structured —
-each kind of thing has its own home:
+## What is this?
 
-| Where | What lives there |
-|---|---|
-| [tests/](tests/) | The test cases — WHAT to verify |
-| [helpers/](helpers/flows.py) | User journeys (`create_account`, ...) that many tests reuse |
-| [pages/](pages/) | Page objects — one class per page of the site, holding its locators and actions |
-| [constants.py](constants.py) | Shared data: site URL, account details, the fake card |
-| [fixtures/](fixtures/) | Things pytest runs around every test: ad blocker, failure screenshots, report labels |
-| [utils/](utils/data.py) | Small standalone tools like `unique_email()` |
-| [conftest.py](conftest.py) | A thin loader that plugs the fixtures in |
+A hybrid **learning playground** and **ready-made test suite scaffold**:
 
-The layering to remember:
-**tests** (what to verify) → **helpers** (the journey) → **pages**
-(where things are on each page) → the browser. When the site changes,
-you fix one locator in one page class — not 26 tests.
+1. **Learn QA automation** — 26 real, heavily-commented tests against the
+   free practice site [automationexercise.com](https://automationexercise.com)
+   (all 26 of its official test cases), an interactive tour, and a
+   professionally layered framework to read and imitate.
+2. **Scaffold tests for YOUR app** — one command copies a clean project
+   skeleton, you add your app's URL, then write tests by hand or let an
+   AI agent generate them using the included prompts.
 
-## Where to start reading
+**The kit provides:**
+- 🧭 **Interactive tour** (`python tour.py`) — watch, record, then write
+- 📚 **26 commented test cases** — a full suite to learn from
+- 🏗️ **Scaffolder + template** — a fresh test project for any web app in seconds
+- 🤖 **AI prompts + agent rules** — standardized prompts (scan → baseline → e2e → fix) and a `CLAUDE.md` convention file any agent can follow
+- 📊 **Reports built in** — one-file HTML report, Allure dashboards with
+  trends and failure screenshots, automatic retries for flaky moments
+- 🚀 **CI included** — GitHub Actions runs the suite and publishes the live
+  Allure report to GitHub Pages
 
-1. **[test_tc01_register_user.py](tests/test_tc01_register_user.py)** — the
-   full registration flow written out step by step. Later tests reuse the
-   `create_account()` helper instead of repeating it.
-2. **[helpers/flows.py](helpers/flows.py)** then
-   **[pages/base_page.py](pages/base_page.py)** — see how a helper like
-   `create_account()` is built from page-object methods.
-3. Then browse by topic below.
+---
 
-## The 26 test cases
+## Supported AI agents
+
+| Agent            | How to use                                          |
+|------------------|-----------------------------------------------------|
+| Claude Code      | Open your scaffolded folder in a terminal — rules in `CLAUDE.md` are picked up automatically |
+| Cursor           | Copy `CLAUDE.md` to `.cursor/rules/qa-automation.mdc` |
+| VS Code Copilot  | Copy `CLAUDE.md` to `.github/copilot-instructions.md` |
+| Windsurf         | Copy `CLAUDE.md` to `.windsurf/rules.md`             |
+| Any other agent  | Paste prompts from `prompts/` and reference `CLAUDE.md` |
+
+---
+
+## Quick start
+
+### 🏁 Learn (recommended first step)
+
+```bash
+git clone https://github.com/jamessaludario/qa-starter-kit-python.git
+cd qa-starter-kit-python
+pip install -r requirements.txt
+playwright install chromium
+
+python tour.py           # the guided tour
+pytest --headed --slowmo 500   # or just watch all 26 tests run
+```
+
+(Python 3.10+ required. Only the Allure analytics report additionally
+needs Node.js — everything else works without it.)
+
+### 🚀 Scaffold tests for YOUR web app
+
+```bash
+python scaffold.py
+```
+
+Two questions (project name, app URL) and you get a fresh, independent
+project next to the kit:
+
+```
+../my-app-tests/     ← full structure, .env filled in, smoke test ready
+```
+
+Then:
+
+```bash
+cd ../my-app-tests
+pytest tests/test_smoke.py     # proves the toolchain end to end
+```
+
+Grow the suite either way:
+- **With an AI agent:** open the folder in your agent and feed it
+  `prompts/00-quick-start.md`. The prompts walk it through scanning your
+  app, generating baseline tests per page, building e2e journeys, and
+  fixing failures — all following the conventions in `CLAUDE.md`.
+- **By hand:** copy `pages/example_page.py.template`, build your first
+  page object, write tests against it.
+
+---
+
+## Commands
+
+> In the starter kit (learning):
+
+```bash
+python tour.py                  # interactive guided tour
+pytest                          # run all 26 tests (headless)
+pytest --headed --slowmo 500    # watch the browser work (great for learning!)
+pytest -k "order"               # run a group of tests
+python run_tests.py             # run everything + open the Allure report
+python scaffold.py              # create a test project for your own app
+```
+
+> In your scaffolded project: the same commands, minus the tour.
+
+**Automatic retries:** a failed test is retried up to 2 times before
+counting as a real failure (`--reruns` in [pytest.ini](pytest.ini)) —
+practice sites and real apps both have slow moments. Retries stay
+visible in the reports, so flakiness is never silently hidden.
+
+---
+
+## Folder structure
+
+The kit and every scaffolded project share the same layered layout:
+
+```
+your-app-tests/
+├── tests/           ← WHAT to verify (assertions live here)
+├── helpers/         ← reusable user journeys (login, create-record, ...)
+├── pages/           ← page objects: ALL locators live here, one class per page
+├── fixtures/        ← pytest plumbing: browser setup, screenshots, report labels
+├── utils/           ← pure-Python tools (unique test data)
+├── constants.py     ← app URL (from .env) + shared test data
+├── conftest.py      ← thin loader that plugs the fixtures in
+├── prompts/         ← copy-paste prompts for your AI agent
+├── CLAUDE.md        ← conventions your AI agent follows
+├── run_tests.py     ← run + build the Allure report in one command
+└── .env             ← your app's URL (git-ignored)
+```
+
+The layering to remember: **tests** (what to verify) → **helpers**
+(the journey) → **pages** (where things are). When the app changes,
+you fix one locator in one page class — not every test.
+
+## How the AI workflow works
+
+1. **Scan** — your agent visits your app's pages and writes a map of
+   elements and locators (`prompts/01-scan-pages.md`)
+2. **Generate** — it turns the maps into page objects + baseline tests
+   (`02-generate-baseline.md`), then full journeys (`03-generate-e2e.md`)
+3. **Run** — pytest executes everything, reports with screenshots
+4. **Fix** — paste failures into `04-fix-errors.md`; locators get fixed
+   in the page objects, never papered over with sleeps
+5. **Repeat** — re-scan when your app changes
+
+---
+
+## The learn track: 26 real test cases
+
+Every file maps 1-to-1 to an official test case of the practice site and
+is commented for beginners. Read them in order, or jump by topic:
 
 | # | File | What it tests |
 |---|------|---------------|
@@ -99,116 +198,69 @@ you fix one locator in one page class — not 26 tests.
 | 25 | [test_tc25_scroll_up_with_arrow.py](tests/test_tc25_scroll_up_with_arrow.py) | Scroll-up arrow button |
 | 26 | [test_tc26_scroll_up_without_arrow.py](tests/test_tc26_scroll_up_without_arrow.py) | Scroll up with JavaScript |
 
-Good stuff to know:
+Where to start reading:
+1. [test_tc01_register_user.py](tests/test_tc01_register_user.py) — a
+   full flow written out step by step
+2. [helpers/flows.py](helpers/flows.py) then
+   [pages/base_page.py](pages/base_page.py) — how a helper like
+   `create_account()` is built from page-object methods
+
+Good to know:
 - Tests that need an account **create their own throwaway account**
   (unique email each run) and **delete it at the end** — every test is
   self-contained and can run alone, in any order.
 - The order tests (14, 15, 16, 24) pay with an obviously **fake card
-  number** — this is a practice site, no real payment happens.
+  number** — it's a practice site, no real payment happens.
 
-## One-time setup
-
-```bash
-# 1. Install the Python packages
-pip install -r requirements.txt
-
-# 2. Download the browser Playwright will control
-playwright install chromium
-```
-
-## Running the tests
-
-```bash
-# Run all 26 tests (browser is hidden / "headless")
-pytest
-
-# Run all tests and WATCH the browser do its thing (great for learning!)
-pytest --headed
-
-# Watch in slow motion (500 ms pause between each action)
-pytest --headed --slowmo 500
-
-# Run just one test case
-pytest tests/test_tc09_search_product.py
-
-# Run a group (e.g. all three checkout flows)
-pytest -k "order"
-
-# Show the print() output from the tests
-pytest -s
-```
-
-**Automatic retries:** the practice site is sometimes slow or flaky, so
-a test that fails is automatically retried up to 2 times (with a 2-second
-pause) before being reported as a real failure — see `--reruns` in
-[pytest.ini](pytest.ini). Retried tests are counted under "Reruns" in the
-HTML report and "Retries" in Allure, so genuine flakiness stays visible
-instead of being silently hidden.
+---
 
 ## Test reports
 
-Every run automatically produces **two** kinds of results in the
-(git-ignored) `reports/` folder:
+Every run produces two kinds of results in the (git-ignored) `reports/`
+folder:
 
-### 1. Quick HTML report (pytest-html)
+**1. Quick HTML report** — `reports/report.html`, a single
+self-contained file: pass/fail per test, durations, full error details.
+Double-click to open.
 
-`reports/report.html` — a single self-contained file with a pass/fail
-summary, one row per test, durations, and full error details for
-failures. Open it by double-clicking the file, or right-click →
-"Reveal in File Explorer" → open with Chrome/Edge.
+> pytest-html is pinned to 3.x on purpose: version 4+ fills the results
+> table with JavaScript, which shows up EMPTY in viewers that block
+> scripts. 3.x writes plain HTML that displays anywhere.
 
-> **Why pytest-html is pinned to 3.x:** version 4+ fills in the results
-> table with JavaScript, so the report looks empty in viewers that block
-> scripts (some IDE previews, locked-down browsers). 3.x writes the
-> results as plain HTML that displays anywhere.
-
-### 2. Graphs & analytics (Allure)
-
-Each run also records raw results into `reports/allure-results`. Turn
-them into an interactive dashboard — status pie chart, duration graphs,
-a timeline, severity breakdowns, and pass-rate **trends across runs**:
+**2. Graphs & analytics (Allure)** — status charts, duration graphs,
+failure screenshots attached to each failed test, defect density per
+feature area (Behaviors tab), and trend graphs across runs:
 
 ```bash
-# One-time setup (needs Node.js; the CLI itself runs on Java 8+)
+# one-time: the Allure CLI (needs Node.js; runs on Java 8+)
 npm install -g allure-commandline
+
+# then this one command runs tests, keeps trend history, builds and
+# opens the report:
+python run_tests.py
 ```
 
-The easiest way to use it is **[run_tests.py](run_tests.py)** — one
-command that runs the tests, carries the trend history forward,
-generates the report, and opens it in your browser:
+(Allure reports are served over a local web server — `run_tests.py` and
+`allure open` handle that; don't open its index.html from the file
+system.)
 
-```bash
-python run_tests.py                 # all tests + report
-python run_tests.py --headed       # any pytest option works
-python run_tests.py -k "order"     # ...including picking tests
-python run_tests.py --no-open      # skip opening the browser
-```
-
-Run it repeatedly and the **Trend** graphs (pass rate, duration,
-retries per run) build up one data point per run — that history
-carry-over is exactly what the script automates for you.
-
-Prefer doing it by hand? `allure serve reports/allure-results` after a
-plain `pytest` run shows the same report (just without trends). Either
-way, Allure's report is served over a local web server — don't open
-its index.html directly from the file system, it won't load that way.
-
-### Reports in CI (GitHub Actions)
+## Reports in CI (GitHub Actions)
 
 [.github/workflows/tests.yml](.github/workflows/tests.yml) runs the
-suite on every push to `main` (or manually from the Actions tab) and
-delivers the reports two ways:
+suite on every push to `main` and delivers the reports two ways:
 
 - **Live Allure report on GitHub Pages** — every run publishes to
-  <https://jamessaludario.github.io/sample-playwright-python/>, with
-  history carried between runs so the trend graphs grow in CI too.
-- **Downloadable artifact** — each run attaches `test-reports`
-  (the self-contained `report.html` plus the Allure folder) under
-  the run's summary page.
+  <https://jamessaludario.github.io/qa-starter-kit-python/>, history
+  carried between runs so the trend graphs grow in CI too.
+- **Downloadable artifact** — each run attaches `test-reports` (the
+  self-contained `report.html` plus the Allure folder).
 
-The workflow still turns red when tests fail — the report is
-generated and published *first*, then the real test result is
-reported, so a red run always has its report attached.
+The workflow still turns red when tests fail — the report is published
+*first*, then the real test result is reported, so a red run always has
+its report attached. Scaffolded projects get a simpler artifact-only
+workflow in `template/.github/workflows/tests.yml`.
+
+---
 
 ## Key ideas to remember
 
@@ -216,21 +268,20 @@ reported, so a red run always has its report attached.
   every test a fresh one automatically.
 - **`expect(...)`** — a check that *waits automatically* for the condition
   to become true. You never need `time.sleep()` in Playwright.
-- **Locators** — ways to find elements on a page:
-  - `page.get_by_role("link", name="Products")` — by what users see (best!)
-  - `page.locator("#search_product")` — by CSS id
-  - `page.locator(".productinfo")` — by CSS class
-  - `page.locator('input[data-qa="login-email"]')` — by attribute
-- **A test = Arrange, Act, Assert** — prepare what you need, do the action,
-  check the result.
-- **Self-contained tests** — a good test creates whatever it needs
-  (accounts, cart items) and cleans up after itself.
+- **Locators** — find elements the way a *user* would:
+  `page.get_by_role("link", name="Products")` beats brittle CSS.
+- **A test = Arrange, Act, Assert** — prepare what you need, do the
+  action, check the result.
+- **Page objects** — all locators in one class per page, so app changes
+  mean one fix, not twenty.
 
 ## Ideas to try next
 
 1. Change the search word in test case 9 from `"dress"` to `"top"`.
 2. In test case 13, try a different quantity.
-3. Add a new test: sort out what happens when you search for something
-   that doesn't exist (e.g. `"xyz123"`).
-4. Try running against Firefox: `pytest --browser firefox`
-   (first run `playwright install firefox`).
+3. Add a new test: what happens when you search for something that
+   doesn't exist (e.g. `"xyz123"`)?
+4. Try Firefox: `pytest --browser firefox` (first:
+   `playwright install firefox`).
+5. Scaffold a project for a site you use daily and let your AI agent
+   build its baseline suite.

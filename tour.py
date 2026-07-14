@@ -84,6 +84,7 @@ def chapter_welcome():
           helpers/          user journeys like create_account()
           pytest.ini        settings applied to every run
           run_tests.py      run everything + build a graphical report
+          scaffold.py       create a test project for YOUR own app
           README.md         the written version of this tour
 
         Where to start reading: tests/test_tc01_register_user.py - it

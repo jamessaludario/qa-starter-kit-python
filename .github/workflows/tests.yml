@@ -2,7 +2,7 @@
 #
 #   1. The Allure report is published to GitHub Pages, so every run
 #      updates a live URL the whole team can open:
-#        https://jamessaludario.github.io/sample-playwright-python/
+#        https://jamessaludario.github.io/qa-starter-kit-python/
 #      History is carried between runs (same trick as run_tests.py),
 #      so the trend graphs build up one data point per CI run.
 #

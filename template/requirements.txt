@@ -1,0 +1,11 @@
+# Python packages needed to run these tests.
+# Install them with:  pip install -r requirements.txt
+playwright
+pytest
+pytest-playwright
+# Pinned to 3.x: version 4+ builds the results table with JavaScript,
+# which shows up as an EMPTY report in viewers that block scripts.
+# 3.x writes the results as plain HTML that displays anywhere.
+pytest-html==3.2.0
+allure-pytest
+pytest-rerunfailures

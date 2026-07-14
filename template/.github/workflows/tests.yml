@@ -1,0 +1,62 @@
+# Runs the test suite in GitHub Actions on every push to main (or
+# manually from the Actions tab) and attaches both reports to the run
+# as a downloadable artifact.
+#
+# Optional next level: publish the Allure report to GitHub Pages so the
+# team has a live URL with trend graphs — see the starter kit's own
+# workflow for the publishing steps:
+# https://github.com/jamessaludario/qa-starter-kit-python/blob/main/.github/workflows/tests.yml
+
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python packages
+        run: pip install -r requirements.txt
+
+      - name: Install the browser
+        run: playwright install --with-deps chromium
+
+      # BASE_URL comes from a repository secret/variable instead of the
+      # (git-ignored) .env file. Set it in Settings -> Secrets and
+      # variables -> Actions -> Variables.
+      - name: Run tests
+        id: tests
+        run: pytest
+        continue-on-error: true
+        env:
+          BASE_URL: ${{ vars.BASE_URL }}
+          PROJECT_NAME: ${{ vars.PROJECT_NAME }}
+
+      - name: Generate the Allure report
+        run: |
+          npm install -g allure-commandline
+          allure generate reports/allure-results -o reports/allure-report --clean
+
+      - name: Attach reports to this run as a download
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            reports/report.html
+            reports/allure-report
+
+      - name: Fail the workflow if tests failed
+        if: steps.tests.outcome == 'failure'
+        run: exit 1
