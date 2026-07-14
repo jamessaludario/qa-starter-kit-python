@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# pytest
+.pytest_cache/
+
+# Playwright test artifacts (screenshots, videos, traces)
+test-results/
+
+# Generated HTML test reports
+reports/

@@ -1,0 +1,98 @@
+# Runs the test suite in GitHub Actions and delivers the reports:
+#
+#   1. The Allure report is published to GitHub Pages, so every run
+#      updates a live URL the whole team can open:
+#        https://jamessaludario.github.io/sample-playwright-python/
+#      History is carried between runs (same trick as run_tests.py),
+#      so the trend graphs build up one data point per CI run.
+#
+#   2. Both reports are also attached to the run as a downloadable
+#      artifact (Actions tab -> the run -> "test-reports").
+#      report.html is self-contained and opens anywhere; the Allure
+#      folder needs "allure open" locally, so use the Pages URL instead.
+#
+# One-time setup after pushing this file: the first run creates the
+# gh-pages branch. Then check Settings -> Pages is set to deploy from
+# the gh-pages branch (GitHub usually configures this automatically).
+
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:        # adds a manual "Run workflow" button
+
+permissions:
+  contents: write           # needed to push the report to gh-pages
+
+# Never let two runs publish to gh-pages at the same time.
+concurrency:
+  group: tests-and-report
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python packages
+        run: pip install -r requirements.txt
+
+      - name: Install the browser
+        run: playwright install --with-deps chromium
+
+      # continue-on-error: a failed test run is exactly when we want the
+      # report, so don't stop here. The last step restores the real
+      # pass/fail status once the report is safely published.
+      - name: Run tests
+        id: tests
+        run: pytest
+        continue-on-error: true
+
+      # The previous report (with its accumulated history) lives on the
+      # gh-pages branch. continue-on-error covers the very first run,
+      # when that branch doesn't exist yet.
+      - name: Fetch previous report history
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: previous-report
+
+      - name: Carry history into the new results
+        run: |
+          if [ -d previous-report/history ]; then
+            cp -r previous-report/history reports/allure-results/history
+          fi
+
+      - name: Generate the Allure report
+        run: |
+          npm install -g allure-commandline
+          allure generate reports/allure-results -o reports/allure-report --clean
+
+      - name: Publish the report to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: reports/allure-report
+
+      - name: Attach reports to this run as a download
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            reports/report.html
+            reports/allure-report
+
+      # Reports are delivered — now let the workflow show the true result.
+      - name: Fail the workflow if tests failed
+        if: steps.tests.outcome == 'failure'
+        run: exit 1
