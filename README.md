@@ -8,6 +8,36 @@ Every test file is heavily commented and maps 1-to-1 to a test case on the
 site: `test_tc09_...` is the site's "Test Case 9", and the numbered comments
 inside follow the site's official steps.
 
+**New to test automation? Take the guided tour first:**
+
+```bash
+python tour.py
+```
+
+An interactive, menu-driven tour ([tour.py](tour.py)) that teaches by
+*showing*: it opens a real browser so you can watch a test drive the
+site in slow motion, lets you record your own script just by clicking
+around (Playwright's codegen), creates a starter test with guided
+TODOs for you to finish, and walks you through the reports. Take the
+chapters in order the first time; revisit any chapter any time.
+
+## Sharing this kit
+
+Everything is self-contained — to hand this to a colleague or student,
+just share the repository link. Their complete setup is:
+
+```bash
+git clone https://github.com/jamessaludario/sample-playwright-python.git
+cd sample-playwright-python
+pip install -r requirements.txt
+playwright install chromium
+python tour.py
+```
+
+(Python 3.10+ required. The Allure report additionally needs Node.js —
+see the Test reports section — but everything else, including the tour
+and the quick HTML report, works without it.)
+
 ## Where to start reading
 
 1. **[conftest.py](conftest.py)** — shared setup: the site URL, test data,

@@ -12,3 +12,6 @@ test-results/
 
 # Generated HTML test reports
 reports/
+
+# Each learner's own practice test, created by the tour (tour.py)
+tests/test_my_first_test.py
