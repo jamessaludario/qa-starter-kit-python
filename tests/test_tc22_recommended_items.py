@@ -12,7 +12,7 @@ New idea in this test:
 
 from playwright.sync_api import Page, expect
 
-from conftest import open_page
+from helpers.flows import open_page
 
 
 def test_add_to_cart_from_recommended_items(page: Page):

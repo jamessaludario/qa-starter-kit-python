@@ -15,7 +15,9 @@ New ideas in this test:
 
 from playwright.sync_api import Page, expect
 
-from conftest import open_page, unique_email, ACCOUNT, PASSWORD
+from constants import ACCOUNT, PASSWORD
+from helpers.flows import open_page
+from utils.data import unique_email
 
 
 def test_register_user(page: Page):

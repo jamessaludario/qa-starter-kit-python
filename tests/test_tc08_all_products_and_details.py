@@ -12,7 +12,8 @@ New ideas in this test:
 
 from playwright.sync_api import Page, expect
 
-from conftest import open_page, BASE_URL
+from constants import BASE_URL
+from helpers.flows import open_page
 
 
 def test_all_products_and_first_product_details(page: Page):

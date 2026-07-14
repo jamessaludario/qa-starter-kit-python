@@ -8,9 +8,11 @@ same email — and expect an error message.
 
 from playwright.sync_api import Page, expect
 
-from conftest import (
-    create_account, login, logout, delete_account, open_page, unique_email, ACCOUNT,
+from constants import ACCOUNT
+from helpers.flows import (
+    create_account, login, logout, delete_account, open_page,
 )
+from utils.data import unique_email
 
 
 def test_register_with_existing_email_shows_error(page: Page):

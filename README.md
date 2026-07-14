@@ -38,14 +38,34 @@ python tour.py
 see the Test reports section — but everything else, including the tour
 and the quick HTML report, works without it.)
 
+## How the kit is organized
+
+The layout mirrors how professional UI test suites are structured —
+each kind of thing has its own home:
+
+| Where | What lives there |
+|---|---|
+| [tests/](tests/) | The test cases — WHAT to verify |
+| [helpers/](helpers/flows.py) | User journeys (`create_account`, ...) that many tests reuse |
+| [pages/](pages/) | Page objects — one class per page of the site, holding its locators and actions |
+| [constants.py](constants.py) | Shared data: site URL, account details, the fake card |
+| [fixtures/](fixtures/) | Things pytest runs around every test: ad blocker, failure screenshots, report labels |
+| [utils/](utils/data.py) | Small standalone tools like `unique_email()` |
+| [conftest.py](conftest.py) | A thin loader that plugs the fixtures in |
+
+The layering to remember:
+**tests** (what to verify) → **helpers** (the journey) → **pages**
+(where things are on each page) → the browser. When the site changes,
+you fix one locator in one page class — not 26 tests.
+
 ## Where to start reading
 
-1. **[conftest.py](conftest.py)** — shared setup: the site URL, test data,
-   an ad blocker (the site's ads make tests flaky), and helper functions
-   (`create_account`, `login`, `delete_account`, ...) reused by many tests.
-2. **[test_tc01_register_user.py](tests/test_tc01_register_user.py)** — the
+1. **[test_tc01_register_user.py](tests/test_tc01_register_user.py)** — the
    full registration flow written out step by step. Later tests reuse the
    `create_account()` helper instead of repeating it.
+2. **[helpers/flows.py](helpers/flows.py)** then
+   **[pages/base_page.py](pages/base_page.py)** — see how a helper like
+   `create_account()` is built from page-object methods.
 3. Then browse by topic below.
 
 ## The 26 test cases

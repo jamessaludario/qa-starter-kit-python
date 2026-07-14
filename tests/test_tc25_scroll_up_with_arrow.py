@@ -14,7 +14,7 @@ New ideas in this test:
 
 from playwright.sync_api import Page, expect
 
-from conftest import open_page
+from helpers.flows import open_page
 
 # The big slogan at the very top of the home page.
 TOP_TEXT = "Full-Fledged practice website for Automation Engineers"

@@ -8,7 +8,7 @@ shows quantity 4.
 
 from playwright.sync_api import Page, expect
 
-from conftest import open_page
+from helpers.flows import open_page
 
 
 def test_cart_shows_chosen_quantity(page: Page):

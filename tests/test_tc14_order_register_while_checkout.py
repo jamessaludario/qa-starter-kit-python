@@ -14,10 +14,10 @@ This test reuses three helpers from conftest.py:
 
 from playwright.sync_api import Page, expect
 
-from conftest import (
-    open_page, add_product_to_cart, go_to_cart, proceed_to_checkout,
-    create_account, pay_and_confirm_order, delete_account, unique_email,
+from helpers.flows import (
+    open_page, add_product_to_cart, go_to_cart, proceed_to_checkout, create_account, pay_and_confirm_order, delete_account,
 )
+from utils.data import unique_email
 
 
 def test_place_order_register_while_checkout(page: Page):

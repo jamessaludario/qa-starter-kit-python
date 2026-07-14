@@ -16,7 +16,7 @@ appears in the page, typos included!
 
 from playwright.sync_api import Page, expect
 
-from conftest import open_page
+from helpers.flows import open_page
 
 
 def test_subscription_on_home_page(page: Page):

@@ -11,7 +11,7 @@ name only needs to CONTAIN the text, not match it exactly.
 
 from playwright.sync_api import Page, expect
 
-from conftest import open_page
+from helpers.flows import open_page
 
 
 def test_view_polo_and_hm_brand_products(page: Page):

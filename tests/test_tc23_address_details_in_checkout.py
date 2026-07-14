@@ -13,10 +13,11 @@ would make the test lie to us.
 
 from playwright.sync_api import Page, expect
 
-from conftest import (
-    open_page, add_product_to_cart, go_to_cart, proceed_to_checkout,
-    create_account, delete_account, unique_email, ACCOUNT,
+from constants import ACCOUNT
+from helpers.flows import (
+    open_page, add_product_to_cart, go_to_cart, proceed_to_checkout, create_account, delete_account,
 )
+from utils.data import unique_email
 
 
 def test_checkout_shows_registration_address(page: Page):

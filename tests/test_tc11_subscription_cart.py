@@ -8,7 +8,7 @@ the subscription box also works when you are looking at your cart.
 
 from playwright.sync_api import Page, expect
 
-from conftest import open_page
+from helpers.flows import open_page
 
 
 def test_subscription_on_cart_page(page: Page):

@@ -79,11 +79,12 @@ def chapter_welcome():
 
         Your map of the kit:
 
-        - tests/            one file per test case, heavily commented
-        - conftest.py       shared helpers every test can use
-        - pytest.ini        settings applied to every run
-        - run_tests.py      run everything + build a graphical report
-        - README.md         the written version of this tour
+          tests/            one file per test case, heavily commented
+          pages/            "page objects" - one class per page of the site
+          helpers/          user journeys like create_account()
+          pytest.ini        settings applied to every run
+          run_tests.py      run everything + build a graphical report
+          README.md         the written version of this tour
 
         Where to start reading: tests/test_tc01_register_user.py - it
         walks through a full user registration one commented step at a
@@ -171,8 +172,8 @@ def chapter_locators():
         sprinkled around - and unexplained sleeps are the #1 smell in
         beginner test code.
 
-        See them in action: conftest.py uses all four styles, with
-        comments saying why each was chosen.
+        See them in action: the page classes in the pages/ folder use
+        all four styles, with comments saying why each was chosen.
     """)
     pause()
 
@@ -228,11 +229,11 @@ Run it (and watch it!) with:
 
 from playwright.sync_api import Page, expect
 
-from conftest import open_page
+from helpers.flows import open_page
 
 
 def test_my_first_test(page: Page):
-    # Step 1: open the home page (helper from conftest.py - it also
+    # Step 1: open the home page (helper from helpers/flows.py - it also
     # closes the cookie popup for you).
     open_page(page)
 

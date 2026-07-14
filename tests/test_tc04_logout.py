@@ -11,9 +11,9 @@ on its own, in any order, on any machine.
 
 from playwright.sync_api import Page, expect
 
-from conftest import (
-    create_account, login, logout, delete_account, unique_email, ACCOUNT, BASE_URL,
-)
+from constants import ACCOUNT, BASE_URL
+from helpers.flows import create_account, login, logout, delete_account
+from utils.data import unique_email
 
 
 def test_logout_returns_to_login_page(page: Page):

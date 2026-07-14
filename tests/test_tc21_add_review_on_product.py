@@ -7,7 +7,7 @@ We fill it in, submit, and check the thank-you message.
 
 from playwright.sync_api import Page, expect
 
-from conftest import open_page
+from helpers.flows import open_page
 
 
 def test_add_review_on_product(page: Page):
