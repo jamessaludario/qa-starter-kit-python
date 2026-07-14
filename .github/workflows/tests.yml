@@ -75,7 +75,8 @@ jobs:
       - name: Generate the Allure report
         run: |
           npm install -g allure-commandline
-          allure generate reports/allure-results -o reports/allure-report --clean
+          allure generate reports/allure-results -o reports/allure-report --clean \
+            --report-name "AutomationExercise Test Report"
 
       - name: Publish the report to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4

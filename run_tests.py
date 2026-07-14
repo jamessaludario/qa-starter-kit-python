@@ -31,6 +31,9 @@ RESULTS = Path("reports/allure-results")   # raw results, written by pytest
 REPORT = Path("reports/allure-report")     # the generated website
 HISTORY = REPORT / "history"               # the "memory" the trends need
 
+# The title shown at the top of the report's Overview page.
+REPORT_NAME = "AutomationExercise Test Report"
+
 
 def main():
     # --no-open is OUR flag (skip step 4); everything else goes to pytest.
@@ -69,7 +72,8 @@ def main():
     # --- Step 3: generate the report --------------------------------------
     print(">> Generating the Allure report...")
     subprocess.run(
-        [allure, "generate", str(RESULTS), "-o", str(REPORT), "--clean"],
+        [allure, "generate", str(RESULTS), "-o", str(REPORT), "--clean",
+         "--report-name", REPORT_NAME],
         check=True,
     )
 
