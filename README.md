@@ -10,15 +10,35 @@ Click **Use this template** to get your own independent copy of the kit
 on GitHub — the original stays untouched, and your copy is 100% yours
 to edit.
 
+**Jump to:** [Pick your path](#pick-your-path) ·
+[Guided tour](#-start-the-guided-tour-15-minutes-zero-experience-needed) ·
+[Quick start](#quick-start) ·
+[Commands](#commands-cheat-sheet) ·
+[AI workflow](#-how-the-ai-workflow-works) ·
+[Troubleshooting](#-troubleshooting)
+
 ---
 
-## 🌱 New to QA automation? Start here
+## Pick your path
+
+Everyone lands here for a different reason. Find your row:
+
+| You are... | Do this |
+|---|---|
+| 🌱 Brand new to test automation | Run the **[guided tour](#-start-the-guided-tour-15-minutes-zero-experience-needed)** below — no reading required |
+| 📖 The type who wants concepts explained first | Open the **[interactive docs guide](docs/qa-automation-guide.html)** — Playwright, locators, assertions, reports, all from zero |
+| 🚀 Comfortable with the basics, testing my own app now | Jump straight to **[Test your own app](#-test-your-own-app)** |
+| 🤖 Want an AI agent to write the tests for me | Jump to **[How the AI workflow works](#-how-the-ai-workflow-works)** |
+
+---
+
+## 🌱 Start the guided tour (15 minutes, zero experience needed)
 
 Don't read anything yet — **do** the guided tour. It sets up your own
 sandbox copy of the practice tests, opens a real browser so you can
 watch a test drive a website in slow motion, lets you record your own
 script just by clicking around, and walks you into writing your first
-test:
+test.
 
 ```bash
 pip install -r requirements.txt
@@ -26,11 +46,20 @@ playwright install chromium
 python tour.py
 ```
 
-About 15 minutes, fully hands-on, quit and resume any time.
+By the end, you'll have:
+
+- [ ] Watched a real browser run an automated test, in slow motion
+- [ ] Learned what a locator is and how tests find things on a page
+- [ ] Recorded your own click-path into working code
+- [ ] Written and run your first test, from scratch
+- [ ] Opened an HTML report of the results
+
+Quit any time with `q` — `python tour.py` always drops you back at the
+same menu. Something not working? See [Troubleshooting](#-troubleshooting).
 
 ---
 
-## What is this?
+## What's inside
 
 A hybrid **learning playground** and **ready-made test suite scaffold**:
 
@@ -42,7 +71,9 @@ A hybrid **learning playground** and **ready-made test suite scaffold**:
    skeleton, you add your app's URL, then write tests by hand or let an
    AI agent generate them using the included prompts.
 
-**The kit provides:**
+<details>
+<summary><strong>See everything the kit provides</strong></summary>
+
 - 🧭 **Interactive tour** (`python tour.py`) — watch, record, then write
 - 📚 **26 commented test cases** — pristine sources in [learn/](learn/),
   your editable sandbox copy in `tour-tests/` (created by the tour,
@@ -53,26 +84,31 @@ A hybrid **learning playground** and **ready-made test suite scaffold**:
   → e2e → fix) and a `CLAUDE.md` convention file any agent can follow
 - 📊 **Reports built in** — one-file HTML report, Allure dashboards with
   trends and failure screenshots, automatic retries for flaky moments
-- 🚀 **CI included** — GitHub Actions runs the suite and publishes the live
-  Allure report to GitHub Pages
+- 🚀 **CI included** — GitHub Actions runs the suite and publishes the
+  live Allure report to GitHub Pages
+- 📖 **A written guide** — [docs/qa-automation-guide.html](docs/qa-automation-guide.html),
+  explaining every concept the tour teaches by doing (also buildable as
+  a small browsable site: `python docs/build_site.py`)
+
+</details>
 
 ---
 
 ## Supported AI agents
 
-| Agent            | How to use                                          |
-|------------------|-----------------------------------------------------|
-| Claude Code      | Open your scaffolded folder in a terminal — rules in `CLAUDE.md` are picked up automatically |
-| Cursor           | Copy `CLAUDE.md` to `.cursor/rules/qa-automation.mdc` |
-| VS Code Copilot  | Copy `CLAUDE.md` to `.github/copilot-instructions.md` |
-| Windsurf         | Copy `CLAUDE.md` to `.windsurf/rules.md`             |
-| Any other agent  | Paste prompts from `prompts/` and reference `CLAUDE.md` |
+| Agent | How to use |
+|---|---|
+| Claude Code | Open your scaffolded folder in a terminal — rules in `CLAUDE.md` are picked up automatically |
+| Cursor | Copy `CLAUDE.md` to `.cursor/rules/qa-automation.mdc` |
+| VS Code Copilot | Copy `CLAUDE.md` to `.github/copilot-instructions.md` |
+| Windsurf | Copy `CLAUDE.md` to `.windsurf/rules.md` |
+| Any other agent | Paste prompts from `prompts/` and reference `CLAUDE.md` |
 
 ---
 
 ## Quick start
 
-### 🏁 Learn (recommended first step)
+### 🏁 Learn first (recommended)
 
 Click **Use this template** above (or clone this repo), then:
 
@@ -84,10 +120,13 @@ python tour.py                  # the guided tour (creates tour-tests/)
 pytest --headed --slowmo 500    # then watch all 26 tests run
 ```
 
+You should see a browser window open, run through a test, and close —
+26 times in a row — ending with a line like `26 passed in 3m12s`.
+
 (Python 3.10+ required. Only the Allure analytics report additionally
 needs Node.js — everything else works without it.)
 
-### 🚀 Start a test suite for YOUR web app
+### 🚀 Test your own app
 
 **A. Fresh project next to the kit:**
 
@@ -105,13 +144,16 @@ are included together automatically. You get an independent project:
 ../my-app-tests/     ← chosen structure, .env filled in, smoke test ready
 ```
 
-**B. Into an existing repo** (e.g. an `e2e/` folder inside your app):
+<details>
+<summary><strong>Adding tests into an existing repo instead?</strong></summary>
 
 ```bash
 python scaffold.py --name my-app --url https://... --dest path/to/repo/e2e --into-existing
 ```
 
 Files you already have are never touched; only missing ones are added.
+
+</details>
 
 **Then, either way:**
 
@@ -125,24 +167,24 @@ Grow the suite:
   `prompts/00-quick-start.md`. The prompts walk it through scanning your
   app, generating baseline tests per page, building e2e journeys, and
   fixing failures — all following the conventions in `CLAUDE.md`.
-- **By hand:** copy `pages/example_page.py.template`, build your first
-  page object, write tests against it.
+- **By hand:** in your scaffolded project, copy `pages/example_page.py.template`,
+  build your first page object, write tests against it.
 
 ---
 
-## Commands
+## Commands cheat sheet
 
 > In the starter kit (learning):
 
-```bash
-python tour.py                  # interactive guided tour
-python tour.py --create-tests   # just (re)create tour-tests/ and exit
-pytest                          # run your copy of the 26 tests (headless)
-pytest --headed --slowmo 500    # watch the browser work (great for learning!)
-pytest -k "order"               # run a group of tests
-python run_tests.py             # run everything + open the Allure report
-python scaffold.py              # create a test project for your own app
-```
+| Command | What it does |
+|---|---|
+| `python tour.py` | Interactive guided tour |
+| `python tour.py --create-tests` | Just (re)create `tour-tests/` and exit |
+| `pytest` | Run your copy of the 26 tests (headless) |
+| `pytest --headed --slowmo 500` | Watch the browser work (great for learning!) |
+| `pytest -k "order"` | Run a group of tests matching a keyword |
+| `python run_tests.py` | Run everything + open the Allure report |
+| `python scaffold.py` | Create a test project for your own app |
 
 > In your scaffolded project: the same commands, minus the tour.
 
@@ -154,6 +196,9 @@ visible in the reports, so flakiness is never silently hidden.
 ---
 
 ## Folder structure
+
+<details>
+<summary><strong>Click to expand the full layout</strong></summary>
 
 ```
 qa-starter-kit-python/
@@ -169,6 +214,7 @@ qa-starter-kit-python/
 ├── scaffold.py      ← creates a test project for YOUR app
 ├── template/        ← the generic skeleton the scaffolder copies
 ├── prompts/         ← copy-paste prompts for AI agents
+├── docs/            ← the written guide (qa-automation-guide.html) + its site builder
 └── run_tests.py     ← run + build the Allure report in one command
 ```
 
@@ -177,7 +223,11 @@ parts). The layering to remember: **tests** (what to verify) →
 **helpers** (the journey) → **pages** (where things are). When the app
 changes, you fix one locator in one page class — not every test.
 
-## How the AI workflow works
+</details>
+
+---
+
+## 🤖 How the AI workflow works
 
 1. **Scan** — your agent visits your app's pages and writes a map of
    elements and locators (`prompts/01-scan-pages.md`)
@@ -190,11 +240,14 @@ changes, you fix one locator in one page class — not every test.
 
 ---
 
-## The learn track: 26 real test cases
+## The 26 practice tests
 
 Every file maps 1-to-1 to an official test case of the practice site and
 is commented for beginners. The sources live in [learn/](learn/); the
 tour copies them to `tour-tests/` where you run and edit them.
+
+<details>
+<summary><strong>Click to see all 26 test cases</strong></summary>
 
 | # | File | What it tests |
 |---|------|---------------|
@@ -224,6 +277,8 @@ tour copies them to `tour-tests/` where you run and edit them.
 | 24 | [test_tc24_download_invoice.py](learn/test_tc24_download_invoice.py) | Download invoice after purchase |
 | 25 | [test_tc25_scroll_up_with_arrow.py](learn/test_tc25_scroll_up_with_arrow.py) | Scroll-up arrow button |
 | 26 | [test_tc26_scroll_up_without_arrow.py](learn/test_tc26_scroll_up_without_arrow.py) | Scroll up with JavaScript |
+
+</details>
 
 Where to start reading:
 1. [learn/test_tc01_register_user.py](learn/test_tc01_register_user.py) —
@@ -273,6 +328,9 @@ system.)
 
 ## Reports in CI (GitHub Actions)
 
+<details>
+<summary><strong>Click to see how CI reporting works</strong></summary>
+
 [.github/workflows/tests.yml](.github/workflows/tests.yml) runs the
 suite on every push to `main` and delivers the reports two ways:
 
@@ -287,29 +345,96 @@ The workflow still turns red when tests fail — the report is published
 its report attached. Scaffolded projects get a simpler artifact-only
 workflow in `template/.github/workflows/tests.yml`.
 
+</details>
+
 ---
 
 ## Key ideas to remember
 
-- **`page`** — a browser tab Playwright controls. pytest-playwright gives
-  every test a fresh one automatically.
-- **`expect(...)`** — a check that *waits automatically* for the condition
-  to become true. You never need `time.sleep()` in Playwright.
-- **Locators** — find elements the way a *user* would:
-  `page.get_by_role("link", name="Products")` beats brittle CSS.
-- **A test = Arrange, Act, Assert** — prepare what you need, do the
-  action, check the result.
-- **Page objects** — all locators in one class per page, so app changes
-  mean one fix, not twenty.
+| Idea | What it means |
+|---|---|
+| `page` | A browser tab Playwright controls. pytest-playwright gives every test a fresh one automatically. |
+| `expect(...)` | A check that *waits automatically* for the condition to become true. You never need `time.sleep()` in Playwright. |
+| Locators | Find elements the way a *user* would: `page.get_by_role("link", name="Products")` beats brittle CSS. |
+| Arrange, Act, Assert | Prepare what you need, do the action, check the result — the shape of every test. |
+| Page objects | All locators in one class per page, so app changes mean one fix, not twenty. |
 
-## Ideas to try next
+---
 
-1. In `tour-tests/`, change the search word in test case 9 from
-   `"dress"` to `"top"`.
-2. In test case 13, try a different quantity.
-3. Add a new test: what happens when you search for something that
-   doesn't exist (e.g. `"xyz123"`)?
-4. Try Firefox: `pytest --browser firefox` (first:
-   `playwright install firefox`).
-5. Scaffold a project for a site you use daily and let your AI agent
-   build its baseline suite.
+## 🎯 Try these next
+
+Small challenges to build confidence before you touch your own app:
+
+- [ ] In `tour-tests/`, change the search word in test case 9 from
+      `"dress"` to `"top"`
+- [ ] In test case 13, try a different quantity
+- [ ] Add a new test: what happens when you search for something that
+      doesn't exist (e.g. `"xyz123"`)?
+- [ ] Try Firefox: `pytest --browser firefox` (first:
+      `playwright install firefox`)
+- [ ] Scaffold a project for a site you use daily and let your AI agent
+      build its baseline suite
+
+---
+
+## 🛠️ Troubleshooting
+
+<details>
+<summary><strong>"python is not recognized" / "pip is not recognized"</strong></summary>
+
+Python isn't on your PATH. Reinstall from
+[python.org](https://www.python.org/downloads/) and tick **"Add
+python.exe to PATH"** on the first screen of the installer.
+
+</details>
+
+<details>
+<summary><strong>PowerShell says "running scripts is disabled on this system"</strong></summary>
+
+Run this once, then try again:
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+</details>
+
+<details>
+<summary><strong>Tests fail once, then pass on the very next run</strong></summary>
+
+That's expected, not a bug — the practice site (and most real apps) has
+slow moments now and then. `pytest.ini` retries a failing test up to 2
+times (`--reruns 2`) before calling it a real failure. Retries always
+stay visible in the report, so flakiness is never hidden.
+
+</details>
+
+<details>
+<summary><strong>A browser never opens, or Playwright complains about missing browsers</strong></summary>
+
+Run `playwright install chromium` (or `playwright install` for all
+three engines). Playwright drives its own downloaded copies of the
+browsers — not the Chrome/Edge already on your machine.
+
+</details>
+
+<details>
+<summary><strong>Where did my results go?</strong></summary>
+
+`reports/report.html` (git-ignored) after every run. Double-click it —
+it's a single self-contained file, no server needed.
+
+</details>
+
+---
+
+## 📖 Learn more
+
+- **[docs/qa-automation-guide.html](docs/qa-automation-guide.html)** — a
+  from-zero written guide covering every concept the tour teaches
+  hands-on: what Playwright is, locators, assertions, fixtures, markers,
+  and reports. Open it directly in a browser, or run
+  `python docs/build_site.py` for a small browsable multi-page version
+  (opens automatically once built).
+- [Playwright for Python docs](https://playwright.dev/python/docs/intro)
+- [pytest documentation](https://docs.pytest.org/)

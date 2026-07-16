@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA Automation Docs | Playwright + Python</title>
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem("qa-docs-theme");
+    if (t === "light" || t === "dark") {
+      document.documentElement.setAttribute("data-theme", t);
+    }
+  } catch (e) { /* localStorage unavailable (e.g. privacy mode) - ignore */ }
+})();
+</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="home">
+
+<header class="navbar">
+  <a class="brand" href="index.html"><span>QA&nbsp;Automation</span></a>
+  <div class="navbar-right">
+    <nav class="navlinks">
+      <a href="about-playwright.html">Guide</a>
+      <a href="run-reports.html">Reports</a>
+      <a href="https://playwright.dev/python/docs/intro">Playwright&nbsp;Docs</a>
+      <a href="https://docs.pytest.org/">pytest&nbsp;Docs</a>
+    </nav>
+    <!-- Light/dark switch. The checkbox comes before the label so the CSS
+         sibling selector (~) can style the label from its checked state. -->
+    <input type="checkbox" id="theme-toggle" class="theme-toggle-input">
+    <label class="theme-toggle" for="theme-toggle" title="Toggle light / dark theme">
+      <span class="icon sun" aria-hidden="true">&#9728;</span>
+      <span class="track"><span class="knob"></span></span>
+      <span class="icon moon" aria-hidden="true">&#127769;</span>
+    </label>
+    <script>
+(function () {
+  var KEY = "qa-docs-theme";
+  var box = document.getElementById("theme-toggle");
+  if (!box) return;
+  var current = document.documentElement.getAttribute("data-theme");
+  if (!current) {
+    var prefersDark = window.matchMedia
+      && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    current = prefersDark ? "dark" : "light";
+  }
+  box.checked = current === "dark";
+  box.addEventListener("change", function () {
+    var theme = box.checked ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", theme);
+    try { localStorage.setItem(KEY, theme); } catch (e) { /* ignore */ }
+  });
+})();
+</script>
+  </div>
+</header>
+<main class="hero-wrap">
+  <section class="hero">
+    <div class="hero-text">
+      <h1><span class="accent">QA Automation</span><br>Documentation</h1>
+      <p class="tagline">Learn browser test automation from zero with Playwright,
+      Python, and pytest - guides, examples, and best practices.</p>
+      <div class="hero-actions">
+        <a class="btn primary" href="about-playwright.html">Get Started</a>
+        <a class="btn ghost" href="run-reports.html">Playwright + pytest</a>
+      </div>
+    </div>
+  </section>
+  <section class="cards">
+    <a class="card" href="about-playwright.html">
+      <span class="card-icon">&#127917;</span>
+      <h3>About Playwright</h3>
+      <p>What Playwright is, why teams choose it, and how it compares to Selenium.</p>
+    </a>
+    <a class="card" href="prerequisites.html">
+      <span class="card-icon">&#9989;</span>
+      <h3>Prerequisites</h3>
+      <p>Everything to install and know before you start.</p>
+    </a>
+    <a class="card" href="installation.html">
+      <span class="card-icon">&#128230;</span>
+      <h3>Installation &amp; Setup</h3>
+      <p>Virtual environments, packages, browsers, and project structure.</p>
+    </a>
+    <a class="card" href="configurations.html">
+      <span class="card-icon">&#9881;&#65039;</span>
+      <h3>Configurations</h3>
+      <p>pytest.ini, command-line options, conftest.py, and constants.</p>
+    </a>
+    <a class="card" href="test-scripts.html">
+      <span class="card-icon">&#128221;</span>
+      <h3>Creating Test Scripts</h3>
+      <p>Your first test, the AAA pattern, and the Page Object Model.</p>
+    </a>
+    <a class="card" href="locators.html">
+      <span class="card-icon">&#127919;</span>
+      <h3>Locators</h3>
+      <p>How to find elements on a page - the heart of automation.</p>
+    </a>
+    <a class="card" href="assertions.html">
+      <span class="card-icon">&#129514;</span>
+      <h3>Assertions</h3>
+      <p>Web-first expect() checks that wait for the page.</p>
+    </a>
+    <a class="card" href="setup-teardown.html">
+      <span class="card-icon">&#128260;</span>
+      <h3>Setup &amp; Teardown</h3>
+      <p>pytest fixtures, yield, and fixture scopes.</p>
+    </a>
+    <a class="card" href="categorization.html">
+      <span class="card-icon">&#127991;&#65039;</span>
+      <h3>Categorizing Tests</h3>
+      <p>Markers, smoke vs regression suites, skip and xfail.</p>
+    </a>
+    <a class="card" href="run-reports.html">
+      <span class="card-icon">&#128202;</span>
+      <h3>Running Tests &amp; Reports</h3>
+      <p>pytest commands, HTML reports, and Allure.</p>
+    </a>
+    <a class="card" href="additional-info.html">
+      <span class="card-icon">&#128161;</span>
+      <h3>Additional Info</h3>
+      <p>Debugging tools, flaky tests, good habits, and resources.</p>
+    </a>
+  </section>
+  <footer class="page-footer center">Beginner's guide - static HTML, the only script is the light/dark switch.</footer>
+</main>
+</body>
+</html>

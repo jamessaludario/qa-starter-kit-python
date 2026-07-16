@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA Automation with Playwright &amp; Python — A Beginner's Guide</title>
+<style>
+  /* ---------- Base ---------- */
+  :root {
+    --bg: #ffffff;
+    --text: #1f2933;
+    --muted: #52606d;
+    --accent: #0b6e4f;
+    --accent-soft: #e6f4ef;
+    --border: #d9e2ec;
+    --code-bg: #f4f6f8;
+    --code-border: #d9e2ec;
+    --code-text: #243b53;
+    --tip-bg: #eef7f2;
+    --tip-border: #0b6e4f;
+    --warn-bg: #fdf6ec;
+    --warn-border: #c77d1f;
+    --note-bg: #eef3fb;
+    --note-border: #2f6fb2;
+    --table-head: #f0f4f8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    font-size: 16px;
+  }
+  .page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  /* ---------- Header ---------- */
+  header.doc-header {
+    border-bottom: 4px solid var(--accent);
+    padding-bottom: 20px;
+    margin-bottom: 28px;
+  }
+  header.doc-header h1 {
+    margin: 0 0 8px;
+    font-size: 2rem;
+    color: var(--accent);
+  }
+  header.doc-header p.subtitle {
+    margin: 0;
+    color: var(--muted);
+    font-size: 1.05rem;
+  }
+
+  /* ---------- Headings ---------- */
+  h2 {
+    font-size: 1.5rem;
+    color: var(--accent);
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 6px;
+    margin-top: 48px;
+  }
+  h2 .secno {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 6px;
+    padding: 0 10px;
+    margin-right: 10px;
+    font-size: 1.1rem;
+  }
+  h3 { font-size: 1.15rem; margin-top: 28px; }
+  h4 { font-size: 1rem; margin-top: 22px; }
+
+  /* ---------- TOC ---------- */
+  nav.toc {
+    background: var(--accent-soft);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 24px;
+    margin-bottom: 12px;
+  }
+  nav.toc h2 {
+    margin: 0 0 10px;
+    border: none;
+    font-size: 1.1rem;
+    padding: 0;
+  }
+  nav.toc ol { margin: 0; padding-left: 22px; }
+  nav.toc li { margin: 4px 0; }
+  nav.toc a { color: var(--accent); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+
+  /* ---------- Code ---------- */
+  code {
+    font-family: Consolas, "Courier New", monospace;
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 0.9em;
+    color: var(--code-text);
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-left: 4px solid var(--accent);
+    border-radius: 6px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    line-height: 1.5;
+  }
+  pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.88rem;
+    color: var(--code-text);
+  }
+  .filename {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 0.8rem;
+    border-radius: 6px 6px 0 0;
+    padding: 3px 12px;
+    margin-bottom: -6px;
+  }
+
+  /* ---------- Callouts ---------- */
+  .tip, .warn, .note {
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 18px 0;
+  }
+  .tip  { background: var(--tip-bg);  border-left: 4px solid var(--tip-border); }
+  .warn { background: var(--warn-bg); border-left: 4px solid var(--warn-border); }
+  .note { background: var(--note-bg); border-left: 4px solid var(--note-border); }
+  .tip strong:first-child, .warn strong:first-child, .note strong:first-child {
+    display: block; margin-bottom: 4px;
+  }
+
+  /* ---------- Tables ---------- */
+  .tablewrap { overflow-x: auto; margin: 18px 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.93rem;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: var(--table-head); }
+  td code { white-space: nowrap; }
+
+  /* ---------- Misc ---------- */
+  a { color: var(--accent); }
+  ul li, ol li { margin: 4px 0; }
+  .backtop {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .backtop:hover { color: var(--accent); }
+  footer {
+    margin-top: 60px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  kbd {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: Consolas, monospace;
+    font-size: 0.85em;
+  }
+</style>
+</head>
+<body>
+<div class="page" id="top">
+
+<header class="doc-header">
+  <h1>QA Automation with Playwright &amp; Python</h1>
+  <p class="subtitle">A step-by-step guide for people with little or no experience in test automation.</p>
+</header>
+
+<nav class="toc">
+  <h2>Table of contents</h2>
+  <ol>
+    <li><a href="#about">About Playwright</a></li>
+    <li><a href="#prereq">Prerequisites</a></li>
+    <li><a href="#install">Installation and setup</a></li>
+    <li><a href="#config">Configurations</a></li>
+    <li><a href="#scripts">Creating test scripts</a></li>
+    <li><a href="#locators">How to access elements (locators)</a></li>
+    <li><a href="#assertions">Assertions</a></li>
+    <li><a href="#setup-teardown">Setup and teardown</a></li>
+    <li><a href="#categorize">Categorization of tests</a></li>
+    <li><a href="#run-reports">How to run tests and check reports</a></li>
+    <li><a href="#extras">Additional info</a></li>
+  </ol>
+</nav>
+
+<div class="note">
+  <strong>Who this guide is for</strong>
+  You know how to use a computer and maybe a little Python, but you have never written
+  an automated test before. Every concept is explained from zero. Read it top to bottom
+  the first time; later, use the table of contents to jump around.
+</div>
+
+<!-- ================================================================ -->
+<h2 id="about"><span class="secno">1</span>About Playwright</h2>
+
+<h3>First: what is QA automation?</h3>
+<p>
+  When testers check a website by hand — clicking buttons, filling forms, and reading the
+  screen to confirm everything works — that is <strong>manual testing</strong>.
+  <strong>QA automation</strong> means writing small programs (called <em>test scripts</em>)
+  that do that clicking, typing, and checking for you. The computer repeats the same checks
+  perfectly, every time, in minutes instead of hours.
+</p>
+
+<h3>What is Playwright?</h3>
+<p>
+  <strong>Playwright</strong> is a free, open-source tool made by Microsoft that lets your
+  code control a real web browser: open pages, click, type, and read what appears on screen.
+  You write the instructions in Python (Playwright also supports JavaScript, Java, and C#,
+  but this guide uses Python).
+</p>
+
+<h3>Why do people choose Playwright?</h3>
+<ul>
+  <li><strong>It controls all major browsers</strong> — Chromium (the engine behind Chrome and Edge),
+      Firefox, and WebKit (the engine behind Safari) — with the same code.</li>
+  <li><strong>Auto-waiting.</strong> Web pages take time to load. Older tools failed if a button
+      wasn't ready yet, forcing testers to add "sleep 5 seconds" everywhere. Playwright
+      automatically waits for elements to be ready before acting on them, which makes tests
+      far more reliable.</li>
+  <li><strong>Fast and modern.</strong> It handles today's dynamic, JavaScript-heavy websites well.</li>
+  <li><strong>Great tooling.</strong> It can record your clicks and generate code for you
+      (<code>codegen</code>), record a full "trace" of a test run you can replay later, and
+      take screenshots and videos automatically.</li>
+  <li><strong>Headless or headed.</strong> Tests can run with a visible browser window ("headed",
+      great for watching and debugging) or invisibly in the background ("headless", great for speed
+      and for servers with no screen).</li>
+</ul>
+
+<h3>How Playwright compares to Selenium</h3>
+<p>
+  You may have heard of <strong>Selenium</strong>, the older and most widely known browser
+  automation tool. Both are good; Playwright is generally easier for beginners because
+  auto-waiting is built in, setup is simpler (browsers are installed with one command),
+  and its error messages are clearer. Selenium's advantages are its longer history and
+  larger ecosystem. For a new project in 2026, Playwright is a very safe choice.
+</p>
+
+<h3>The pieces you will use</h3>
+<div class="tablewrap">
+<table>
+  <tr><th>Tool</th><th>What it does</th></tr>
+  <tr><td><code>playwright</code></td><td>The library that drives the browser (click, type, read the page).</td></tr>
+  <tr><td><code>pytest</code></td><td>The <em>test runner</em>: it finds your test files, runs them, and reports pass/fail. It is the most popular test framework in Python.</td></tr>
+  <tr><td><code>pytest-playwright</code></td><td>A plugin that connects the two: it hands each test a ready-to-use browser page and adds handy command-line options like <code>--headed</code>.</td></tr>
+</table>
+</div>
+<a class="backtop" href="#top">&uarr; Back to top</a>
+
+<!-- ================================================================ -->
+<h2 id="prereq"><span class="secno">2</span>Prerequisites</h2>
+
+<h3>Things to install first</h3>
+<ol>
+  <li>
+    <strong>Python 3.9 or newer.</strong> Download from
+    <a href="https://www.python.org/downloads/">python.org/downloads</a>.
+    <div class="warn">
+      <strong>Windows users — important!</strong>
+      On the first screen of the Python installer, tick the checkbox
+      <em>"Add python.exe to PATH"</em>. If you skip this, the <code>python</code> command
+      won't work in your terminal.
+    </div>
+    Verify it installed by opening a terminal and running:
+    <pre><code>python --version</code></pre>
+    You should see something like <code>Python 3.12.x</code>.
+  </li>
+  <li>
+    <strong>pip</strong> — Python's package installer. It comes bundled with Python. Verify with:
+    <pre><code>pip --version</code></pre>
+  </li>
+  <li>
+    <strong>A code editor.</strong> <a href="https://code.visualstudio.com/">Visual Studio Code</a>
+    (free) is the usual choice. Install its <em>Python</em> extension from the Extensions panel.
+  </li>
+  <li>
+    <strong>A terminal.</strong> Windows: PowerShell (built in). macOS/Linux: Terminal.
+    You will type commands here; every command in this guide runs in a terminal.
+  </li>
+</ol>
+
+<h3>Knowledge that helps (but is not required)</h3>
+<ul>
+  <li><strong>Basic Python</strong> — variables, functions, <code>if</code> statements, imports.
+      If these are new, a few hours on any free Python tutorial is enough to start.</li>
+  <li><strong>Basic HTML</strong> — knowing that a page is made of elements like
+      <code>&lt;button&gt;</code>, <code>&lt;input&gt;</code>, and <code>&lt;a&gt;</code> (links)
+      makes locators (Section 6) much easier to understand.</li>
+  <li><strong>Browser DevTools</strong> — right-click any element on a web page and choose
+      <em>Inspect</em> to see its HTML. You will use this constantly to find elements.</li>
+</ul>
+<a class="backtop" href="#top">&uarr; Back to top</a>
+
+<!-- ================================================================ -->
+<h2 id="install"><span class="secno">3</span>Installation and setup</h2>
+
+<h3>Step 1 — Create a project folder</h3>
+<pre><code>mkdir my-first-automation
+cd my-first-automation</code></pre>
+
+<h3>Step 2 — Create a virtual environment</h3>
+<p>
+  A <strong>virtual environment</strong> (venv) is a private copy of Python just for this
+  project, so its packages don't clash with other projects on your machine. Always use one.
+</p>
+<pre><code># Create it (makes a folder called .venv)
+python -m venv .venv
+
+# Activate it - Windows (PowerShell):
+.venv\Scripts\Activate.ps1
+
+# Activate it - macOS / Linux:
+source .venv/bin/activate</code></pre>
+<p>
+  When it's active, your terminal prompt shows <code>(.venv)</code> at the start.
+  You must activate it every time you open a new terminal for this project.
+</p>
+<div class="warn">
+  <strong>PowerShell says "running scripts is disabled"?</strong>
+  Run this once, then try activating again:
+  <pre><code>Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser</code></pre>
+</div>
+
+<h3>Step 3 — Install the packages</h3>
+<p>Create a file named <code>requirements.txt</code> listing what the project needs:</p>
+<span class="filename">requirements.txt</span>
+<pre><code>playwright
+pytest
+pytest-playwright
+pytest-html==3.2.0
+pytest-rerunfailures</code></pre>
+<p>Then install everything in one go:</p>
+<pre><code>pip install -r requirements.txt</code></pre>
+<div class="tablewrap">
+<table>
+  <tr><th>Package</th><th>Why you need it</th></tr>
+  <tr><td><code>playwright</code></td><td>Drives the browser.</td></tr>
+  <tr><td><code>pytest</code></td><td>Finds and runs your tests.</td></tr>
+  <tr><td><code>pytest-playwright</code></td><td>Gives each test a ready browser page + CLI options.</td></tr>
+  <tr><td><code>pytest-html==3.2.0</code></td><td>Writes a shareable HTML report of each run. (Version 3.x is pinned because 4+ builds its report with JavaScript, which shows up empty in viewers that block scripts.)</td></tr>
+  <tr><td><code>pytest-rerunfailures</code></td><td>Optional: retries a failed test automatically — useful for slow or flaky sites.</td></tr>
+</table>
+</div>
+
+<h3>Step 4 — Install the browsers</h3>
+<p>
+  Playwright downloads its own copies of the browsers (it does not use your everyday Chrome).
+  This is a one-time step:
+</p>
+<pre><code>playwright install</code></pre>
+<p>To save disk space you can install only Chromium: <code>playwright install chromium</code></p>
+
+<h3>Step 5 — Recommended project structure</h3>
+<p>
+  You <em>could</em> put everything in one file, but real projects separate concerns into
+  layers. This structure keeps tests readable and easy to maintain:
+</p>
+<pre><code>my-first-automation/
+|-- .venv/               (virtual environment - never edit, never commit to git)
+|-- pytest.ini           (test runner configuration - Section 4)
+|-- conftest.py          (shared fixtures - Section 8)
+|-- constants.py         (URLs, timeouts, other fixed values)
+|-- requirements.txt     (package list)
+|-- pages/               (page objects: ALL element locators live here)
+|   |-- base_page.py
+|   |-- login_page.py
+|-- helpers/             (reusable multi-step journeys, e.g. "log in as user X")
+|-- utils/               (test data generators, small utilities)
+|-- tests/               (the actual tests - assertions live here)
+|   |-- test_login.py
+|-- reports/             (generated HTML reports land here)</code></pre>
+<div class="tip">
+  <strong>The layering rule (worth memorizing)</strong>
+  Tests contain <em>assertions</em> ("is the welcome message visible?").
+  Helpers contain <em>journeys</em> ("register a new user").
+  Pages contain <em>locators</em> ("the login button is <code>get_by_role('button', name='Login')</code>").
+  Never put locators directly in tests — when the website changes, you fix one page file
+  instead of fifty tests. This pattern is called the <strong>Page Object Model (POM)</strong>.
+</div>
+<a class="backtop" href="#top">&uarr; Back to top</a>
+
+<!-- ================================================================ -->
+<h2 id="config"><span class="secno">4</span>Configurations</h2>
+
+<h3>pytest.ini — the control panel</h3>
+<p>
+  <code>pytest.ini</code> sits in your project root and tells pytest how to behave
+  <em>every</em> time you run it, so you don't retype the same options. A practical example:
+</p>
+<span class="filename">pytest.ini</span>
+<pre><code>[pytest]
+; Which folder(s) contain the tests
+testpaths = tests
+
+; Options applied automatically on every run:
+;   --browser chromium        -&gt; run in Chromium
+;   --html=...                -&gt; write an HTML report
+;   --self-contained-html     -&gt; put CSS inside the one report file (easy to share)
+;   --reruns 2                -&gt; retry a failed test up to 2 more times
+;   --reruns-delay 2          -&gt; wait 2 seconds between retries
+addopts = --browser chromium --html=reports/report.html --self-contained-html --reruns 2 --reruns-delay 2
+
+; Named categories for tests (see Section 9)
+markers =
+    smoke: quick checks of the most critical paths
+    regression: the full, thorough suite</code></pre>
+
+<h3>Useful command-line options from pytest-playwright</h3>
+<p>These can go in <code>addopts</code> (permanent) or be typed per-run (temporary):</p>
+<div class="tablewrap">
+<table>
+  <tr><th>Option</th><th>Effect</th></tr>
+  <tr><td><code>--browser chromium</code></td><td>Choose the browser: <code>chromium</code>, <code>firefox</code>, or <code>webkit</code>. Repeat the flag to run in several.</td></tr>
+  <tr><td><code>--headed</code></td><td>Show the browser window while tests run (default is invisible/headless).</td></tr>
+  <tr><td><code>--slowmo 500</code></td><td>Pause 500 ms between each action so you can watch what happens.</td></tr>
+  <tr><td><code>--screenshot only-on-failure</code></td><td>Save a screenshot whenever a test fails.</td></tr>
+  <tr><td><code>--video retain-on-failure</code></td><td>Record video, keep it only for failures.</td></tr>
+  <tr><td><code>--tracing retain-on-failure</code></td><td>Record a Playwright trace (replayable recording) for failures.</td></tr>
+  <tr><td><code>--base-url https://mysite.com</code></td><td>Set a base URL so tests can use <code>page.goto("/login")</code>.</td></tr>
+</table>
+</div>
+
+<h3>conftest.py — shared setup code</h3>
+<p>
+  <code>conftest.py</code> is a special file pytest loads automatically. It holds
+  <strong>fixtures</strong> (reusable setup/teardown blocks — explained fully in Section 8)
+  and project-wide hooks. Anything defined here is available to every test without imports.
+</p>
+
+<h3>constants.py — one home for fixed values</h3>
+<span class="filename">constants.py</span>
+<pre><code># Every URL and timeout lives here, so changing an environment
+# (e.g. staging -&gt; production) is a one-line edit.
+BASE_URL = "https://automationexercise.com"
+DEFAULT_TIMEOUT = 10_000   # milliseconds - Playwright times are in ms</code></pre>
+<a class="backtop" href="#top">&uarr; Back to top</a>
+
+<!-- ================================================================ -->
+<h2 id="scripts"><span class="secno">5</span>Creating test scripts</h2>
+
+<h3>The naming rules (pytest finds tests by name)</h3>
+<ul>
+  <li>Test <strong>files</strong> must start with <code>test_</code> — e.g. <code>test_login.py</code></li>
+  <li>Test <strong>functions</strong> inside them must also start with <code>test_</code> — e.g. <code>def test_login_with_valid_password():</code></li>
+</ul>
+<p>Anything that doesn't follow this pattern is simply ignored by pytest.</p>
+
+<h3>Your first test</h3>
+<span class="filename">tests/test_first.py</span>
+<pre><code># "page" is provided automatically by pytest-playwright:
+# a fresh, ready-to-use browser tab for this one test.
+# "expect" is Playwright's assertion helper (Section 7).
+from playwright.sync_api import Page, expect
+
+
+def test_homepage_has_correct_title(page: Page):
+    # 1. ARRANGE / ACT - go to the website
+    page.goto("https://playwright.dev")
+
+    # 2. ASSERT - check the page title contains "Playwright".
+    # If it does, the test PASSES. If not, it FAILS with a clear message.
+    expect(page).to_have_title("Playwright")  # substring/regex also possible</code></pre>
+<p>Run it:</p>
+<pre><code>pytest tests/test_first.py --headed</code></pre>
+<p>A browser window opens, visits the site, checks the title, and closes. Congratulations —
+   that's an automated test.</p>
+
+<h3>The anatomy of a good test: Arrange, Act, Assert</h3>
+<p>Almost every test follows the same three beats (the "AAA pattern"):</p>
+<ol>
+  <li><strong>Arrange</strong> — get everything ready (open the page, prepare test data).</li>
+  <li><strong>Act</strong> — do the one thing you're testing (click "Login", submit the form).</li>
+  <li><strong>Assert</strong> — check the outcome ("Logged in as Maria" is visible).</li>
+</ol>
+
+<h3>A realistic example using the Page Object Model</h3>
+<p>First, a page object — the only place locators are allowed to live:</p>
+<span class="filename">pages/login_page.py</span>
+<pre><code>from playwright.sync_api import Page
+
+
+class LoginPage:
+    """Knows WHERE things are on the login page and HOW to use them.
+    Tests never touch locators directly - they call these methods."""
+
+    def __init__(self, page: Page):
+        self.page = page
+        # All locators defined once, in one place:
+        self.email_input = page.get_by_placeholder("Email Address")
+        self.password_input = page.get_by_placeholder("Password")
+        self.login_button = page.get_by_role("button", name="Login")
+        self.error_message = page.get_by_text("Your email or password is incorrect!")
+
+    def open(self):
+        self.page.goto("https://automationexercise.com/login")
+
+    def login(self, email: str, password: str):
+        self.email_input.fill(email)
+        self.password_input.fill(password)
+        self.login_button.click()</code></pre>
+<p>Then the test — short, readable, and free of locators:</p>
+<span class="filename">tests/test_login.py</span>
+<pre><code>from playwright.sync_api import Page, expect
+from pages.login_page import LoginPage
+
+
+def test_login_with_wrong_password_shows_error(page: Page):
+    # ARRANGE
+    login_page = LoginPage(page)
+    login_page.open()
+
+    # ACT
+    login_page.login("someone@example.com", "definitely-wrong-password")
+
+    # ASSERT
+    expect(login_page.error_message).to_be_visible()</code></pre>
+
+<h3>Rules of thumb for writing tests</h3>
+<ul>
+  <li><strong>One behavior per test.</strong> "Login with wrong password shows an error" is one test;
+      don't also verify the signup form in the same function.</li>
+  <li><strong>Descriptive names.</strong> <code>test_login_with_wrong_password_shows_error</code>
+      tells you what broke without opening the file. <code>test_1</code> tells you nothing.</li>
+  <li><strong>Tests must be independent.</strong> Each test creates whatever data it needs and
+      cleans up after itself, so tests can run in any order — and one failure doesn't cascade.</li>
+  <li><strong>Never use <code>time.sleep()</code>.</strong> Use <code>expect(...)</code> assertions,
+      which wait intelligently (Section 7 explains why).</li>
+</ul>
+<a class="backtop" href="#top">&uarr; Back to top</a>
+
+<!-- ================================================================ -->
+<h2 id="locators"><span class="secno">6</span>How to access elements (locators)</h2>
+
+<h3>What is a locator?</h3>
+<p>
+  A web page is built from HTML <strong>elements</strong> — buttons, text boxes, links, images.
+  Before your script can click a button, it must first <em>find</em> that button among the
+  hundreds of elements on the page. A <strong>locator</strong> is the "address" you give
+  Playwright so it can find the right element.
+</p>
+<p>
+  Think of it like giving directions: "the button labeled <em>Login</em>" or "the text box
+  with placeholder <em>Email Address</em>". In code:
+</p>
+<pre><code># Create a locator (nothing happens on the page yet - it's just the address)
+login_button = page.get_by_role("button", name="Login")
+
+# Use it - NOW Playwright finds the element and clicks it
+login_button.click()</code></pre>
+<div class="note">
+  <strong>Locators are "lazy" and self-updating</strong>
+  A locator doesn't search the page when you create it — only when you act on it
+  (<code>.click()</code>, <code>.fill()</code>, or inside <code>expect()</code>).
+  Each action re-finds the element, so locators keep working even on pages that
+  redraw themselves.
+</div>
+
+<h3>The recommended locators (use these first)</h3>
+<p>
+  Playwright's <code>get_by_*</code> methods find elements the way a <em>human</em> would —
+  by their visible label, role, or placeholder. They survive code refactors much better than
+  locators tied to HTML internals.
+</p>
+<div class="tablewrap">
+<table>
+  <tr><th>Locator</th><th>Finds elements by...</th><th>Example</th></tr>
+  <tr>
+    <td><code>get_by_role()</code></td>
+    <td>Their role (button, link, heading, checkbox...) and visible name. <strong>The best default choice.</strong></td>
+    <td><code>page.get_by_role("button", name="Sign up")</code></td>
+  </tr>
+  <tr>
+    <td><code>get_by_text()</code></td>
+    <td>The text they display.</td>
+    <td><code>page.get_by_text("Welcome back")</code></td>
+  </tr>
+  <tr>
+    <td><code>get_by_label()</code></td>
+    <td>The form label next to an input.</td>
+    <td><code>page.get_by_label("Password")</code></td>
+  </tr>
+  <tr>
+    <td><code>get_by_placeholder()</code></td>
+    <td>The gray hint text inside an empty input.</td>
+    <td><code>page.get_by_placeholder("Email Address")</code></td>
+  </tr>
+  <tr>
+    <td><code>get_by_title()</code></td>
+    <td>Their <code>title</code> attribute (tooltip text).</td>
+    <td><code>page.get_by_title("Close dialog")</code></td>
+  </tr>
+  <tr>
+    <td><code>get_by_alt_text()</code></td>
+    <td>An image's alternative text.</td>
+    <td><code>page.get_by_alt_text("Company logo")</code></td>
+  </tr>
+  <tr>
+    <td><code>get_by_test_id()</code></td>
+    <td>A <code>data-testid</code> attribute developers add specifically for tests. Very stable — ask your developers to add them!</td>
+    <td><code>page.get_by_test_id("submit-order")</code></td>
+  </tr>
+</table>
+</div>
+
+<h3>CSS and XPath locators (when the above aren't enough)</h3>
+<p>
+  <code>page.locator()</code> accepts <strong>CSS selectors</strong> (the same syntax used to
+  style pages) and <strong>XPath</strong>. You'll need these for elements without good labels:
+</p>
+<pre><code># CSS: by id (the # symbol) - ids should be unique on a page
+page.locator("#susbcribe_email")
+
+# CSS: by class (the . symbol)
+page.locator(".shopping-cart")
+
+# CSS: by tag + attribute
+page.locator("input[name='search_product']")
+
+# CSS: element inside another element (a space means "descendant")
+page.locator("#cart_items .product-name")
+
+# XPath (starts with // ) - powerful but harder to read; prefer CSS
+page.locator("//button[text()='Checkout']")</code></pre>
+
+<h3>How to discover an element's address</h3>
+<ol>
+  <li>Open the page in your browser.</li>
+  <li>Right-click the element and choose <strong>Inspect</strong>. DevTools opens with its HTML highlighted, e.g.
+      <code>&lt;button class="btn btn-primary" data-qa="login-button"&gt;Login&lt;/button&gt;</code></li>
+  <li>Pick the most stable, human-readable address: here, role <code>button</code> with name
+      <code>Login</code>, or the <code>data-qa</code> attribute via
+      <code>page.locator("[data-qa='login-button']")</code>.</li>
+</ol>
+<p>Or let Playwright suggest one for you — its recorder shows a recommended locator for anything you hover:</p>
+<pre><code>playwright codegen https://automationexercise.com</code></pre>
+
+<h3>Narrowing down: chaining and filtering</h3>
+<p>When several elements match, get more specific:</p>
+<pre><code># Search INSIDE another element (chaining)
+page.locator(".navbar").get_by_role("link", name="Products")
+
+# Keep only matches that contain certain text (filtering)
+page.get_by_role("listitem").filter(has_text="Blue Top")
+
+# Pick by position - use as a last resort, order can change
+page.get_by_role("link", name="View Product").first
+page.get_by_role("row").nth(2)          # third match (counting starts at 0)</code></pre>
+
+<h3>Common actions on a located element</h3>
+<div class="tablewrap">
+<table>
+  <tr><th>Action</th><th>What it does</th></tr>
+  <tr><td><code>.click()</code></td><td>Click it.</td></tr>
+  <tr><td><code>.fill("text")</code></td><td>Clear a text box and type the text.</td></tr>
+  <tr><td><code>.press("Enter")</code></td><td>Press a keyboard key while focused on it.</td></tr>
+  <tr><td><code>.check()</code> / <code>.uncheck()</code></td><td>Tick / untick a checkbox.</td></tr>
+  <tr><td><code>.select_option("USA")</code></td><td>Choose from a dropdown (<code>&lt;select&gt;</code>).</td></tr>
+  <tr><td><code>.hover()</code></td><td>Move the mouse over it (to open hover menus).</td></tr>
+  <tr><td><code>.inner_text()</code></td><td>Read the text it displays.</td></tr>
+  <tr><td><code>.scroll_into_view_if_needed()</code></td><td>Scroll until it is on screen.</td></tr>
+</table>
+</div>
+<div class="tip">
+  <strong>Priority order when choosing a locator</strong>
+  1) <code>get_by_role</code> &nbsp;2) other <code>get_by_*</code> methods
+  &nbsp;3) <code>get_by_test_id</code> &nbsp;4) simple CSS &nbsp;5) XPath (last resort).
+  The higher on this list, the less likely your test breaks when the page's internals change.
+</div>
+<a class="backtop" href="#top">&uarr; Back to top</a>
+
+<!-- ================================================================ -->
+<h2 id="assertions"><span class="secno">7</span>Assertions</h2>
+
+<h3>What is an assertion?</h3>
+<p>
+  An <strong>assertion</strong> is the checking step — the moment your test says
+  <em>"I expect X to be true; if it isn't, fail this test."</em> Without assertions a script
+  just clicks around; assertions are what make it a <em>test</em>.
+</p>
+
+<h3>Use <code>expect()</code> — it waits for you</h3>
+<p>
+  Playwright's <code>expect()</code> assertions are <strong>web-first</strong>: they don't
+  check once and give up. They keep re-checking (by default for up to 5 seconds) until the
+  condition becomes true or time runs out. This absorbs the little delays that are normal
+  on real websites — a success message that takes 800&nbsp;ms to appear simply passes.
+</p>
+<pre><code>from playwright.sync_api import expect
+
+# Keeps checking for up to 5s until the element is visible - then passes.
+expect(page.get_by_text("Order placed!")).to_be_visible()
+
+# Need longer for a slow operation? Override per-assertion:
+expect(page.get_by_text("Report ready")).to_be_visible(timeout=15_000)</code></pre>
+<div class="warn">
+  <strong>Never use <code>time.sleep()</code> to wait</strong>
+  A fixed sleep is always wrong twice: too short on a slow day (test fails randomly)
+  and too long on a fast day (test wastes time). <code>expect()</code> waits exactly
+  as long as needed. If you're tempted to sleep, there is always an
+  <code>expect()</code> that says what you're really waiting for.
+</div>
+
+<h3>The assertions you'll use most</h3>
+<div class="tablewrap">
+<table>
+  <tr><th>Assertion</th><th>Checks that...</th></tr>
+  <tr><td><code>expect(locator).to_be_visible()</code></td><td>the element is shown on screen.</td></tr>
+  <tr><td><code>expect(locator).to_have_text("Done")</code></td><td>its text is exactly "Done".</td></tr>
+  <tr><td><code>expect(locator).to_contain_text("Don")</code></td><td>its text contains "Don".</td></tr>
+  <tr><td><code>expect(locator).to_have_value("42")</code></td><td>an input box contains "42".</td></tr>
+  <tr><td><code>expect(locator).to_be_enabled()</code></td><td>it can be clicked (not grayed out).</td></tr>
+  <tr><td><code>expect(locator).to_be_checked()</code></td><td>a checkbox is ticked.</td></tr>
+  <tr><td><code>expect(locator).to_have_count(3)</code></td><td>exactly 3 elements match the locator.</td></tr>
+  <tr><td><code>expect(page).to_have_title("Home")</code></td><td>the browser tab title is "Home".</td></tr>
+  <tr><td><code>expect(page).to_have_url("https://site.com/cart")</code></td><td>the current address matches.</td></tr>
+</table>
+</div>
+
+<h3>Negating: checking something is NOT there</h3>
+<pre><code># After removing the item, the cart should show the empty message
+# and the product row should be gone:
+expect(page.get_by_text("Cart is empty!")).to_be_visible()
+expect(page.locator("#product-1")).not_to_be_visible()</code></pre>
+
+<h3>What a failure looks like</h3>
+<p>When an assertion fails, pytest prints exactly what was expected vs. what was found:</p>
+<pre><code>AssertionError: Locator expected to be visible
+Actual value: hidden
+Call log:
+  - expect(locator).to_be_visible with timeout 5000ms
+  - waiting for get_by_text("Order placed!")</code></pre>
+<p>Read these carefully — they usually tell you precisely what went wrong and where.</p>
+<a class="backtop" href="#top">&uarr; Back to top</a>
+
+<!-- ================================================================ -->
+<h2 id="setup-teardown"><span class="secno">8</span>Setup and teardown</h2>
+
+<h3>The concepts</h3>
+<ul>
+  <li><strong>Setup</strong> — work done <em>before</em> a test runs: open a browser, log in,
+      create a test user, load data.</li>
+  <li><strong>Teardown</strong> — cleanup done <em>after</em> a test finishes (pass <em>or</em> fail):
+      delete the test user, log out, close the browser.</li>
+</ul>
+<p>
+  Good teardown is what keeps tests <em>independent</em>: every test starts from a clean
+  slate no matter what the previous test did.
+</p>
+
+<h3>pytest fixtures — how setup/teardown is written</h3>
+<p>
+  In pytest, setup and teardown live in <strong>fixtures</strong>: functions marked with
+  <code>@pytest.fixture</code>. A test "requests" a fixture simply by naming it as a
+  parameter. Everything <em>before</em> the <code>yield</code> line is setup; everything
+  <em>after</em> it is teardown.
+</p>
+<span class="filename">conftest.py</span>
+<pre><code>import pytest
+from playwright.sync_api import Page
+
+
+@pytest.fixture
+def logged_in_page(page: Page):
+    # ---------- SETUP (runs before the test) ----------
+    page.goto("https://automationexercise.com/login")
+    page.get_by_placeholder("Email Address").fill("tester@example.com")
+    page.get_by_placeholder("Password").fill("secret123")
+    page.get_by_role("button", name="Login").click()
+
+    # yield hands control to the test, passing it the ready page
+    yield page
+
+    # ---------- TEARDOWN (runs after the test, even if it FAILED) ----------
+    page.get_by_role("link", name="Logout").click()</code></pre>
+<span class="filename">tests/test_account.py</span>
+<pre><code>from playwright.sync_api import expect
+
+
+# Just naming "logged_in_page" as a parameter triggers the whole fixture.
+def test_dashboard_greets_the_user(logged_in_page):
+    expect(logged_in_page.get_by_text("Logged in as")).to_be_visible()</code></pre>
+<div class="note">
+  <strong>You've already been using a fixture!</strong>
+  The <code>page</code> parameter in every earlier example <em>is</em> a fixture, provided
+  by pytest-playwright. Its setup launches a fresh browser tab; its teardown closes it.
+  That's why you never wrote "open browser" or "close browser" yourself.
+</div>
+
+<h3>Fixture scope — how often setup runs</h3>
+<div class="tablewrap">
+<table>
+  <tr><th>Scope</th><th>Setup/teardown runs...</th><th>Typical use</th></tr>
+  <tr><td><code>function</code> (default)</td><td>once per test</td><td>fresh page, fresh test data</td></tr>
+  <tr><td><code>class</code></td><td>once per test class</td><td>shared state for a group of related tests</td></tr>
+  <tr><td><code>module</code></td><td>once per file</td><td>expensive setup shared by one file's tests</td></tr>
+  <tr><td><code>session</code></td><td>once per entire run</td><td>start a mock server, load config</td></tr>
+</table>
+</div>
+<pre><code>@pytest.fixture(scope="session")
+def api_token():
+    # Fetched once, reused by every test in the run.
+    return fetch_token_from_api()</code></pre>
+<div class="tip">
+  <strong>Where fixtures live</strong>
+  Put fixtures used by many files in <code>conftest.py</code> — pytest auto-discovers them,
+  no import needed. Fixtures used by a single file can live at the top of that file.
+</div>
+<a class="backtop" href="#top">&uarr; Back to top</a>
+
+<!-- ================================================================ -->
+<h2 id="categorize"><span class="secno">9</span>Categorization of tests</h2>
+
+<h3>Why categorize?</h3>
+<p>
+  Once you have dozens of tests, you rarely want to run <em>all</em> of them every time.
+  After a small change you might run just the quick "smoke" checks (2 minutes) and save the
+  full "regression" suite (30+ minutes) for later. Categories make that possible.
+</p>
+
+<h3>Markers — pytest's labels</h3>
+<p>A <strong>marker</strong> is a label you stick on a test with a decorator:</p>
+<pre><code>import pytest
+
+
+@pytest.mark.smoke
+def test_homepage_loads(page):
+    ...
+
+@pytest.mark.regression
+def test_full_checkout_journey_with_new_address(page):
+    ...
+
+# A test can carry several markers:
+@pytest.mark.smoke
+@pytest.mark.cart
+def test_add_item_to_cart(page):
+    ...</code></pre>
+
+<h3>Register your markers (avoid typo bugs)</h3>
+<p>
+  Declare every marker in <code>pytest.ini</code>. Unregistered markers produce warnings,
+  and — worse — a typo like <code>@pytest.mark.smoek</code> would otherwise silently create
+  a new category and your test would stop running with the smoke suite.
+</p>
+<span class="filename">pytest.ini (excerpt)</span>
+<pre><code>[pytest]
+markers =
+    smoke: quick checks of the most critical user paths
+    regression: the full, thorough suite
+    cart: anything involving the shopping cart
+addopts = --strict-markers   ; turn unknown markers into ERRORS - highly recommended</code></pre>
+
+<h3>Running by category</h3>
+<pre><code># Only smoke tests
+pytest -m smoke
+
+# Everything EXCEPT slow regression tests
+pytest -m "not regression"
+
+# Smoke tests that also involve the cart
+pytest -m "smoke and cart"
+
+# Either category
+pytest -m "smoke or cart"</code></pre>
+
+<h3>Common suite names in QA teams</h3>
+<div class="tablewrap">
+<table>
+  <tr><th>Suite</th><th>Purpose</th><th>When it runs</th></tr>
+  <tr><td><strong>Smoke</strong></td><td>"Is the app fundamentally alive?" 5-15 fast tests of the most critical paths (login, homepage, checkout).</td><td>On every code change / deployment.</td></tr>
+  <tr><td><strong>Regression</strong></td><td>"Did anything anywhere break?" The full suite.</td><td>Nightly, or before a release.</td></tr>
+  <tr><td><strong>Feature areas</strong> (cart, auth, search...)</td><td>Everything about one part of the app.</td><td>When that area changes.</td></tr>
+</table>
+</div>
+
+<h3>Other useful built-in markers</h3>
+<pre><code># Skip a test entirely (always give a reason!)
+@pytest.mark.skip(reason="Feature removed in v2, test pending rewrite")
+def test_old_wishlist(page): ...
+
+# Skip only under some condition
+@pytest.mark.skipif(sys.platform == "win32", reason="Safari not available on Windows")
+def test_webkit_specific(page): ...
+
+# "We KNOW this fails - there's an open bug." Reported as xfail, not failure.
+@pytest.mark.xfail(reason="BUG-1234: totals rounding error")
+def test_cart_total_rounding(page): ...</code></pre>
+<a class="backtop" href="#top">&uarr; Back to top</a>
+
+<!-- ================================================================ -->
+<h2 id="run-reports"><span class="secno">10</span>How to run tests and check reports</h2>
+
+<h3>Running tests — the commands you'll actually use</h3>
+<pre><code># Run EVERYTHING pytest can find
+pytest
+
+# Run one file
+pytest tests/test_login.py
+
+# Run one specific test inside a file
+pytest tests/test_login.py::test_login_with_wrong_password_shows_error
+
+# Run tests whose NAME contains a keyword
+pytest -k "cart"
+
+# Run a category (Section 9)
+pytest -m smoke
+
+# Watch the browser while it runs, slowed down
+pytest --headed --slowmo 500
+
+# More detail in the terminal (-v = verbose); -s shows print() output
+pytest -v -s
+
+# Stop at the first failure (handy while debugging)
+pytest -x
+
+# Re-run only the tests that failed last time
+pytest --lf</code></pre>
+
+<h3>Reading the terminal output</h3>
+<pre><code>tests/test_login.py ..F.                                          [100%]
+
+=================== short test summary info ====================
+FAILED tests/test_login.py::test_login_shows_username - AssertionError: ...
+=============== 1 failed, 3 passed in 42.10s ====================</code></pre>
+<ul>
+  <li>Each <code>.</code> is a passing test; <code>F</code> is a failure; <code>s</code> means skipped;
+      <code>x</code> means expected failure (xfail); <code>R</code> means the test was retried.</li>
+  <li>Above the summary, every failure gets a full breakdown: the exact line that failed,
+      what was expected, and what was actually found.</li>
+</ul>
+
+<h3>The HTML report (pytest-html)</h3>
+<p>
+  If your <code>pytest.ini</code> includes
+  <code>--html=reports/report.html --self-contained-html</code> (Section 4), every run
+  writes a report automatically. Otherwise add those flags to any run by hand.
+</p>
+<ol>
+  <li>Run your tests as usual: <code>pytest</code></li>
+  <li>Open <code>reports/report.html</code> in any browser (double-click it in your file explorer).</li>
+</ol>
+<p>The report shows:</p>
+<ul>
+  <li>A <strong>summary bar</strong> — how many passed, failed, skipped, or were rerun, and total duration.</li>
+  <li>A <strong>results table</strong> — one row per test with its outcome and duration.</li>
+  <li><strong>Failure details</strong> — the full error text for every failed test, and (if you enabled
+      <code>--screenshot only-on-failure</code>) a screenshot of the page at the moment of failure.</li>
+</ul>
+<p>
+  Because of <code>--self-contained-html</code>, the report is a single file — you can attach
+  it to an email or a ticket and it will display anywhere.
+</p>
+
+<h3>Allure — a richer, dashboard-style report (optional)</h3>
+<p>
+  <a href="https://allurereport.org/">Allure</a> produces an interactive report with graphs,
+  history, and per-step timelines. Teams often adopt it once suites grow. Two-part setup:
+  the pytest plugin (<code>pip install allure-pytest</code>) records results, and the Allure
+  command-line tool renders them:
+</p>
+<pre><code># 1. Record results while testing
+pytest --alluredir=reports/allure-results
+
+# 2. Turn the results into a report and open it
+allure generate reports/allure-results -o reports/allure-report --clean
+allure open reports/allure-report</code></pre>
+<div class="note">
+  <strong>Note:</strong> the <code>allure</code> command itself is a separate install
+  (it needs Java, or on Windows: <code>scoop install allure</code>). Start with pytest-html;
+  add Allure when you feel the need for prettier analytics.
+</div>
+
+<h3>What to do when a test fails</h3>
+<ol>
+  <li><strong>Read the error message.</strong> It names the assertion, the locator, and what was found instead.</li>
+  <li><strong>Look at the failure screenshot</strong> (if enabled) — often the page shows an
+      unexpected popup or error banner that explains everything.</li>
+  <li><strong>Re-run just that test with a visible browser:</strong>
+      <code>pytest tests/test_x.py::test_name --headed --slowmo 500</code> and watch what happens.</li>
+  <li><strong>Decide: bug or broken test?</strong> A failing test means <em>either</em> the app broke
+      (report a bug — automation just did its job!) <em>or</em> the app changed legitimately and
+      the test needs updating.</li>
+</ol>
+<a class="backtop" href="#top">&uarr; Back to top</a>
+
+<!-- ================================================================ -->
+<h2 id="extras"><span class="secno">11</span>Additional info</h2>
+
+<h3>Debugging tools built into Playwright</h3>
+<ul>
+  <li>
+    <strong>Codegen (test recorder).</strong> Opens a browser; as you click around it writes
+    Python code for every action. Great for learning locator syntax:
+    <pre><code>playwright codegen https://automationexercise.com</code></pre>
+  </li>
+  <li>
+    <strong>Playwright Inspector (step-through debugger).</strong> Runs your test one action
+    at a time with a live locator explorer:
+    <pre><code># Windows (PowerShell)
+$env:PWDEBUG = "1"; pytest tests/test_login.py
+
+# macOS / Linux
+PWDEBUG=1 pytest tests/test_login.py</code></pre>
+  </li>
+  <li>
+    <strong>Trace Viewer (flight recorder).</strong> Run with
+    <code>--tracing retain-on-failure</code> and each failure saves a <code>trace.zip</code>.
+    Open it to scrub through every step with before/after screenshots, console logs, and
+    network calls:
+    <pre><code>playwright show-trace path/to/trace.zip</code></pre>
+    This is the single most powerful way to diagnose a failure that only happens on the
+    CI server.
+  </li>
+</ul>
+
+<h3>Dealing with flaky tests</h3>
+<p>
+  A <strong>flaky</strong> test passes sometimes and fails sometimes without any code change —
+  usually caused by timing (the site was slow) or shared state (two tests fighting over the
+  same account). Defenses, in order of preference:
+</p>
+<ol>
+  <li>Replace any fixed waits with <code>expect()</code> assertions (Section 7).</li>
+  <li>Make every test create its own data — e.g. register a fresh user with a unique,
+      timestamped email instead of sharing one account.</li>
+  <li>As a safety net, auto-retry failures with pytest-rerunfailures:
+      <code>--reruns 2 --reruns-delay 2</code>. Retried tests are flagged in reports, so
+      you can still spot and fix the flakiness rather than hide it.</li>
+</ol>
+
+<h3>Generating unique test data</h3>
+<span class="filename">utils/data.py</span>
+<pre><code>import uuid
+
+
+def unique_email() -> str:
+    """A fresh email every call, e.g. qa-3f2a1c@example.com,
+    so tests never collide over the same account."""
+    return f"qa-{uuid.uuid4().hex[:6]}@example.com"</code></pre>
+
+<h3>Good habits checklist</h3>
+<ul>
+  <li>Keep <em>all</em> locators in page objects — never in tests.</li>
+  <li>Wait with <code>expect()</code>, never <code>time.sleep()</code>.</li>
+  <li>One behavior per test; name tests after that behavior.</li>
+  <li>Tests create their own data and clean up after themselves.</li>
+  <li>Register markers and use <code>--strict-markers</code>.</li>
+  <li>Add <code>.venv/</code>, <code>reports/</code>, and <code>__pycache__/</code> to <code>.gitignore</code>.</li>
+  <li>Start small: automate 5 solid smoke tests before attempting 50.</li>
+</ul>
+
+<h3>Running tests automatically (CI) — a peek ahead</h3>
+<p>
+  Once your suite is stable, teams wire it into <strong>Continuous Integration</strong> (CI) —
+  a service like GitHub Actions or Jenkins that runs the tests automatically on every code
+  change and posts the report. Playwright runs headless on CI servers out of the box, so the
+  suite you built locally is already CI-ready. That's a topic for its own guide, but know
+  that it's the natural next step.
+</p>
+
+<h3>Practice websites (safe to test against)</h3>
+<ul>
+  <li><a href="https://automationexercise.com">automationexercise.com</a> — a full fake e-commerce shop with 26 published test cases to practice on.</li>
+  <li><a href="https://the-internet.herokuapp.com">the-internet.herokuapp.com</a> — dozens of isolated tricky widgets (dropdowns, alerts, iframes...).</li>
+  <li><a href="https://www.saucedemo.com">saucedemo.com</a> — a small demo store with ready-made test accounts.</li>
+</ul>
+
+<h3>Official documentation</h3>
+<ul>
+  <li><a href="https://playwright.dev/python/docs/intro">Playwright for Python docs</a> — the definitive reference for locators, assertions, and APIs.</li>
+  <li><a href="https://docs.pytest.org/">pytest documentation</a> — fixtures, markers, and command-line options in depth.</li>
+  <li><a href="https://playwright.dev/python/docs/best-practices">Playwright best practices</a> — the official recommendations this guide is based on.</li>
+</ul>
+
+<a class="backtop" href="#top">&uarr; Back to top</a>
+
+<footer>
+  QA Automation with Playwright &amp; Python — Beginner's Guide.
+  Written for readers with zero automation background. Self-contained static HTML (no JavaScript required).
+</footer>
+
+</div>
+</body>
+</html>
