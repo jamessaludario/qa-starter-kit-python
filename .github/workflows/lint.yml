@@ -1,0 +1,43 @@
+# Lints the Python code with Ruff on EVERY push, to any branch.
+#
+# A linter reads the code without running it and flags likely mistakes
+# (unused imports, undefined names, ...) in a few seconds - much faster
+# feedback than waiting for the full test suite. The rules live in
+# ruff.toml at the repo root; run the exact same check locally with:
+#
+#   pip install ruff
+#   ruff check .
+#
+# This is intentionally a separate workflow from tests.yml: the test
+# suite (and its report publishing) only runs on main, while linting is
+# cheap enough to run on every branch, so mistakes are caught before a
+# pull request is even opened.
+
+name: Lint
+
+on:
+  push:                     # every push, every branch
+  pull_request:
+  workflow_dispatch:        # adds a manual "Run workflow" button
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Ruff
+        run: pip install ruff
+
+      # Reads ruff.toml automatically. Fails the workflow (red X on the
+      # commit) if any rule is violated, and prints exactly which line
+      # to fix. GitHub's annotations format makes the findings show up
+      # inline on the PR diff as well.
+      - name: Lint with Ruff
+        run: ruff check . --output-format=github

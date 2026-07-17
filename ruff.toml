@@ -1,0 +1,28 @@
+# Configuration for Ruff, the Python linter (https://docs.astral.sh/ruff/).
+# A linter reads your code WITHOUT running it and flags likely mistakes:
+# unused imports, undefined names, comparisons that are always false, etc.
+#
+# Run it locally any time with:
+#   pip install ruff
+#   ruff check .
+#
+# CI runs the same check on every push (.github/workflows/lint.yml), so a
+# typo-level bug is caught in seconds instead of minutes into a test run.
+
+# The kit supports Python 3.10+ (see README), so let Ruff assume the same.
+target-version = "py310"
+
+exclude = [
+    # YOUR sandbox copy of the practice tests (created by the tour).
+    # It exists to be edited and broken freely - the linter stays out.
+    "tour-tests",
+]
+
+[lint.per-file-ignores]
+# F401 = "imported but unused". In __init__.py files these imports are
+# intentional re-exports: they let tests write
+#   from pages import LoginPage
+# instead of the longer
+#   from pages.login_page import LoginPage
+# so "unused" is exactly what they are supposed to look like.
+"__init__.py" = ["F401"]

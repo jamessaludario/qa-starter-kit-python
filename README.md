@@ -185,6 +185,7 @@ Grow the suite:
 | `pytest -k "order"` | Run a group of tests matching a keyword |
 | `python run_tests.py` | Run everything + open the Allure report |
 | `python scaffold.py` | Create a test project for your own app |
+| `ruff check .` | Lint the code — catch unused imports & typos in seconds (first: `pip install ruff`) |
 
 > In your scaffolded project: the same commands, minus the tour.
 

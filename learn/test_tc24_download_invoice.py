@@ -10,7 +10,7 @@ New idea in this test:
     already listening BEFORE the download starts.
 """
 
-from playwright.sync_api import Page, expect
+from playwright.sync_api import Page
 
 from helpers.flows import (
     open_page, add_product_to_cart, go_to_cart, proceed_to_checkout, create_account, pay_and_confirm_order, delete_account,
