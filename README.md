@@ -86,6 +86,10 @@ A hybrid **learning playground** and **ready-made test suite scaffold**:
   trends and failure screenshots, automatic retries for flaky moments
 - 🚀 **CI included** — GitHub Actions runs the suite and publishes the
   live Allure report to GitHub Pages
+- 🖥️ **A desktop-app track** — [desktop/](desktop/), the same layered
+  approach applied to native Windows apps with pywinauto, since
+  Playwright only drives browsers (Windows-only, so it installs
+  separately: `pip install -r requirements-desktop.txt`)
 - 📖 **A written guide** — [docs/qa-automation-guide.html](docs/qa-automation-guide.html),
   explaining every concept the tour teaches by doing (also buildable as
   a small browsable site: `python docs/build_site.py`)
@@ -185,6 +189,7 @@ Grow the suite:
 | `pytest -k "order"` | Run a group of tests matching a keyword |
 | `python run_tests.py` | Run everything + open the Allure report |
 | `python scaffold.py` | Create a test project for your own app |
+| `python desktop/run_tests.py` | Run the desktop-app tests (Windows Calculator) |
 | `ruff check .` | Lint the code — catch unused imports & typos in seconds (first: `pip install ruff`) |
 
 > In your scaffolded project: the same commands, minus the tour.
@@ -209,6 +214,8 @@ qa-starter-kit-python/
 ├── helpers/         ← reusable user journeys (login, add-to-cart, ...)
 ├── fixtures/        ← pytest plumbing: ad blocker, screenshots, report labels
 ├── utils/           ← pure-Python tools (unique test data)
+├── desktop/         ← the desktop-app track: same layering, pywinauto instead
+│                      of Playwright (pages/, helpers/, fixtures/, tests/)
 ├── constants.py     ← site URL + shared test data
 ├── conftest.py      ← thin loader that plugs the fixtures in
 ├── tour.py          ← the interactive learning tour

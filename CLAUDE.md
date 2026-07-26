@@ -15,6 +15,13 @@ suite. It has two halves:
    --include). The repo is also a GitHub template ("Use this
    template"), so users can copy it without cloning.
 
+Plus a smaller third piece, **the desktop track** (desktop/): the same
+layering applied to native Windows apps with pywinauto, since Playwright
+cannot drive them. It is deliberately self-contained — its own conftest.py,
+fixtures, and requirements-desktop.txt — because pywinauto is Windows-only
+and the web track must stay installable everywhere. Section 12 of
+docs/qa-automation-guide.html is its tutorial; keep the two in step.
+
 ## Conventions when editing here
 
 - Comment style: this is teaching material. Every non-obvious line gets
@@ -43,3 +50,10 @@ pytest.ini, requirements.txt), mirror the improvement into template/
   partial layout, e.g. `--include none` and `--include pages`.
 - The tour must keep working: `echo 1 | python tour.py` should print
   chapter 1 without errors.
+- Desktop check (Windows, on an unlocked desktop): `python desktop/run_tests.py`.
+  These drive real windows, so they cannot run headless or over a
+  disconnected RDP session.
+- Docs check: after editing docs/qa-automation-guide.html (the source of
+  truth), rebuild with `python docs/build_site.py --no-open`. New sections
+  must also be registered in build_site.py (SECTIONS + SIDEBAR_GROUPS) and
+  in the guide's own table of contents.

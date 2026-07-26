@@ -55,6 +55,8 @@ SECTIONS = [
      "pytest commands, HTML reports, and Allure."),
     ("extras", "Additional Info", "additional-info.html", "&#128161;",
      "Debugging tools, flaky tests, good habits, and resources."),
+    ("desktop", "Testing Desktop Apps", "desktop-apps.html", "&#128421;&#65039;",
+     "Driving native Windows apps with pywinauto, when Playwright can't reach them."),
 ]
 
 # Sidebar groups, mimicking a docs site's grouped navigation.
@@ -62,6 +64,8 @@ SIDEBAR_GROUPS = [
     ("Getting Started", ["about", "prereq", "install", "config"]),
     ("Writing Tests", ["scripts", "locators", "assertions", "setup-teardown"]),
     ("Running Tests", ["categorize", "run-reports", "extras"]),
+    # Its own group: this one steps outside the browser entirely.
+    ("Beyond the Browser", ["desktop"]),
 ]
 
 BY_ID = {s[0]: s for s in SECTIONS}

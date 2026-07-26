@@ -3,3 +3,6 @@
 # (learn/, tour-tests/) stays runnable on any OS without it.
 # Install with:  pip install -r requirements-desktop.txt
 pywinauto
+# Optional: only needed if you want screenshots of a failing window.
+# pywinauto's capture_as_image() quietly returns nothing without it.
+pillow
