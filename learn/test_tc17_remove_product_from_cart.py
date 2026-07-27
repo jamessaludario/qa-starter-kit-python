@@ -11,7 +11,7 @@ New idea in this test:
 
 from playwright.sync_api import Page, expect
 
-from helpers.flows import open_page, add_product_to_cart, go_to_cart
+from helpers.flows import add_product_to_cart, go_to_cart, open_page
 
 
 def test_remove_product_from_cart(page: Page):

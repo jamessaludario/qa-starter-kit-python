@@ -46,7 +46,9 @@ def main():
         *args,
     ]
     print(">> Running desktop tests...")
-    result = subprocess.run(command)
+    # check=False: a failing test makes pytest exit non-zero, and that is a
+    # result to pass on (see below), not an exception to crash on.
+    result = subprocess.run(command, check=False)
 
     # Same exit code pytest gave us, so this script works in CI too.
     sys.exit(result.returncode)

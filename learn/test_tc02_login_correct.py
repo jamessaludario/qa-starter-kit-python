@@ -12,7 +12,7 @@ it can test logging back in.
 from playwright.sync_api import Page, expect
 
 from constants import ACCOUNT
-from helpers.flows import create_account, login, logout, delete_account
+from helpers.flows import create_account, delete_account, login, logout
 from utils.data import unique_email
 
 

@@ -51,7 +51,9 @@ def main():
 
     # --- Step 1: run the tests -------------------------------------------
     print(">> Running tests...")
-    test_run = subprocess.run([sys.executable, "-m", "pytest", *args])
+    # check=False: we want to read the exit code ourselves (see just below)
+    # rather than have a failing test raise and skip the report steps.
+    test_run = subprocess.run([sys.executable, "-m", "pytest", *args], check=False)
 
     # Exit code 0 = all passed, 1 = some failed. Both produce results we
     # want to see! Anything else (2+) means pytest itself had a problem.
@@ -74,7 +76,8 @@ def main():
     # --- Step 4: open it in the browser ------------------------------------
     if open_report:
         print(">> Opening the report (press Ctrl+C here when done)...")
-        subprocess.run([allure, "open", str(REPORT)])
+        # check=False: this blocks until you press Ctrl+C, which exits non-zero.
+        subprocess.run([allure, "open", str(REPORT)], check=False)
 
     sys.exit(test_run.returncode)
 

@@ -20,6 +20,7 @@ Re-discover these for any app with:
 """
 
 import re
+from typing import ClassVar
 
 from desktop.pages.base_app import BaseApp
 
@@ -36,6 +37,16 @@ _OPERATOR_IDS = {
 class CalculatorPage(BaseApp):
     app_path = "calc.exe"
     window_title = "Calculator"
+
+    # open() waits for this before handing the app to a test: the keypad
+    # is built a moment AFTER the window appears, so without this a fast
+    # test can reach for a button that doesn't exist yet. (ClassVar tells
+    # type checkers - and Ruff - that this dict is shared configuration,
+    # not per-instance state that each object should get its own copy of.)
+    ready_control: ClassVar[dict] = {
+        "auto_id": "num1Button",
+        "control_type": "Button",
+    }
 
     def _click(self, automation_id: str):
         """

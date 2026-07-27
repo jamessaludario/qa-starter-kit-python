@@ -14,6 +14,14 @@ from desktop.pages.calculator_page import CalculatorPage
 
 @pytest.fixture
 def calculator():
-    app = CalculatorPage().open()
-    yield app
-    app.close()
+    app = CalculatorPage()
+    try:
+        app.open()
+        yield app
+    finally:
+        # try/finally, NOT just a line after `yield`: if open() itself
+        # fails, the code after a yield never runs, so the half-started
+        # app would be left on screen. Six failing runs like that leave a
+        # dozen Calculators open - and then even correct code breaks,
+        # because "the window titled Calculator" is suddenly ambiguous.
+        app.close()

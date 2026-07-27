@@ -90,14 +90,14 @@ def extract_sections(html: str) -> dict:
     parts = re.split(r"<!-- =+ -->", html)
     for part in parts:
         m = re.search(
-            r'<h2 id="([^"]+)"><span class="secno">\d+</span>(.*?)</h2>', part, re.S
+            r'<h2 id="([^"]+)"><span class="secno">\d+</span>(.*?)</h2>', part, re.DOTALL
         )
         if not m:
             continue
         sec_id, title = m.group(1), m.group(2).strip()
         body = part[m.end():]
         body = body.split("<footer")[0]                       # last section: drop footer
-        body = re.sub(r'<a class="backtop"[^>]*>.*?</a>\s*', "", body, flags=re.S)
+        body = re.sub(r'<a class="backtop"[^>]*>.*?</a>\s*', "", body, flags=re.DOTALL)
         sections[sec_id] = (title, body.strip())
     return sections
 
@@ -117,7 +117,7 @@ def add_h3_ids(body: str):
         toc.append((anchor, strip_tags(inner)))
         return f'<h3 id="{anchor}">{inner}</h3>'
 
-    return re.sub(r"<h3>(.*?)</h3>", repl, body, flags=re.S), toc
+    return re.sub(r"<h3>(.*?)</h3>", repl, body, flags=re.DOTALL), toc
 
 
 # ------------------------------------------------------------------ templates

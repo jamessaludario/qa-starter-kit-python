@@ -15,7 +15,12 @@ from playwright.sync_api import Page, expect
 
 from constants import ACCOUNT
 from helpers.flows import (
-    open_page, add_product_to_cart, go_to_cart, proceed_to_checkout, create_account, delete_account,
+    add_product_to_cart,
+    create_account,
+    delete_account,
+    go_to_cart,
+    open_page,
+    proceed_to_checkout,
 )
 from utils.data import unique_email
 

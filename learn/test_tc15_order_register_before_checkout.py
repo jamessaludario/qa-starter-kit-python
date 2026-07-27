@@ -12,7 +12,13 @@ in the less common paths.
 from playwright.sync_api import Page, expect
 
 from helpers.flows import (
-    open_page, add_product_to_cart, go_to_cart, proceed_to_checkout, create_account, pay_and_confirm_order, delete_account,
+    add_product_to_cart,
+    create_account,
+    delete_account,
+    go_to_cart,
+    open_page,
+    pay_and_confirm_order,
+    proceed_to_checkout,
 )
 from utils.data import unique_email
 

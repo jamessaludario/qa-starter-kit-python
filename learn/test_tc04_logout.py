@@ -12,7 +12,7 @@ on its own, in any order, on any machine.
 from playwright.sync_api import Page, expect
 
 from constants import ACCOUNT, BASE_URL
-from helpers.flows import create_account, login, logout, delete_account
+from helpers.flows import create_account, delete_account, login, logout
 from utils.data import unique_email
 
 

@@ -1228,49 +1228,90 @@ window.wait("visible ready", timeout=10)</code></pre>
   <code>CalculatorApp.exe</code> under a new pid.
 </div>
 <p>
-  The fix has two steps. First find the window by title across the whole desktop —
-  <code>Desktop(...)</code> isn't tied to a pid, so the handoff can't fool it. Then
-  <em>immediately re-bind</em> to that exact window through its own process:
+  Getting this right means solving three problems at once, so it's worth reading the finished
+  version as a whole. It launches the app, works out which window is <em>ours</em>, waits until
+  the UI inside it really exists, and only then hands it over:
 </p>
-<span class="filename">desktop/pages/base_app.py</span>
-<pre><code>from pywinauto import Desktop
-from pywinauto.application import Application
+<span class="filename">desktop/pages/base_app.py (abridged)</span>
+<pre><code>from pywinauto.application import Application
+from pywinauto.findwindows import find_elements
+from pywinauto.timings import wait_until_passes
+
+WAIT_TIMEOUT = 15
+RETRY_INTERVAL = 0.3
 
 
 class BaseApp:
-    app_path = None        # child classes set these, e.g. "calc.exe"
+    app_path = None          # child classes set these, e.g. "calc.exe"
     window_title = None
+    ready_control = None     # child_window() kwargs proving the UI loaded
+
+    def _matching_elements(self):
+        return find_elements(
+            title=self.window_title, backend="uia", top_level_only=True
+        )
 
     def open(self):
+        # TRAP 1: note which windows exist BEFORE launching, so we never
+        # bind to one that was already open.
+        handles_before = {e.handle for e in self._matching_elements()}
+
+        # TRAP 2: ignore what start() returns - the pid usually changes.
         Application(backend="uia").start(self.app_path)
 
-        # STEP 1: find the window by title, NOT through the process we
-        # started - that one may already be gone.
-        found = Desktop(backend="uia").window(title=self.window_title)
-        found.wait("visible ready", timeout=10)
+        def usable_window():
+            for info in self._matching_elements():
+                if info.handle in handles_before:
+                    continue
+                # Store the app as soon as our window appears, so close()
+                # can kill it even if the UI never finishes loading.
+                self.app = Application(backend="uia").connect(
+                    process=info.process_id
+                )
+                spec = self.app.window(handle=info.handle)
+                # TRAP 3: only accept a window that HAS the UI in it.
+                if self.ready_control and not spec.child_window(
+                    **self.ready_control
+                ).exists():
+                    raise LookupError("window is up, UI is not loaded yet")
+                return spec
+            raise LookupError("no new window yet")
 
-        # STEP 2: resolve that search ONCE, then talk to this exact
-        # window in the process that really owns it.
-        handle = found.handle
-        self.app = Application(backend="uia").connect(
-            process=found.element_info.process_id
+        self.window = wait_until_passes(
+            WAIT_TIMEOUT, RETRY_INTERVAL, usable_window,
+            exceptions=(LookupError,),
         )
-        self.window = self.app.window(handle=handle)
-
-        self.window.set_focus()      # bring it to the front
+        self.window.wait("visible ready", timeout=WAIT_TIMEOUT)
+        self.window.set_focus()
         return self
 
     def close(self):
         if self.app is not None:
-            self.app.kill()</code></pre>
+            self.app.kill()
+            self.app = None</code></pre>
+<p>And the subclass declares what "loaded" means for its app:</p>
+<pre><code>class CalculatorPage(BaseApp):
+    app_path = "calc.exe"
+    window_title = "Calculator"
+    ready_control = {"auto_id": "num1Button", "control_type": "Button"}</code></pre>
+<div class="warn">
+  <strong>TRAP 3 is the one that will confuse you most: a window is not a UI</strong>
+  A modern Windows app's visible window is only an outer shell — its class name is literally
+  <code>ApplicationFrameWindow</code> — and the real interface lives in a <em>separate</em>
+  window created inside it a moment later. So <code>wait("visible ready")</code> can succeed
+  while the app is still empty: inspect the window at that instant and you see about seven
+  controls (minimise, maximise, close…) instead of Calculator's thirty-six, and asking for a
+  button raises <code>ElementNotFoundError</code> naming that frame as the parent. On an idle
+  machine the gap is too small to notice, which makes it a race that only appears under load.
+  Waiting for a control you know belongs to the real UI closes the gap.
+</div>
 <div class="tip">
-  <strong>Why step 2 isn't optional</strong>
-  A <code>Desktop(...)</code> specification is <em>lazy</em>: it re-runs its "any top-level
-  window called Calculator" search every single time you touch it. That's slow, and it's
-  unreliable — it can latch onto a different (or dying) window of the same name, and raises
-  <code>ElementNotFoundError</code> if the window is momentarily unavailable. Binding once to
-  the handle you already found made this repo's two tests about 40% faster and stopped an
-  intermittent failure.
+  <strong>Bind once, by handle</strong>
+  Notice <code>open()</code> ends up with <code>self.app.window(handle=...)</code>. A
+  <code>Desktop(...).window(title=...)</code> specification is <em>lazy</em> — it re-runs its
+  "any window called Calculator" search every single time you touch it. That's slower, and it
+  can drift onto a different (or dying) window of the same name. Resolving once to a handle made
+  this repo's two tests about 40% faster.
 </div>
 <p>
   Not sure what an app's window is really called? List everything currently open:
@@ -1488,15 +1529,21 @@ from desktop.pages.calculator_page import CalculatorPage
 
 @pytest.fixture
 def calculator():
-    app = CalculatorPage().open()
-    yield app          # the test runs here
-    app.close()        # ...and this always runs, even if it failed</code></pre>
+    app = CalculatorPage()
+    try:
+        app.open()
+        yield app        # the test runs here
+    finally:
+        app.close()      # ...and this runs even if open() itself failed</code></pre>
 <div class="warn">
-  <strong>Always close in teardown</strong>
-  A web test that crashes leaves a browser tab that pytest cleans up. A desktop test that
-  crashes leaves a <em>real application window</em> sitting on the screen. Skip the
-  <code>app.close()</code> and a dozen Calculators pile up, each one a candidate for the next
-  <code>title="Calculator"</code> lookup to match by mistake.
+  <strong><code>try</code>/<code>finally</code>, not just a line after <code>yield</code></strong>
+  This looks like fussy style until it bites. Code placed after <code>yield</code> only runs if
+  the fixture reached the <code>yield</code> — so if <code>open()</code> raises, the
+  half-started app is never closed and stays on screen. It then compounds: six failing runs
+  leave a dozen Calculators open, and now even <em>correct</em> code fails, because "the window
+  titled Calculator" is suddenly ambiguous
+  (<code>ElementAmbiguousError</code>). One broken test quietly poisons every later run — a
+  failure mode with no equivalent on the web, where pytest disposes of the browser for you.
 </div>
 
 <h3>Writing and running the test</h3>
@@ -1562,7 +1609,15 @@ python desktop/run_tests.py -v              # verbose</code></pre>
   </tr>
   <tr>
     <td><code>ElementAmbiguousError</code> ("found 2 elements")</td>
-    <td>Your description matches more than one control. Add <code>control_type</code>, or as a last resort <code>found_index=0</code>.</td>
+    <td>Your description matches more than one control. Add <code>control_type</code>, or as a last resort <code>found_index=0</code>. If it names your whole <em>window</em>, you have leftover copies of the app open from earlier failed runs — close them, and fix teardown so they stop accumulating.</td>
+  </tr>
+  <tr>
+    <td><code>ElementNotFoundError</code> whose <code>parent</code> is an <code>ApplicationFrameWindow</code></td>
+    <td>You're asking the outer shell for a control that lives in the app's inner content window, which isn't built yet. Wait for a known control first (TRAP 3 above).</td>
+  </tr>
+  <tr>
+    <td>The window opens but stays empty; only ~7 controls are ever found</td>
+    <td>The app is never really shown, so its UI is never built. Something is covering it or holding the foreground (a maximised app, an always-on-top overlay), or the desktop is locked. Windows also refuses to let a background process steal focus, so <code>set_focus()</code> can't rescue you. Free the desktop and re-run.</td>
   </tr>
   <tr>
     <td>No controls found at all</td>

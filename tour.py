@@ -73,7 +73,9 @@ def run(args):
     """Run a command, showing it first so learners connect action to command."""
     print(">>", " ".join(args))
     print(LINE)
-    result = subprocess.run(args)
+    # check=False: commands here are allowed to fail - a failing test is part
+    # of the lesson - so the caller decides what to do with the result.
+    result = subprocess.run(args, check=False)
     print(LINE)
     return result
 
@@ -376,7 +378,7 @@ def check_setup():
     """A friendly nudge if the kit's install steps were skipped."""
     try:
         import playwright  # noqa: F401
-        import pytest      # noqa: F401
+        import pytest  # noqa: F401
     except ImportError:
         say("""
             One-time setup needed first! In this folder, run:

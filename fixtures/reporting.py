@@ -82,7 +82,7 @@ def screenshot_on_failure(page: Page, request):
             name="screenshot-at-failure",
             attachment_type=allure.attachment_type.PNG,
         )
-    except Exception:
+    except Exception:  # noqa: BLE001, S110 - deliberate, see the comment above
         pass
 
 

@@ -14,7 +14,13 @@ New idea in this test:
 from playwright.sync_api import Page, expect
 
 from helpers.flows import (
-    open_page, add_product_to_cart, go_to_cart, create_account, login, logout, delete_account,
+    add_product_to_cart,
+    create_account,
+    delete_account,
+    go_to_cart,
+    login,
+    logout,
+    open_page,
 )
 from utils.data import unique_email
 

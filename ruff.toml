@@ -3,11 +3,14 @@
 # unused imports, undefined names, comparisons that are always false, etc.
 #
 # Run it locally any time with:
-#   pip install ruff
+#   pip install ruff==0.16.0     <- the version CI pins, see lint.yml
 #   ruff check .
 #
 # CI runs the same check on every push (.github/workflows/lint.yml), so a
 # typo-level bug is caught in seconds instead of minutes into a test run.
+# Install the pinned version rather than the latest: Ruff turns on new rules
+# as it grows, so a newer local copy can report problems CI doesn't (and
+# vice versa), which is confusing for no good reason.
 
 # The kit supports Python 3.10+ (see README), so let Ruff assume the same.
 target-version = "py310"

@@ -13,7 +13,7 @@
 #     from pages import CartPage
 
 from pages.base_page import BasePage
-from pages.login_page import LoginPage
-from pages.products_page import ProductsPage
 from pages.cart_page import CartPage
+from pages.login_page import LoginPage
 from pages.payment_page import PaymentPage
+from pages.products_page import ProductsPage

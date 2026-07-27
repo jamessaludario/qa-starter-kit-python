@@ -53,7 +53,9 @@ def main():
     # (sys.executable = the python running this script, so the tests run
     # with the same Python/packages no matter how many you have installed)
     print(">> Running tests...")
-    test_run = subprocess.run([sys.executable, "-m", "pytest", *args])
+    # check=False: we want to read the exit code ourselves (see just below)
+    # rather than have a failing test raise and skip the report steps.
+    test_run = subprocess.run([sys.executable, "-m", "pytest", *args], check=False)
 
     # Exit code 0 = all passed, 1 = some failed. Both produce results we
     # want to see! Anything else (2+) means pytest itself had a problem
@@ -80,7 +82,8 @@ def main():
     # --- Step 4: open it in the browser ------------------------------------
     if open_report:
         print(">> Opening the report (press Ctrl+C here when done)...")
-        subprocess.run([allure, "open", str(REPORT)])
+        # check=False: this blocks until you press Ctrl+C, which exits non-zero.
+        subprocess.run([allure, "open", str(REPORT)], check=False)
 
     # Report the test outcome as our own exit code, so this script can be
     # used in CI too (0 = green, 1 = something failed).

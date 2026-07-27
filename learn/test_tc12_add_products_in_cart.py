@@ -14,7 +14,7 @@ New ideas in this test:
 from playwright.sync_api import Page, expect
 
 from constants import BASE_URL
-from helpers.flows import open_page, add_product_to_cart, go_to_cart
+from helpers.flows import add_product_to_cart, go_to_cart, open_page
 
 
 def test_add_two_products_to_cart(page: Page):

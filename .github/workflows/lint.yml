@@ -5,7 +5,7 @@
 # feedback than waiting for the full test suite. The rules live in
 # ruff.toml at the repo root; run the exact same check locally with:
 #
-#   pip install ruff
+#   pip install ruff==0.16.0     <- match the pinned version below
 #   ruff check .
 #
 # This is intentionally a separate workflow from tests.yml: the test
@@ -32,8 +32,14 @@ jobs:
         with:
           python-version: "3.12"
 
+      # PINNED ON PURPOSE. Ruff enables new rules in its default rule set as
+      # it grows, so an unpinned "pip install ruff" can turn this workflow red
+      # on a commit that changed nothing - the linter simply got stricter
+      # overnight. Pinning means the check only changes when we choose to
+      # change it. To upgrade: bump the version here, run `ruff check .`
+      # locally, fix whatever the new rules found, and commit it together.
       - name: Install Ruff
-        run: pip install ruff
+        run: pip install ruff==0.16.0
 
       # Reads ruff.toml automatically. Fails the workflow (red X on the
       # commit) if any rule is violated, and prints exactly which line
