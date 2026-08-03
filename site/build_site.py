@@ -261,6 +261,35 @@ def collect_pylib() -> dict:
 
 # ---------------------------------------------------------------- the page
 
+def shell_urls(build_id: str) -> list:
+    """Everything the service worker must have to open the site offline.
+
+    Generated rather than hand-listed, because a hand-listed shell goes
+    stale the first time somebody adds a JS module and nobody notices
+    until a learner on a train sees a blank page.
+
+    Deliberately EXCLUDES vendor/pyodide: it is 11 MB and the whole
+    loading story is that it arrives only when a coding challenge needs
+    it. Precaching it at install would undo that. It is still cached
+    lazily once fetched, so challenges work offline after their first
+    run.
+    """
+    urls = ["./"]
+    # The four entry points index.html asks for by version.
+    urls += [f"{name}?v={build_id}" for name in
+             ("app.css", "content.js", "pylib.js", "js/main.js")]
+    # The ES modules main.js imports, plus the mock shop the iframe
+    # loads. These are requested without a ?v=, so list them as they are.
+    for path in sorted((SRC / "js").rglob("*.js")):
+        relative = path.relative_to(SRC).as_posix()
+        if relative != "js/main.js":
+            urls.append(relative)
+    for path in sorted((SRC / "mockapp").rglob("*")):
+        if path.is_file():
+            urls.append(path.relative_to(SRC).as_posix())
+    return urls
+
+
 def index_html(build_id: str) -> str:
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -336,8 +365,11 @@ def build() -> str:
         f"window.QUEST_PYLIB = {json.dumps(pylib, ensure_ascii=False)};\n",
         encoding="utf-8")
     (DIST / "index.html").write_text(index_html(build_id), encoding="utf-8")
+    shell = shell_urls(build_id)
     (DIST / "sw.js").write_text(
-        (SRC / "sw.js").read_text(encoding="utf-8").replace("__BUILD_ID__", build_id),
+        (SRC / "sw.js").read_text(encoding="utf-8")
+        .replace("__BUILD_ID__", build_id)
+        .replace('"__SHELL__"', json.dumps(shell)),
         encoding="utf-8")
 
     pyodide = VENDOR / "pyodide"

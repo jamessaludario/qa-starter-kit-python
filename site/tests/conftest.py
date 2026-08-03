@@ -60,6 +60,12 @@ import build_site  # noqa: I001
 # Building and serving
 # --------------------------------------------------------------------------
 
+# Every path the browser actually asked the SERVER for. The service
+# worker tests read this to tell "fetched fresh" from "served out of the
+# cache", which is invisible from inside the page.
+REQUEST_LOG: list = []
+
+
 class QuietHandler(http.server.SimpleHTTPRequestHandler):
     """Serve dist/ with the content types a browser insists on.
 
@@ -83,6 +89,10 @@ class QuietHandler(http.server.SimpleHTTPRequestHandler):
         ".css": "text/css",
         ".html": "text/html",
     }
+
+    def do_GET(self):
+        REQUEST_LOG.append(self.path)
+        super().do_GET()
 
     def log_message(self, *args):
         """Silence the per-request log: 11 MB of Pyodide is a lot of lines."""
@@ -127,6 +137,18 @@ def quest_site() -> str:
     finally:
         server.shutdown()
         server.server_close()
+
+
+@pytest.fixture
+def server_requests(quest_site: str):
+    """Paths the server was asked for, starting empty for each test.
+
+    Cleared rather than snapshotted, because a test wants "what happened
+    after this point", not "everything since the session began".
+    """
+    del quest_site
+    REQUEST_LOG.clear()
+    return REQUEST_LOG
 
 
 @pytest.fixture(scope="session")

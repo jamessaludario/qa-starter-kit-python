@@ -308,8 +308,33 @@ with `fetch` so the numbers are true, then `loadPyodide` reads them from
 the HTTP cache. A fake spinner on an 11 MB download is a lie told to
 someone on a slow connection.
 
-After the first visit a service worker serves everything from cache, so
-the site works offline. Pyodide is **vendored** at a pinned version
+A service worker makes the site work offline, with a split that matters:
+
+- **The page itself is network-first**, cache as fallback. `index.html`
+  is the document that pins every asset's `?v=<build id>`, so caching it
+  first means a rebuilt site keeps loading the old page, which keeps
+  requesting the old assets — and the learner never sees new content no
+  matter how often they reload. It is a few hundred bytes; fetching it
+  fresh costs nothing.
+- **Everything else is cache-first.** Every one of those URLs is
+  versioned, so a new build asks for new URLs and can never be handed a
+  stale file.
+- **The shell is precached at install**, from a list `build_site.py`
+  generates. On a first visit the worker is not controlling the page
+  yet, so nothing that load fetched passes through the fetch handler —
+  without precaching, "works offline after the first visit" is simply
+  untrue.
+- **Pyodide is deliberately not in the shell.** It is 11 MB and the
+  whole loading story is that it arrives only when a coding challenge
+  needs it. It is cached lazily once fetched, so challenges work offline
+  after their first run; lessons, quizzes and the map work offline
+  immediately.
+
+`tests/test_site_offline.py` holds all four in place, read from the
+server side — from inside the page a cache hit and a network fetch look
+identical.
+
+Pyodide is **vendored** at a pinned version
 (`fetch_vendor.py`, currently 0.28.3), not pulled from a CDN at runtime:
 a third-party CDN is an availability dependency, a privacy leak, and a
 supply-chain risk that a teaching site has no reason to take. An
