@@ -1,0 +1,32 @@
+{
+  "id": "page-object-peaks",
+  "order": 6,
+  "badge": "6",
+  "title": "Page Object Peaks",
+  "tagline": "Two hundred tests, one place to fix a locator. The climb starts here.",
+  "teaches": "The layering the whole kit is built on: tests assert, helpers do journeys, pages own EVERY locator",
+  "source": [
+    "guide §5 Creating test scripts",
+    "pages/base_page.py",
+    "pages/products_page.py",
+    "helpers/flows.py"
+  ],
+  "requires": ["fixture-foundry"],
+  "map": { "x": 78, "y": 30 },
+  "objectives": [
+    "State the rule in one line: tests assert, helpers run journeys, pages hold all the locators",
+    "Move a locator out of a test and give the page-object method a name that reads like intent",
+    "Decide what belongs in a page object and what belongs in a helper - and defend the line you drew",
+    "Change one id in the markup and fix the whole suite by editing a single file",
+    "Recognise the page object that has quietly grown assertions inside it, and take them back out"
+  ],
+  "plannedChallenges": [
+    "Spot the locator that escaped into the test",
+    "Name the method: login(), not click_submit_button()",
+    "Fill the blank: the page object's missing method",
+    "Should this be a page object or a helper?",
+    "The markup changed - fix the suite in one file",
+    "The page object that asserts too much",
+    "Boss: refactor a 40-line test into pages/ + helpers/ with no locator left behind"
+  ]
+}

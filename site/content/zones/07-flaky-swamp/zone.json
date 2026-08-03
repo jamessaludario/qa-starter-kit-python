@@ -1,0 +1,32 @@
+{
+  "id": "flaky-swamp",
+  "order": 7,
+  "badge": "7",
+  "title": "The Flaky Swamp",
+  "tagline": "The test that passes on your machine and fails in CI at 3 a.m.",
+  "teaches": "Races, fixed waits, order dependence, and how to debug a failure you cannot reproduce",
+  "source": [
+    "guide §11 Additional info",
+    "guide §7 Assertions",
+    "learn/test_tc20_search_and_verify_cart_after_login",
+    "pytest.ini"
+  ],
+  "requires": ["page-object-peaks"],
+  "map": { "x": 60, "y": 34 },
+  "objectives": [
+    "Name the four usual causes of a flaky test and spot which one you are looking at",
+    "Replace every fixed wait with an assertion that says what you are actually waiting for",
+    "Find the test that only passes because the test before it left something behind",
+    "Read a Playwright timeout message and get the cause out of it, not just the line number",
+    "Argue honestly about --reruns: what it buys, and what it hides"
+  ],
+  "plannedChallenges": [
+    "Spot the flake: three tests, one of them is lying",
+    "Predict the error message",
+    "The sleep that works until it does not",
+    "The test that only passes second",
+    "Read the trace: where did the 30 seconds go?",
+    "Fix the race without adding a single wait",
+    "Boss: take a suite that fails one run in five and make it fail zero"
+  ]
+}

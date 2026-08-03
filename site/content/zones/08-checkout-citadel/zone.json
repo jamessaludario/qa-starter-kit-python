@@ -1,0 +1,34 @@
+{
+  "id": "checkout-citadel",
+  "order": 8,
+  "badge": "8",
+  "title": "Checkout Citadel",
+  "tagline": "The long journey: register, shop, check out, pay, and clean up after yourself.",
+  "teaches": "Full end-to-end flows built from helpers, self-contained data, and teardown that always runs",
+  "source": [
+    "learn/test_tc14_order_register_while_checkout",
+    "learn/test_tc15_order_register_before_checkout",
+    "learn/test_tc16_order_login_before_checkout",
+    "learn/test_tc24_download_invoice",
+    "helpers/flows.py",
+    "utils/data.py"
+  ],
+  "requires": ["flaky-swamp"],
+  "map": { "x": 44, "y": 24 },
+  "objectives": [
+    "Build a ten-step journey that still reads like a paragraph, because the steps are helpers",
+    "Create the data the test needs instead of depending on data somebody else left behind",
+    "Delete the account you created, even when the assertion in the middle failed",
+    "Assert at the points that matter, rather than after every single click",
+    "Judge when one long E2E test is right and when it should have been three short ones"
+  ],
+  "plannedChallenges": [
+    "Register, then shop: the journey in helpers",
+    "Self-contained data: your own account, every run",
+    "Assert at the checkpoints that matter",
+    "Fix the broken test: it checks out as the wrong user",
+    "Teardown that survives a mid-test failure",
+    "One long test or three short ones?",
+    "Boss: rebuild Test Case 16 - login, check out, verify the invoice, delete the account"
+  ]
+}

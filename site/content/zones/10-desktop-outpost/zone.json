@@ -1,0 +1,31 @@
+{
+  "id": "desktop-outpost",
+  "order": 10,
+  "badge": "★",
+  "title": "Desktop Outpost",
+  "tagline": "Side quest: what to do when the thing you must test is not a web page.",
+  "teaches": "pywinauto, the Windows accessibility tree, and how the same layering applies outside the browser",
+  "source": [
+    "guide §12 Testing desktop apps",
+    "desktop/pages",
+    "desktop/helpers",
+    "desktop/run_tests.py"
+  ],
+  "requires": [],
+  "map": { "x": 12, "y": 18 },
+  "objectives": [
+    "Say why Playwright cannot drive a native window, and what pywinauto does instead",
+    "Find a control by its accessibility name, the desktop cousin of get_by_role()",
+    "Apply the same layering off the web: tests assert, page objects own every control",
+    "Name what you give up outside the browser - no auto-waiting, no headless, no CI on a locked desktop",
+    "Decide when a desktop test is worth its cost, and when a unit test would do the job better"
+  ],
+  "plannedChallenges": [
+    "Why Playwright stops at the window frame",
+    "The accessibility tree, and how to look at it",
+    "Locating a control by name",
+    "Auto-waiting is gone: what replaces it",
+    "The same layering, a different driver",
+    "Quiz: when is a desktop test the right tool?"
+  ]
+}
