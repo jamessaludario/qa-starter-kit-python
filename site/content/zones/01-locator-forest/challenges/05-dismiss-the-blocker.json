@@ -1,0 +1,49 @@
+{
+  "id": "dismiss-the-blocker",
+  "title": "Dismiss the blocker",
+  "kind": "fix-the-broken-test",
+  "xp": 40,
+  "brief": "A cookie-consent panel is covering the shop. This test tries to click straight past it.\n\n**Run it first.** It takes a moment - Playwright retries for the full 30 seconds before giving up - and the call log tells you precisely what stopped it.\n\nThen fix it by dismissing the panel first. The real site does the same thing, and so does `pages/base_page.py`:\n\n```python\nconsent_button = self.page.get_by_role(\"button\", name=\"Consent\")\nif consent_button.count() > 0 and consent_button.first.is_visible():\n    consent_button.first.click()\n```\n\nHere the panel is always there, so you can just click it - no `if` needed.",
+  "scenario": { "route": "/", "consent": true },
+  "starter": "from playwright.sync_api import Page, expect\n\n\ndef test_products_page_opens_past_the_consent_panel(page: Page):\n    page.goto(\"https://automationexercise.com/\")\n\n    page.get_by_role(\"link\", name=\"Products\").click()\n\n    expect(page.get_by_role(\"heading\", name=\"All Products\")).to_be_visible()\n",
+  "solution": "from playwright.sync_api import Page, expect\n\n\ndef test_products_page_opens_past_the_consent_panel(page: Page):\n    page.goto(\"https://automationexercise.com/\")\n\n    # Nothing on the page is clickable until this is out of the way.\n    page.get_by_role(\"button\", name=\"Consent\").click()\n\n    page.get_by_role(\"link\", name=\"Products\").click()\n\n    expect(page.get_by_role(\"heading\", name=\"All Products\")).to_be_visible()\n",
+  "rubric": ["test-function", "has-assertion"],
+  "checks": [
+    {
+      "kind": "state",
+      "path": "consentOpen",
+      "isFalse": true,
+      "label": "The consent panel has been dismissed",
+      "feedback": "The panel is still up at the end of your test. Click the Consent button before anything else - while it is open, every click underneath it is intercepted."
+    },
+    {
+      "kind": "state",
+      "path": "route",
+      "equals": "/products",
+      "label": "The Products link click got through"
+    },
+    {
+      "kind": "matcher",
+      "name": "to_be_visible",
+      "label": "You still assert the heading rendered"
+    }
+  ],
+  "hints": [
+    {
+      "cost": 5,
+      "label": "Nudge",
+      "text": "Read the call log: \"<div class=\"consent-popup\"> intercepts pointer events\". Playwright found your link. Something was on top of it."
+    },
+    {
+      "cost": 7,
+      "label": "Strategy",
+      "text": "Add one line before the Products click: click the button whose accessible name is Consent. Its role is button, not link."
+    },
+    {
+      "cost": 10,
+      "label": "Solution",
+      "text": "page.get_by_role(\"button\", name=\"Consent\").click() as the first action after goto."
+    }
+  ],
+  "reveal": "This is the failure that makes people add `time.sleep(5)` and move on - and the sleep never helps, because time was never the problem.\n\nRead the call log instead. `intercepts pointer events` names the element that was in the way, and the fix is always the same: deal with the thing in the way.\n\nIt is also why the kit's `BasePage.open()` dismisses consent as part of *opening a page* rather than leaving it to every test."
+}

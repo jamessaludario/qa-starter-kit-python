@@ -1,0 +1,43 @@
+{
+  "id": "strict-mode",
+  "title": "Strict mode strikes",
+  "kind": "fix-the-broken-test",
+  "xp": 35,
+  "brief": "Run this before you change anything. It fails instantly - no 30-second wait - and the message tells you why.\n\nThe home page has **two** links called *Test Cases*: one in the menu, one as a big button in the banner. That is not a bug in the shop; the real automationexercise.com does the same, which is why `learn/test_tc07_test_cases_page.py` has a comment about it.\n\nMake the test pass. The menu link and the banner button go to the same place, so either will do - just say which one you mean.",
+  "scenario": { "route": "/" },
+  "starter": "from playwright.sync_api import Page, expect\n\n\ndef test_test_cases_page_opens(page: Page):\n    page.goto(\"https://automationexercise.com/\")\n\n    page.get_by_role(\"link\", name=\"Test Cases\").click()\n\n    expect(page).to_have_url(\"https://automationexercise.com/test_cases\")\n    expect(page.get_by_text(\"Below is the list of test Cases\")).to_be_visible()\n",
+  "solution": "from playwright.sync_api import Page, expect\n\n\ndef test_test_cases_page_opens(page: Page):\n    page.goto(\"https://automationexercise.com/\")\n\n    # .first because the page has more than one 'Test Cases' link\n    # (one in the menu, one big button in the banner).\n    page.get_by_role(\"link\", name=\"Test Cases\").first.click()\n\n    expect(page).to_have_url(\"https://automationexercise.com/test_cases\")\n    expect(page.get_by_text(\"Below is the list of test Cases\")).to_be_visible()\n",
+  "rubric": ["test-function", "has-assertion"],
+  "checks": [
+    {
+      "kind": "state",
+      "path": "route",
+      "equals": "/test_cases",
+      "label": "The click lands on the test cases page",
+      "feedback": "The shop never got there. If you are still seeing a strict mode violation, the locator is still matching both links."
+    },
+    {
+      "kind": "matcher",
+      "name": "to_be_visible",
+      "label": "The page content assertion still runs"
+    }
+  ],
+  "hints": [
+    {
+      "cost": 4,
+      "label": "Nudge",
+      "text": "The error says \"resolved to 2 elements\". You do not need a different locator - you need to say which of the two."
+    },
+    {
+      "cost": 6,
+      "label": "Strategy",
+      "text": "Three ways: .first, .nth(0), or scope the search to the menu with page.locator(\".shop-menu\").get_by_role(...). All three are legitimate here."
+    },
+    {
+      "cost": 9,
+      "label": "Solution",
+      "text": "page.get_by_role(\"link\", name=\"Test Cases\").first.click()"
+    }
+  ],
+  "reveal": "Strict mode looks like an obstacle and is actually a gift. The alternative - most other tools' behaviour - is silently clicking the first match, which means your test passes today and clicks the wrong thing next month when the order changes.\n\nA failure you can read beats a pass you cannot trust."
+}

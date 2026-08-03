@@ -1,0 +1,49 @@
+{
+  "id": "expect-waits",
+  "title": "expect() waits for you",
+  "kind": "write-the-test",
+  "xp": 30,
+  "brief": "Search the shop for **dress** and prove the results arrived.\n\n1. type `dress` into the search box (`#search_product` - it has no label, so an id is the right handle)\n2. click the search button (`#submit_search`)\n3. assert the **Searched Products** heading is visible\n\nThe shop takes **600 ms** to answer, and while it is thinking the product grid is empty. You will not need to do anything about that - which is the point of the challenge.",
+  "scenario": { "route": "/products" },
+  "starter": "from playwright.sync_api import Page, expect\n\n\ndef test_search_shows_the_results_heading(page: Page):\n    page.goto(\"https://automationexercise.com/products\")\n\n    # 1. type the search term\n\n    # 2. click search\n\n    # 3. assert the results heading appeared\n",
+  "solution": "from playwright.sync_api import Page, expect\n\n\ndef test_search_shows_the_results_heading(page: Page):\n    page.goto(\"https://automationexercise.com/products\")\n\n    page.locator(\"#search_product\").fill(\"dress\")\n    page.locator(\"#submit_search\").click()\n\n    expect(page.get_by_role(\"heading\", name=\"Searched Products\")).to_be_visible()\n",
+  "rubric": ["test-function", "has-assertion", "expect-over-assert"],
+  "checks": [
+    {
+      "kind": "state",
+      "path": "query",
+      "equals": "dress",
+      "label": "The shop actually ran a search for \"dress\"",
+      "feedback": "The shop did not finish a search for \"dress\". Check that you filled the box before clicking, and that your test waited long enough for the results - which expect() does for you."
+    },
+    {
+      "kind": "matcher",
+      "name": "to_be_visible",
+      "label": "You assert the results heading is visible"
+    },
+    {
+      "kind": "virtualMs",
+      "atLeast": 600,
+      "label": "Your test waited out the shop's 600 ms response",
+      "feedback": "Your test finished before the results could possibly have arrived. That means nothing actually waited - an assertion that passes at 0 ms is not looking at the search results."
+    }
+  ],
+  "hints": [
+    {
+      "cost": 4,
+      "label": "Nudge",
+      "text": ".fill(\"dress\") on the box, .click() on the button, then one expect(). No waiting code of any kind."
+    },
+    {
+      "cost": 6,
+      "label": "Strategy",
+      "text": "The heading is a heading, so get_by_role(\"heading\", name=\"Searched Products\") reads best. Before the search it says \"All Products\"; afterwards it says \"Searched Products\"."
+    },
+    {
+      "cost": 9,
+      "label": "Solution",
+      "text": "page.locator(\"#search_product\").fill(\"dress\"); page.locator(\"#submit_search\").click(); expect(page.get_by_role(\"heading\", name=\"Searched Products\")).to_be_visible()"
+    }
+  ],
+  "reveal": "Look at the **page time used** figure under the results: 600 ms.\n\nYour test waited exactly as long as the shop took - not a fixed guess, not zero. You wrote no waiting code at all; `to_be_visible()` retried until the heading turned up.\n\nThat is the whole argument against `time.sleep(2)`. A sleep would have waited 2000 ms for a 600 ms operation, and would still have been too short the day the shop got slower."
+}

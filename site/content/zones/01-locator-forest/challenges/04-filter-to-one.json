@@ -1,0 +1,44 @@
+{
+  "id": "filter-to-one",
+  "title": "Filter the list down",
+  "kind": "locator-match",
+  "xp": 30,
+  "brief": "Eight products are on screen. Two of them are dresses.\n\nWrite one locator that matches **exactly the two dress cards** - not the eight cards, not the two `<p>` tags holding their names, the two `.productinfo` cards themselves.\n\nThe tool for this is `.filter(has_text=\"...\")`: start from all the cards, then keep only the ones containing some text.",
+  "scenario": { "route": "/products" },
+  "expectCount": 2,
+  "starter": "",
+  "placeholder": "locator(\".productinfo\").filter(has_text=\"...\")",
+  "solution": "locator(\".productinfo\").filter(has_text=\"Dress\")",
+  "rubric": [],
+  "checks": [
+    {
+      "kind": "matcher",
+      "name": "to_have_count",
+      "label": "It matches exactly the two dress cards"
+    },
+    {
+      "kind": "locatorKind",
+      "name": "filter",
+      "label": "You narrowed the list with .filter()",
+      "feedback": "You landed on two elements, but not by filtering. `.nth(2)` and friends depend on the catalogue never being reordered; `.filter(has_text=\"Dress\")` says what you actually mean and keeps working when a ninth product arrives."
+    }
+  ],
+  "hints": [
+    {
+      "cost": 4,
+      "label": "Nudge",
+      "text": "Start from the whole set - locator(\".productinfo\") gives you all eight - then narrow it."
+    },
+    {
+      "cost": 6,
+      "label": "Strategy",
+      "text": "Both dresses have \"Dress\" in their names: Sleeveless Dress and Stylish Dress. has_text matches a substring and ignores case."
+    },
+    {
+      "cost": 9,
+      "label": "Solution",
+      "text": "locator(\".productinfo\").filter(has_text=\"Dress\")"
+    }
+  ],
+  "reveal": "`.filter()` is the one narrowing tool that describes **meaning** rather than **position**, which is why it survives changes that break `.nth()`.\n\nWatch the outlines in the shop panel: the whole card is highlighted, not just the name. Filtering keeps the elements you started from - it does not descend into them."
+}

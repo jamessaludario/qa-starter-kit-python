@@ -1,0 +1,46 @@
+{
+  "id": "why-the-assert-failed",
+  "title": "Why the assert failed",
+  "kind": "predict-the-error",
+  "xp": 25,
+  "brief": "Same search you just wrote, three different ways of checking it. Work out what each one does before you read the options.",
+  "questions": [
+    {
+      "prompt": "This fails about nine times out of ten on a busy machine, and passes on a fast one. Why?",
+      "code": "page.locator(\"#submit_search\").click()\nassert page.get_by_role(\"heading\", name=\"Searched Products\").is_visible()",
+      "options": [
+        "is_visible() is broken and should never be used",
+        "is_visible() takes one snapshot and never retries, so it looks before the results arrive",
+        "The locator is wrong",
+        "assert cannot be used with Playwright"
+      ],
+      "answer": 1,
+      "why": "is_visible() is not broken - it is doing exactly what it says, answering about this instant. The bug is asking the question too early. Every Playwright method whose name starts with is_ or returns a plain value (count(), inner_text()) is a snapshot. Snapshots belong in variables you then reason about, not in the assertion that decides whether the page is ready."
+    },
+    {
+      "prompt": "A colleague fixes the flake like this. What would you say in review?",
+      "code": "page.locator(\"#submit_search\").click()\ntime.sleep(3)\nassert page.get_by_role(\"heading\", name=\"Searched Products\").is_visible()",
+      "options": [
+        "Looks good - three seconds is plenty",
+        "It hides the flake rather than fixing it, wastes 2.4 s on every run, and will still fail the day the search takes 3.1 s",
+        "Use time.sleep(10) to be safe",
+        "Move the sleep before the click"
+      ],
+      "answer": 1,
+      "why": "It usually passes, which is what makes it dangerous - it looks fixed. Multiply 2.4 wasted seconds by 300 tests and your suite takes ten extra minutes to be no more reliable. expect(...).to_be_visible() waits 600 ms here and would wait 3.1 s if it had to. It is both faster and safer, which is a rare combination."
+    },
+    {
+      "prompt": "This one passes, and it is still wrong. What is it actually testing?",
+      "code": "page.locator(\"#submit_search\").click()\nexpect(page.get_by_role(\"heading\", name=\"All Products\")).to_be_visible()",
+      "options": [
+        "Nothing is wrong - the heading is visible",
+        "It asserts the heading BEFORE the search - it passes at 0 ms and would still pass if search were completely broken",
+        "to_be_visible cannot be used on headings",
+        "It needs a longer timeout"
+      ],
+      "answer": 1,
+      "why": "A green test that cannot fail is worse than no test, because it buys false confidence. \"All Products\" is what the heading says before the search finishes, so this assertion is satisfied instantly and never looks at the results at all. When you write an assertion, ask: what change to the product would make this go red? If the answer is \"nothing\", it is not a test."
+    }
+  ],
+  "reveal": "Three ways to get a wrong answer:\n\n- **assert + snapshot** - checks too early, fails randomly\n- **sleep + assert** - checks late enough today, wastes time forever, still random\n- **expect on the wrong thing** - never fails at all\n\nOne way to get a right one: `expect()` on the thing that is only true **after** the behaviour you are testing."
+}
