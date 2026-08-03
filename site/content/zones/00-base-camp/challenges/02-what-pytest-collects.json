@@ -1,0 +1,43 @@
+{
+  "id": "what-pytest-collects",
+  "title": "What pytest actually collects",
+  "kind": "quiz",
+  "xp": 20,
+  "brief": "\"It says 0 tests collected\" is the single most common first-day problem, and it is almost always a naming rule. Three questions.",
+  "questions": [
+    {
+      "prompt": "A file called `login_test.py` contains `def test_login(page): ...`. You run `pytest`. What happens?",
+      "options": [
+        "It runs - the function is named test_login",
+        "It is ignored - the FILE must start with test_ too",
+        "It runs, but only with the --strict flag",
+        "It errors, because a test file cannot end in _test.py"
+      ],
+      "answer": 1,
+      "why": "Both halves of the rule must hold: the file must match test_*.py AND the function must start with test_. Rename it to test_login.py and it is collected. (pytest can be configured to accept *_test.py as well, but the kit's pytest.ini does not - stick to the default and you will never be surprised.)"
+    },
+    {
+      "prompt": "Inside `test_cart.py` you write `def check_cart_total(page): ...`. Does pytest run it?",
+      "options": [
+        "Yes - it is in a test file",
+        "No - the function name does not start with test_",
+        "Only if another test calls it",
+        "Only if it contains an assert"
+      ],
+      "answer": 1,
+      "why": "pytest collects by NAME, not by content. check_cart_total is just a function sitting in a file that nobody calls. This is genuinely useful: helper functions live safely next to tests precisely because they are not named test_."
+    },
+    {
+      "prompt": "Where does the `page` argument come from in `def test_home(page):`?",
+      "options": [
+        "You have to create it: page = Browser().new_page()",
+        "It is a pytest fixture from the pytest-playwright plugin - a fresh tab per test",
+        "It is a global variable pytest sets before the run",
+        "It is optional and always None unless you pass it yourself"
+      ],
+      "answer": 1,
+      "why": "pytest matches the argument name to a registered fixture. pytest-playwright provides `page` and hands each test a brand-new browser tab, which is why tests cannot leak state into each other through the browser. The kit's conftest.py says exactly this in its opening comment."
+    }
+  ],
+  "reveal": "Naming is discovery. If a test is not running, read its file name and its function name before you read anything else."
+}

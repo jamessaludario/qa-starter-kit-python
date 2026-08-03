@@ -1,0 +1,46 @@
+{
+  "id": "read-the-failure",
+  "title": "Read the failure",
+  "kind": "predict-the-error",
+  "xp": 25,
+  "brief": "Failure messages are the most useful documentation you will ever be handed, and beginners skim them. Slow down and read these three properly.",
+  "questions": [
+    {
+      "prompt": "A test fails with this. What is the most likely cause?",
+      "code": "Locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for get_by_role(\"button\", name=\"Continue Shopping\")",
+      "options": [
+        "The button was there but disabled",
+        "Playwright never found a button with that accessible name",
+        "The network was slow",
+        "The assertion was wrong"
+      ],
+      "answer": 1,
+      "why": "\"waiting for <locator>\" with nothing after it means the element never turned up at all. Playwright kept looking for the full 30 seconds. Check the name (it is matched against the accessible name, not the id) and check that the thing you expected to open actually opened."
+    },
+    {
+      "prompt": "And this one - what does the extra line change?",
+      "code": "Locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator(\"#cartModal\").get_by_role(\"button\", name=\"Continue Shopping\")\n  - locator resolved to a hidden element\n  - retrying click action",
+      "options": [
+        "Same thing - the element is missing",
+        "The element exists but is not visible, so the click was never safe to make",
+        "The selector has a syntax error",
+        "Playwright clicked it and the click did nothing"
+      ],
+      "answer": 1,
+      "why": "\"resolved to a hidden element\" means the locator matched - your selector is fine. The element was in the DOM but had no visible box, typically because a modal is still animating in. Playwright refuses to click what a user could not click, and retries instead. Waiting for the modal to be visible first is exactly what pages/products_page.py does in the kit."
+    },
+    {
+      "prompt": "This one is not a timeout. What went wrong?",
+      "code": "Locator.click: Error: strict mode violation: get_by_role(\"link\", name=\"Test Cases\")\nresolved to 2 elements:\n    1) <a.test-cases-cta> Test Cases\n    2) <a> Test Cases",
+      "options": [
+        "The page loaded twice",
+        "Your locator is ambiguous - it matches two elements, and Playwright will not guess",
+        "You need a longer timeout",
+        "One of the two links is broken"
+      ],
+      "answer": 1,
+      "why": "Strict mode is a feature. Two matches means \"which one did you mean?\" and Playwright fails immediately rather than clicking a coin-flip. Fix it by narrowing: .first, .nth(i), or - better - scope the search to the region you meant, like page.locator(\".shop-menu\").get_by_role(...). Retrying would never help, which is why this one fails instantly instead of after 30 seconds."
+    }
+  ],
+  "reveal": "Three shapes, three different first moves:\n\n- **\"waiting for <locator>\"** alone -> the element is not there. Check the name.\n- **\"resolved to a hidden element\"** -> your locator is right, your timing is not.\n- **\"strict mode violation\"** -> your locator is ambiguous. Narrow it.\n\nYou will meet all three again in the Locator Forest."
+}

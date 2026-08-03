@@ -1,0 +1,51 @@
+{
+  "id": "arrange-act-assert",
+  "title": "Arrange, Act, Assert - in that order",
+  "kind": "fix-the-broken-test",
+  "xp": 30,
+  "brief": "This test fails, and not because the shop is broken. Run it first and read the message - it tells you exactly which page it was looking at.\n\nThen fix it. Do not add anything: just put the three beats in the right order.",
+  "scenario": { "route": "/" },
+  "starter": "from playwright.sync_api import Page, expect\n\n\ndef test_products_link_opens_the_products_page(page: Page):\n    # ARRANGE\n    page.goto(\"https://automationexercise.com/\")\n\n    # ASSERT\n    expect(page).to_have_url(\"https://automationexercise.com/products\")\n\n    # ACT\n    page.get_by_role(\"link\", name=\"Products\").click()\n",
+  "solution": "from playwright.sync_api import Page, expect\n\n\ndef test_products_link_opens_the_products_page(page: Page):\n    # ARRANGE\n    page.goto(\"https://automationexercise.com/\")\n\n    # ACT\n    page.get_by_role(\"link\", name=\"Products\").click()\n\n    # ASSERT\n    expect(page).to_have_url(\"https://automationexercise.com/products\")\n",
+  "rubric": ["test-function", "has-assertion"],
+  "checks": [
+    {
+      "kind": "state",
+      "path": "route",
+      "equals": "/products",
+      "label": "The click actually happened and moved the shop to /products",
+      "feedback": "The shop is not on the products page at the end of your test. Did the click line run - or is it still sitting after the assertion?"
+    },
+    {
+      "kind": "matcher",
+      "name": "to_have_url",
+      "label": "You still assert the URL",
+      "feedback": "The expect(page).to_have_url(...) line has gone missing. Move it, do not delete it."
+    },
+    {
+      "kind": "action",
+      "method": "click",
+      "locatorKind": "role",
+      "label": "You click the Products link",
+      "feedback": "No click reached the page. The Act step is what makes this a test of the link rather than a test of the home page."
+    }
+  ],
+  "hints": [
+    {
+      "cost": 3,
+      "label": "Nudge",
+      "text": "Read the failure. It says the URL it found was the home page. When was the assertion checked - before or after the click?"
+    },
+    {
+      "cost": 5,
+      "label": "Strategy",
+      "text": "Python runs top to bottom. Swap the ASSERT block and the ACT block so the check happens after the thing it is checking."
+    },
+    {
+      "cost": 8,
+      "label": "Solution",
+      "text": "Move `page.get_by_role(\"link\", name=\"Products\").click()` above the `expect(page).to_have_url(...)` line."
+    }
+  ],
+  "reveal": "An assertion that runs before the action is not a strict test - it is a test of the wrong moment. Playwright's auto-waiting will not save you here either: `to_have_url` retried for five seconds on a URL that was never going to change.\n\nWhen a test fails, the first question is always **when did it check?**"
+}

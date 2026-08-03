@@ -1,0 +1,44 @@
+{
+  "id": "first-test",
+  "title": "Your first test",
+  "kind": "write-the-test",
+  "xp": 30,
+  "brief": "The shop is open on the right. Finish this test so it checks that the browser tab's title is `Automation Exercise`.\n\nOne line is all it takes. The matcher you want is `to_have_title`, and it goes on the `page`, not on a locator:\n\n```python\nexpect(page).to_have_title(\"...\")\n```",
+  "scenario": { "route": "/" },
+  "starter": "from playwright.sync_api import Page, expect\n\n\ndef test_home_page_has_the_right_title(page: Page):\n    # ARRANGE + ACT: open the shop's home page\n    page.goto(\"https://automationexercise.com/\")\n\n    # ASSERT: check the tab title. Your line goes here.\n",
+  "solution": "from playwright.sync_api import Page, expect\n\n\ndef test_home_page_has_the_right_title(page: Page):\n    page.goto(\"https://automationexercise.com/\")\n    expect(page).to_have_title(\"Automation Exercise\")\n",
+  "rubric": ["test-function", "has-assertion"],
+  "checks": [
+    {
+      "kind": "matcher",
+      "name": "to_have_title",
+      "label": "You assert the page title with expect(page).to_have_title(...)",
+      "feedback": "I did not see a to_have_title check run. Note it goes on the page itself - expect(page), not expect(page.locator(...))."
+    },
+    {
+      "kind": "state",
+      "path": "route",
+      "equals": "/",
+      "label": "The test is looking at the home page",
+      "feedback": "Your test navigated somewhere else. Leave the page.goto() line pointing at the home page for this one."
+    }
+  ],
+  "hints": [
+    {
+      "cost": 3,
+      "label": "Nudge",
+      "text": "expect() takes either a Locator or the page itself. Titles belong to the page."
+    },
+    {
+      "cost": 5,
+      "label": "Strategy",
+      "text": "The shape is expect(page).to_have_title(\"...\"). The title is written in the browser tab above the shop panel - and it is the same one the kit's Test Case 1 checks."
+    },
+    {
+      "cost": 8,
+      "label": "Solution",
+      "text": "expect(page).to_have_title(\"Automation Exercise\")"
+    }
+  ],
+  "reveal": "That is a complete, honest automated test: it opens a page, it states a belief, and it can fail.\n\nIn the kit this exact line is the second line of `learn/test_tc01_register_user.py`. You have just written production code."
+}

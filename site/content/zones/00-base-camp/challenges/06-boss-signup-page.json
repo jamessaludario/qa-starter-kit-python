@@ -1,0 +1,51 @@
+{
+  "id": "boss-signup-page",
+  "title": "Boss: prove the signup page opens",
+  "kind": "write-the-test",
+  "boss": true,
+  "xp": 60,
+  "brief": "No starter code, no comments to fill in. Write the test.\n\n**The behaviour to prove:** from the home page, clicking **Signup / Login** opens the login page, and the **New User Signup!** form is there when it does.\n\nA reviewer will expect:\n\n- a test function named after the behaviour, not after the page\n- the browser tab as the `page` argument\n- an assertion on the address *and* one on what is on screen\n- role-based locators where the element has a visible name\n\nThis is step 3 of `learn/test_tc01_register_user.py`, written from scratch.",
+  "scenario": { "route": "/" },
+  "starter": "from playwright.sync_api import Page, expect\n\n\n",
+  "solution": "from playwright.sync_api import Page, expect\n\n\ndef test_signup_login_link_opens_the_signup_form(page: Page):\n    page.goto(\"https://automationexercise.com/\")\n\n    page.get_by_role(\"link\", name=\"Signup / Login\").click()\n\n    expect(page).to_have_url(\"https://automationexercise.com/login\")\n    expect(page.get_by_text(\"New User Signup!\")).to_be_visible()\n",
+  "rubric": ["test-function", "has-assertion", "no-xpath", "expect-over-assert"],
+  "checks": [
+    {
+      "kind": "state",
+      "path": "route",
+      "equals": "/login",
+      "label": "Your test reaches the login page",
+      "feedback": "The shop did not end up on /login. The menu link is labelled \"Signup / Login\" - spaces and slash included."
+    },
+    {
+      "kind": "action",
+      "method": "click",
+      "label": "You get there by clicking, not by navigating straight to the URL",
+      "feedback": "You went straight to /login with goto(). That tests the page, but not the LINK - and the link is the behaviour we are proving. Start at the home page and click."
+    },
+    {
+      "kind": "matcher",
+      "name": "to_have_url",
+      "label": "You assert the address"
+    },
+    {
+      "kind": "matcher",
+      "name": "to_be_visible",
+      "label": "You assert the signup form is on screen",
+      "feedback": "Nothing checked that the form rendered. A URL can be right while the page behind it is empty - that is a real failure mode, and worth one more line."
+    }
+  ],
+  "hints": [
+    {
+      "cost": 6,
+      "label": "Nudge",
+      "text": "Same shape as the last challenge: goto, click, two expects. The only new thing is that you write the def line yourself."
+    },
+    {
+      "cost": 10,
+      "label": "Strategy",
+      "text": "def test_signup_login_link_opens_the_signup_form(page: Page): then goto the home page, click get_by_role(\"link\", name=\"Signup / Login\"), then assert the URL is .../login and that get_by_text(\"New User Signup!\") is visible."
+    }
+  ],
+  "reveal": "Base Camp cleared.\n\nYou can now write a test that a reviewer would merge: named for its behaviour, arranged-acted-asserted in order, waiting properly, and reading like a sentence.\n\nNext: **The Locator Forest**, where the interesting question stops being \"what do I check\" and becomes \"how do I find it\"."
+}

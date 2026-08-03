@@ -20,3 +20,11 @@ docs/site/
 # Your working copy of the practice tests, created from learn/ by the
 # tour (python tour.py). Edit and break these freely.
 tour-tests/
+
+# The built quest site - generated from site/content/ and site/src/ by
+# site/build_site.py (CI rebuilds it fresh on every deploy)
+site/dist/
+
+# The vendored Python runtime for the quest site (~12 MB of WebAssembly).
+# Downloaded on demand by site/fetch_vendor.py, deliberately not committed.
+site/vendor/

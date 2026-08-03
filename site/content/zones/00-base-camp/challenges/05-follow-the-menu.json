@@ -1,0 +1,52 @@
+{
+  "id": "follow-the-menu",
+  "title": "Follow the menu",
+  "kind": "write-the-test",
+  "xp": 35,
+  "brief": "Write the whole test this time. Starting on the home page:\n\n1. click the **Products** link in the menu\n2. check the address is `https://automationexercise.com/products`\n3. check the **All Products** heading is on screen\n\nTwo assertions, because they prove different things: one that you *navigated*, one that the page actually *rendered*.\n\nFor the heading, `get_by_role(\"heading\", name=\"All Products\")` reads better than any CSS selector - it finds it the way a person would.",
+  "scenario": { "route": "/" },
+  "starter": "from playwright.sync_api import Page, expect\n\n\ndef test_products_page_opens_from_the_menu(page: Page):\n    page.goto(\"https://automationexercise.com/\")\n\n    # Your turn: click, then check twice.\n",
+  "solution": "from playwright.sync_api import Page, expect\n\n\ndef test_products_page_opens_from_the_menu(page: Page):\n    page.goto(\"https://automationexercise.com/\")\n\n    page.get_by_role(\"link\", name=\"Products\").click()\n\n    expect(page).to_have_url(\"https://automationexercise.com/products\")\n    expect(page.get_by_role(\"heading\", name=\"All Products\")).to_be_visible()\n",
+  "rubric": ["test-function", "has-assertion", "no-xpath"],
+  "checks": [
+    {
+      "kind": "state",
+      "path": "route",
+      "equals": "/products",
+      "label": "The shop ends up on the products page",
+      "feedback": "The shop is still somewhere else. Did the click find the Products link in the menu?"
+    },
+    {
+      "kind": "matcher",
+      "name": "to_have_url",
+      "label": "You assert the address",
+      "feedback": "No to_have_url check ran. Remember it goes on the page: expect(page).to_have_url(...)."
+    },
+    {
+      "kind": "matcher",
+      "name": "to_be_visible",
+      "label": "You assert the heading is visible",
+      "feedback": "No to_be_visible check ran. If your assertion is below a line that failed, it never got the chance - fix the first failure and run again."
+    },
+    {
+      "kind": "locatorKind",
+      "name": "role",
+      "atLeast": 2,
+      "label": "You used role-based locators (the top of the priority list)",
+      "feedback": "You got there, but with a CSS selector where a role locator would do. get_by_role finds elements the way a user does, so it survives redesigns that break a class name. Try get_by_role(\"link\", name=\"Products\") and get_by_role(\"heading\", name=\"All Products\")."
+    }
+  ],
+  "hints": [
+    {
+      "cost": 4,
+      "label": "Nudge",
+      "text": "Three lines: one click, two expects. The click is a link; the heading is a heading."
+    },
+    {
+      "cost": 6,
+      "label": "Strategy",
+      "text": "page.get_by_role(\"link\", name=\"Products\").click(), then expect(page).to_have_url(\"https://automationexercise.com/products\"), then expect(page.get_by_role(\"heading\", name=\"All Products\")).to_be_visible()."
+    }
+  ],
+  "reveal": "Notice you never told Playwright to *wait* for the products page. `to_have_url` and `to_be_visible` retry on their own until the page catches up.\n\nThat is the habit this whole quest is built around, and it is why the kit's rule is: **never `time.sleep()`**."
+}

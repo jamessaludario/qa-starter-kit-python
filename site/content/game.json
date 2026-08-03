@@ -1,0 +1,90 @@
+{
+  "title": "Quest for Automation",
+  "xp": {
+    "firstTryBonus": 0.5,
+    "cleanBonus": 0.25,
+    "hintFloor": 0.25
+  },
+  "levels": [
+    { "xp": 0, "title": "Intern" },
+    { "xp": 120, "title": "Junior Tester" },
+    { "xp": 280, "title": "Test Engineer" },
+    { "xp": 500, "title": "Automation Engineer" },
+    { "xp": 800, "title": "SDET" },
+    { "xp": 1200, "title": "Senior SDET" },
+    { "xp": 1700, "title": "Automation Lead" },
+    { "xp": 2300, "title": "Automation Archmage" }
+  ],
+  "badges": [
+    {
+      "id": "first-blood",
+      "name": "First Green",
+      "icon": "✔",
+      "hint": "Clear your first challenge.",
+      "rule": { "type": "challengesPassed", "value": 1 }
+    },
+    {
+      "id": "never-slept",
+      "name": "Never Slept",
+      "icon": "⏱",
+      "hint": "Clear the Locator Forest without a single time.sleep().",
+      "rule": { "type": "zoneCleanOfSleep", "zone": "locator-forest" }
+    },
+    {
+      "id": "selector-sniper",
+      "name": "Selector Sniper",
+      "icon": "◎",
+      "hint": "Drive the page with 10 role-based locators.",
+      "rule": { "type": "statAtLeast", "stat": "roleLocators", "value": 10 }
+    },
+    {
+      "id": "one-shot",
+      "name": "One Shot",
+      "icon": "⭐",
+      "hint": "Pass 5 challenges on the first try.",
+      "rule": { "type": "firstTryPasses", "value": 5 }
+    },
+    {
+      "id": "unaided",
+      "name": "Unaided",
+      "icon": "🧠",
+      "hint": "Pass 5 challenges without opening a hint.",
+      "rule": { "type": "passedWithoutHints", "value": 5 }
+    },
+    {
+      "id": "trailhead",
+      "name": "Trailhead",
+      "icon": "⛺",
+      "hint": "Clear Base Camp.",
+      "rule": { "type": "zoneCleared", "zone": "base-camp" }
+    },
+    {
+      "id": "pathfinder",
+      "name": "Pathfinder",
+      "icon": "🌲",
+      "hint": "Clear the Locator Forest.",
+      "rule": { "type": "zoneCleared", "zone": "locator-forest" }
+    },
+    {
+      "id": "web-first",
+      "name": "Web First",
+      "icon": "🌊",
+      "hint": "Clear Assertion Ridge.",
+      "rule": { "type": "zoneCleared", "zone": "assertion-ridge" }
+    },
+    {
+      "id": "boss-slayer",
+      "name": "Boss Slayer",
+      "icon": "👑",
+      "hint": "Beat your first boss challenge.",
+      "rule": { "type": "bossesCleared", "value": 1 }
+    },
+    {
+      "id": "triple-crown",
+      "name": "Triple Crown",
+      "icon": "🏆",
+      "hint": "Beat three boss challenges.",
+      "rule": { "type": "bossesCleared", "value": 3 }
+    }
+  ]
+}
