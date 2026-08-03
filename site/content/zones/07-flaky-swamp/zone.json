@@ -12,7 +12,7 @@
     "pytest.ini"
   ],
   "requires": ["page-object-peaks"],
-  "map": { "x": 60, "y": 34 },
+  "map": { "x": 13, "y": 50 },
   "objectives": [
     "Name the four usual causes of a flaky test and spot which one you are looking at",
     "Replace every fixed wait with an assertion that says what you are actually waiting for",

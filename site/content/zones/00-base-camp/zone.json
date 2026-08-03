@@ -7,7 +7,7 @@
   "teaches": "Arrange-Act-Assert, pytest naming, your first passing test",
   "source": ["guide §1 About Playwright", "guide §5 Creating test scripts"],
   "requires": [],
-  "map": { "x": 10, "y": 84 },
+  "map": { "x": 13, "y": 84 },
   "objectives": [
     "Explain what separates a test from a script that just clicks around",
     "Name a test file and a test function so pytest actually collects them",

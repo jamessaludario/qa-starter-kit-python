@@ -13,7 +13,7 @@
     "pages/cart_page.py"
   ],
   "requires": ["form-marshes"],
-  "map": { "x": 74, "y": 78 },
+  "map": { "x": 87, "y": 50 },
   "objectives": [
     "Carry state across three pages without letting the test lose track of what it added",
     "Count rows with to_have_count() instead of reading a number out of the page and trusting it",

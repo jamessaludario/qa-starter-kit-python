@@ -186,6 +186,44 @@ def load_zone(folder: Path) -> dict:
     return zone
 
 
+# Measured, not guessed. At the narrowest width the map is drawn at
+# (1100px, see app.css) a zone card is 210px wide in a ~1040px board and
+# up to 175px tall in a 660px board - about 20% x 27% of the map. Two
+# cards closer than that in BOTH axes visibly overlap, so these
+# thresholds sit just above the real card, leaving room for a tagline
+# that wraps onto a third line.
+MIN_MAP_GAP_X = 22
+MIN_MAP_GAP_Y = 29
+
+
+def check_map_spacing(zones: list):
+    """Refuse to build a map whose zone cards would sit on top of each other.
+
+    Zone positions are hand-authored percentages, which is lovely until
+    somebody adds the thirteenth zone and discovers the overlap by
+    screenshot. Failing the build names both zones and the fix.
+    """
+    clashes = []
+    for index, first in enumerate(zones):
+        for second in zones[index + 1:]:
+            gap_x = abs(first["map"]["x"] - second["map"]["x"])
+            gap_y = abs(first["map"]["y"] - second["map"]["y"])
+            if gap_x < MIN_MAP_GAP_X and gap_y < MIN_MAP_GAP_Y:
+                clashes.append(
+                    f"  '{first['id']}' at ({first['map']['x']},{first['map']['y']}) "
+                    f"and '{second['id']}' at ({second['map']['x']},{second['map']['y']})"
+                    f" - only {gap_x} apart in x and {gap_y} in y"
+                )
+    if clashes:
+        raise SystemExit(
+            "ERROR: these zone cards would overlap on the quest map:\n"
+            + "\n".join(clashes)
+            + f"\nMove one of each pair: centres need to differ by at least "
+            f"{MIN_MAP_GAP_X} in x OR {MIN_MAP_GAP_Y} in y.\n"
+            "The map is laid out as a serpentine - see site/CONTRIBUTING-CONTENT.md."
+        )
+
+
 def load_content() -> dict:
     game = json.loads((CONTENT / "game.json").read_text(encoding="utf-8"))
     zones = [load_zone(folder) for folder in sorted(CONTENT.glob("zones/*")) if folder.is_dir()]
@@ -196,6 +234,8 @@ def load_content() -> dict:
         unknown = [need for need in zone["requires"] if need not in known]
         if unknown:
             raise SystemExit(f"ERROR: zone '{zone['id']}' requires unknown zone(s) {unknown}")
+
+    check_map_spacing(zones)
 
     about = (CONTENT / "about.md")
     return {
@@ -316,10 +356,31 @@ def build() -> str:
     return build_id
 
 
+PREFERRED_PORT = 8000
+
+
+def open_server(handler):
+    """Bind port 8000, or the next thing the OS will give us.
+
+    Something is often already on 8000 - another copy of this script, a
+    dev server, a leftover from an editor. Falling back beats greeting a
+    learner with a WinError 10048 traceback for a problem that is not
+    theirs and not interesting.
+    """
+    try:
+        return socketserver.TCPServer(("127.0.0.1", PREFERRED_PORT), handler)
+    except OSError:
+        # Port 0 = "any free port"; the OS picks and tells us which.
+        server = socketserver.TCPServer(("127.0.0.1", 0), handler)
+        print(f"  (port {PREFERRED_PORT} is busy - using "
+              f"{server.server_address[1]} instead)")
+        return server
+
+
 def serve(open_browser: bool):
     handler = partial(http.server.SimpleHTTPRequestHandler, directory=str(DIST))
-    with socketserver.TCPServer(("127.0.0.1", 8000), handler) as httpd:
-        url = "http://127.0.0.1:8000/"
+    with open_server(handler) as httpd:
+        url = f"http://127.0.0.1:{httpd.server_address[1]}/"
         print(f"\nServing {DIST} at {url}  (Ctrl+C to stop)")
         if open_browser:
             webbrowser.open(url)

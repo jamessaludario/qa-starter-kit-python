@@ -12,7 +12,7 @@
     "README.md"
   ],
   "requires": ["runners-gate"],
-  "map": { "x": 50, "y": 8 },
+  "map": { "x": 87, "y": 16 },
   "objectives": [
     "Scaffold a fresh project for your own app and get its smoke test green",
     "Choose which parts of the framework you actually need, and leave the rest out",

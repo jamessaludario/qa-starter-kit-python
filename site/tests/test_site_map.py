@@ -15,6 +15,7 @@ earned by actually solving a challenge. This one catches a broken
 storage layer in a second; that one proves the whole loop.
 """
 
+import pytest
 from helpers.progress import mark_zone_cleared, passed_challenge_count
 from pages.map_page import MapPage
 from pages.zone_page import ZonePage
@@ -32,6 +33,66 @@ def test_the_map_lists_every_zone_in_order(page: Page):
     # would show up here rather than as a strange-looking map.
     expect(quest_map.zones.first).to_contain_text("Base Camp")
     expect(quest_map.zones.last).to_contain_text("Ship It")
+
+
+@pytest.mark.parametrize("width", [1100, 1280, 1600])
+def test_no_two_zone_cards_sit_on_top_of_each_other(page: Page, width: int):
+    """The map has to be readable, not just correct.
+
+    Zone positions are hand-authored percentages, so adding a zone can
+    push two cards into the same space - which is exactly what happened
+    when zones 3 to 11 were added to a map laid out for three. The build
+    now refuses that, and this proves it in a real browser where the
+    card's actual rendered height is known rather than estimated.
+
+    1100 is the width the map first appears at, and therefore the
+    tightest one. Below it the layout falls back to a stacked list.
+    """
+    page.set_viewport_size({"width": width, "height": 1000})
+    quest_map = MapPage(page).open()
+    count = quest_map.zones.count()
+
+    boxes = [quest_map.zones.nth(i).bounding_box() for i in range(count)]
+    assert all(boxes), "A zone card rendered with no box at all"
+
+    overlapping = []
+    for i in range(count):
+        for j in range(i + 1, count):
+            a, b = boxes[i], boxes[j]
+            apart = (
+                a["x"] + a["width"] <= b["x"]
+                or b["x"] + b["width"] <= a["x"]
+                or a["y"] + a["height"] <= b["y"]
+                or b["y"] + b["height"] <= a["y"]
+            )
+            if not apart:
+                overlapping.append(
+                    f"{quest_map.zones.nth(i).inner_text().splitlines()[0]!r} and "
+                    f"{quest_map.zones.nth(j).inner_text().splitlines()[0]!r}"
+                )
+
+    assert not overlapping, "Zone cards overlap on the map: " + "; ".join(overlapping)
+
+
+def test_the_map_becomes_a_readable_list_on_a_phone(page: Page):
+    """At 320 px the drawn trail is dropped for a plain stacked list.
+
+    A map you have to pinch and pan is a map half the learners give up
+    on, so the wide-screen positioning is the enhancement and the list
+    is the base.
+    """
+    page.set_viewport_size({"width": 320, "height": 720})
+    quest_map = MapPage(page).open()
+
+    expect(quest_map.zones).to_have_count(12)
+
+    first = quest_map.zones.nth(0).bounding_box()
+    second = quest_map.zones.nth(1).bounding_box()
+
+    # Stacked, not scattered: each card starts below the one before it,
+    # and none of them runs off the side of the screen.
+    assert second["y"] >= first["y"] + first["height"]
+    assert first["x"] + first["width"] <= 320
 
 
 def test_base_camp_is_open_to_a_learner_who_has_done_nothing(page: Page):

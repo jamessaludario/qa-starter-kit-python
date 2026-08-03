@@ -14,7 +14,7 @@
     "utils/data.py"
   ],
   "requires": ["flaky-swamp"],
-  "map": { "x": 44, "y": 24 },
+  "map": { "x": 13, "y": 16 },
   "objectives": [
     "Build a ten-step journey that still reads like a paragraph, because the steps are helpers",
     "Create the data the test needs instead of depending on data somebody else left behind",

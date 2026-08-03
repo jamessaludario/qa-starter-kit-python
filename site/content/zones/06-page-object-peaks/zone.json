@@ -12,7 +12,7 @@
     "helpers/flows.py"
   ],
   "requires": ["fixture-foundry"],
-  "map": { "x": 78, "y": 30 },
+  "map": { "x": 37.5, "y": 50 },
   "objectives": [
     "State the rule in one line: tests assert, helpers run journeys, pages hold all the locators",
     "Move a locator out of a test and give the page-object method a name that reads like intent",

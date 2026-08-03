@@ -299,13 +299,46 @@ Create `content/zones/<nn>-<slug>/zone.json`:
   "teaches": "fill, check, select_option, negative cases",
   "source": ["guide §6", "learn/test_tc01"],
   "requires": ["assertion-ridge"],  // cleared before this opens
-  "map": { "x": 58, "y": 55 },      // percent of the map board
+  "map": { "x": 62.5, "y": 84 },    // percent of the map board
   "objectives": ["By the end you can ..."],
   "plannedChallenges": ["Titles, while the zone is still a stub"]
 }
 ```
 
 Then add `lesson.md` beside it, and `challenges/` when you have some.
+
+### Where to put it on the map
+
+The trail is a **serpentine**: four columns, three rows, running from
+the bottom-left upward, so `order` follows the path.
+
+```
+  x =    13      37.5      62.5       87
+y = 16   8   →    9    →   10    →    11
+              ┌──────────────────────────┘
+y = 50   7   ←    6    ←    5    ←     4
+         └──────────────────────────┐
+y = 84   0   →    1    →    2    →     3
+```
+
+A zone card is 210 px wide and up to 175 px tall — roughly **20% × 27%**
+of the board. Two cards whose centres are closer than that in *both*
+axes overlap, so the build refuses them:
+
+```
+ERROR: these zone cards would overlap on the quest map:
+  'form-marshes' at (62,50) and 'cart-caverns' at (50,50) - only 12 apart in x and 0 in y
+```
+
+Centres must differ by **at least 22 in x or 29 in y**. Adding a
+thirteenth zone means extending the grid (a fourth row at `y = -18` will
+not do — keep everything between roughly 16 and 84) or moving to five
+columns and re-spacing. `site/tests/test_site_map.py` checks the real
+rendered boxes at three viewport widths, so an overlap fails a test as
+well as the build.
+
+Below 1100 px the positions are ignored entirely and the map becomes a
+plain stacked list in `order`.
 
 **A zone with no challenges is a valid, shipped stub** — the map shows
 it, the zone page lists `plannedChallenges`, and zones behind it stay

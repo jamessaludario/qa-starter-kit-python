@@ -13,7 +13,7 @@
     "pages/login_page.py"
   ],
   "requires": ["assertion-ridge"],
-  "map": { "x": 58, "y": 56 },
+  "map": { "x": 87, "y": 84 },
   "objectives": [
     "Fill text inputs, radios, checkboxes and dropdowns with the method each one actually needs",
     "Reach a field by its visible label instead of by the id a developer happened to choose",

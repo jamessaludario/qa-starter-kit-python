@@ -185,9 +185,14 @@ a.zone-node:hover { border-color: var(--quest); text-decoration: none; }
 .swatch.started { border-color: var(--warm); background: var(--warm); }
 .swatch.locked { opacity: .5; }
 
-/* On a roomy screen the same list becomes a map along a drawn path. */
-@media (min-width: 900px) {
-  .map-board { aspect-ratio: 16 / 9; }
+/* On a roomy screen the same list becomes a map along a drawn path.
+   1100px, not 900: the trail is 4 zone cards wide, and below this the
+   cards touch. A clean stacked list beats a cramped map. */
+@media (min-width: 1100px) {
+  /* The min-height is what keeps the trail readable. Zones are placed
+     as percentages of this box, so on a short-but-wide window 16/9
+     alone would squash the rows of cards into each other. */
+  .map-board { aspect-ratio: 16 / 9; min-height: 660px; }
   .map-path {
     display: block; position: absolute; inset: 0; width: 100%; height: 100%;
   }

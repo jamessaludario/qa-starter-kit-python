@@ -12,7 +12,7 @@
     "desktop/run_tests.py"
   ],
   "requires": [],
-  "map": { "x": 12, "y": 18 },
+  "map": { "x": 62.5, "y": 16 },
   "objectives": [
     "Say why Playwright cannot drive a native window, and what pywinauto does instead",
     "Find a control by its accessibility name, the desktop cousin of get_by_role()",

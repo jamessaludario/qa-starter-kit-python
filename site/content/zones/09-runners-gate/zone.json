@@ -13,7 +13,7 @@
     ".github/workflows"
   ],
   "requires": ["checkout-citadel"],
-  "map": { "x": 28, "y": 32 },
+  "map": { "x": 37.5, "y": 16 },
   "objectives": [
     "Tag a test with a marker and register it, so a typo is an error instead of a silent skip",
     "Split a suite into smoke and regression, and defend which tests went where",
