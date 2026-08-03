@@ -2,6 +2,7 @@
   "id": "page-object-peaks",
   "order": 6,
   "badge": "6",
+  "abbr": "PP",
   "title": "Page Object Peaks",
   "tagline": "Two hundred tests, one place to fix a locator. The climb starts here.",
   "teaches": "The layering the whole kit is built on: tests assert, helpers do journeys, pages own EVERY locator",
@@ -12,7 +13,7 @@
     "helpers/flows.py"
   ],
   "requires": ["fixture-foundry"],
-  "map": { "x": 37.5, "y": 50 },
+  "map": { "x": 87, "y": 58 },
   "objectives": [
     "State the rule in one line: tests assert, helpers run journeys, pages hold all the locators",
     "Move a locator out of a test and give the page-object method a name that reads like intent",

@@ -100,7 +100,24 @@ def test_base_camp_is_open_to_a_learner_who_has_done_nothing(page: Page):
 
     # The whole no-account premise rests on this: arrive, start playing.
     expect(quest_map.zone_link("Base Camp")).to_be_visible()
-    expect(quest_map.zone_status("Base Camp")).to_contain_text("0 / 6 cleared")
+    expect(quest_map.zone_status("Base Camp")).to_have_text("6 challenges")
+
+
+def test_a_first_time_learner_is_told_exactly_where_to_start(page: Page):
+    """Eleven of twelve zones are locked on day one.
+
+    So the map must answer "where do I begin?" without making anyone
+    hunt for the one bright node among the dim ones.
+    """
+    quest_map = MapPage(page).open()
+
+    expect(quest_map.continue_button).to_have_text("Start · Base Camp")
+    expect(quest_map.continue_button).to_have_attribute(
+        "href", "#/zone/base-camp/first-test"
+    )
+
+    # And the card says what that first thing actually is.
+    expect(quest_map.status_card("Up next")).to_contain_text("Your first test")
 
 
 def test_a_zone_you_have_not_earned_is_shut_and_says_why(page: Page):
@@ -111,10 +128,16 @@ def test_a_zone_you_have_not_earned_is_shut_and_says_why(page: Page):
     expect(quest_map.locked_zone("The Locator Forest")).to_be_visible()
     expect(quest_map.zone_link("The Locator Forest")).to_have_count(0)
 
-    # And it names the way out rather than just refusing.
-    expect(quest_map.zone_status("The Locator Forest")).to_have_text(
+    # On the trail the state is one word - there is no room for a
+    # sentence without landing it on the next zone's name.
+    expect(quest_map.zone_status("The Locator Forest")).to_have_text("Locked")
+
+    # But the reason is never lost: it is in the markup for the stacked
+    # layout, and in the tooltip out here.
+    expect(quest_map.lock_reason("The Locator Forest")).to_have_text(
         "Clear Base Camp first."
     )
+    assert quest_map.lock_tooltip("The Locator Forest") == "Clear Base Camp first."
 
 
 def test_clearing_base_camp_opens_the_locator_forest(page: Page):
@@ -123,7 +146,7 @@ def test_clearing_base_camp_opens_the_locator_forest(page: Page):
 
     expect(quest_map.zone_link("The Locator Forest")).to_be_visible()
     expect(quest_map.locked_zone("The Locator Forest")).to_have_count(0)
-    expect(quest_map.zone_status("Base Camp")).to_contain_text("6 / 6 cleared")
+    expect(quest_map.zone_status("Base Camp")).to_have_text("Cleared")
 
     # ...and only the next one. Unlocking must not cascade down the map.
     expect(quest_map.locked_zone("The Form Marshes")).to_be_visible()
@@ -145,7 +168,8 @@ def test_a_zone_that_is_mapped_but_not_built_shows_its_shape(page: Page):
 
     # A stub behind a prerequisite stays shut and names what opens it,
     # exactly like a built zone would.
-    expect(quest_map.zone_status("The Form Marshes")).to_have_text(
+    expect(quest_map.zone_status("The Form Marshes")).to_have_text("Locked")
+    expect(quest_map.lock_reason("The Form Marshes")).to_have_text(
         "Clear Assertion Ridge first."
     )
 

@@ -236,7 +236,7 @@ def test_xp_earned_by_solving_survives_closing_the_page(
 
     assert quest_map.xp() == earned
     expect(quest_map.summary).to_contain_text("1 challenge cleared")
-    expect(quest_map.zone_status("Base Camp")).to_contain_text("1 / 6 cleared")
+    expect(quest_map.zone_status("Base Camp")).to_have_text("1 of 6 done")
 
     # And the zone remembers WHICH one, not just how many.
     base_camp = ZonePage(page, "base-camp").open()

@@ -1,48 +1,57 @@
 /* Quest for Automation - stylesheet.
  *
- * Same family as docs/build_site.py's theme (teal, warm amber) so the
- * three tracks look related, with a violet accent for the game layer.
+ * A trail-map palette: deep green-black ground, one mint accent for the
+ * road you are on, and warm gold reserved for side quests. Two accents,
+ * each with a job - mint means "this is the way", gold means "this is a
+ * detour" - so colour carries meaning rather than decoration.
+ *
  * Light and dark both come from prefers-color-scheme; there is no theme
  * switch, because there is no page reload to lose it across.
  */
 
 :root {
-  --brand: #0e7a70;
-  --brand-strong: #0a5f57;
-  --brand-soft: #dcf1ee;
-  --quest: #6d3fd4;
-  --quest-soft: #ede7fb;
-  --warm: #c9761a;
+  --brand: #0f7d63;
+  --brand-strong: #0b6350;
+  --brand-soft: #dff2ea;
+  --quest: #0f8a63;
+  --quest-soft: #e3f5ec;
+  --side: #8a6626;
+  --side-soft: #f7efdf;
+  --warm: #b8791f;
   --good: #0d9573;
   --bad: #c0392b;
-  --bg: #fdfcfa;
-  --bg-soft: #f4f2ed;
+  --bg: #fbfaf7;
+  --bg-soft: #f3f2ed;
   --panel: #ffffff;
-  --text: #29323a;
-  --muted: #64707c;
-  --border: #e6e2da;
-  --code-bg: #f4f2ed;
+  --text: #1c2422;
+  --muted: #5d6b66;
+  --dim: #8b968f;
+  --border: #e3e5e0;
+  --code-bg: #f3f2ed;
   --radius: 12px;
-  --shadow: 0 1px 2px rgba(41, 50, 58, .05), 0 10px 28px rgba(41, 50, 58, .06);
+  --shadow: 0 1px 2px rgba(28, 36, 34, .05), 0 10px 28px rgba(28, 36, 34, .06);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --brand: #4cc8b9;
-    --brand-strong: #7adcd0;
-    --brand-soft: #113632;
-    --quest: #a98bf5;
-    --quest-soft: #241a3d;
-    --warm: #e8b565;
-    --good: #34d399;
-    --bad: #f87171;
-    --bg: #16191d;
-    --bg-soft: #1d2126;
-    --panel: #1b1f24;
-    --text: #dde1e4;
-    --muted: #98a2ac;
-    --border: #2e343b;
-    --code-bg: #21262c;
+    --brand: #5fd0a0;
+    --brand-strong: #8ce0bd;
+    --brand-soft: #102b22;
+    --quest: #5fd0a0;
+    --quest-soft: rgba(95, 208, 160, .13);
+    --side: #c9a15c;
+    --side-soft: rgba(201, 161, 92, .14);
+    --warm: #c9a15c;
+    --good: #5fd0a0;
+    --bad: #f0857d;
+    --bg: #0d100f;
+    --bg-soft: #141917;
+    --panel: #141917;
+    --text: #e8ede9;
+    --muted: #a4b2ad;
+    --dim: #6f807b;
+    --border: #26302d;
+    --code-bg: #1a201e;
     --shadow: none;
   }
 }
@@ -95,8 +104,11 @@ pre code { background: none; padding: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
 .btn:hover { text-decoration: none; }
-.btn.primary { background: var(--quest); color: #fff; }
-.btn.primary:hover { background: #5a31b8; }
+/* Dark text on the mint fill: the accent is light enough that white
+   would fail contrast, and a primary button is the one thing that must
+   never be hard to read. */
+.btn.primary { background: var(--quest); color: var(--bg); }
+.btn.primary:hover { background: var(--brand-strong); }
 .btn.primary:disabled { background: var(--muted); cursor: progress; }
 .btn.ghost { border-color: var(--border); color: var(--text); background: var(--panel); }
 .btn.ghost:hover { border-color: var(--quest); color: var(--quest); }
@@ -141,70 +153,190 @@ main { display: block; }
 main:focus { outline: none; }
 .view { max-width: 980px; margin: 0 auto; padding: 26px 20px 70px; }
 
+/* The map is a picture, not a column of prose, and 980px is a measure
+   chosen for reading. Squeezed to it, the zone labels touch. */
+.view-map { max-width: 1240px; }
+
 /* ------------------------------------------------------------- quest map */
 
-.map-intro { text-align: center; padding-bottom: 6px; }
-.map-intro h1 { font-size: 2.3rem; }
-.map-intro .lede { margin: 0 auto; }
-.map-stats { color: var(--muted); font-size: .95rem; }
+.map-intro {
+  display: flex; flex-wrap: wrap; align-items: flex-end;
+  justify-content: space-between; gap: 18px 32px; padding-bottom: 20px;
+}
+.intro-words { max-width: 62ch; }
+.map-intro h1 { font-size: 2.15rem; line-height: 1.2; margin: 2px 0 8px; }
+.map-intro .lede { margin: 0; color: var(--muted); }
+.eyebrow {
+  margin: 0; font-size: .72rem; font-weight: 700; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--quest);
+}
+.map-stats { color: var(--muted); font-size: .95rem; margin: 12px 0 0; }
+.intro-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 
-.map-board { position: relative; margin-top: 20px; }
-.map-path { display: none; }
-.quest-map { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+/* The board. Below 1100px this is just a container and the zones stack;
+   the scenery is hidden because a trail with nothing on it is noise. */
+.map-board { position: relative; margin-top: 4px; }
+.map-scenery { display: none; }
+.quest-map { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 
 .zone-node {
-  display: block; background: var(--panel); border: 1.5px solid var(--border);
-  border-radius: var(--radius); padding: 12px 16px; color: var(--text);
-  box-shadow: var(--shadow);
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 14px; border-radius: var(--radius);
+  border: 1px solid var(--border); background: var(--panel);
+  color: var(--text); text-decoration: none;
 }
 a.zone-node:hover { border-color: var(--quest); text-decoration: none; }
-.zone-node.complete { border-color: var(--good); }
-.zone-node.started { border-color: var(--warm); }
-.zone-node.locked { opacity: .62; }
-.zone-label { display: flex; align-items: center; gap: 9px; }
-.zone-index {
+.zone-node.locked { opacity: .55; }
+
+/* The node itself: a shape you can read before any text. A circle is
+   the road, a diamond a detour, a square the end of it. */
+.zone-dot {
+  position: relative; flex: none;
   display: inline-flex; align-items: center; justify-content: center;
-  min-width: 26px; height: 26px; padding: 0 6px; border-radius: 8px;
-  background: var(--quest-soft); color: var(--quest); font-weight: 800; font-size: .82rem;
+  width: 46px; height: 46px; border-radius: 50%;
+  background: var(--bg-soft); border: 2px solid var(--border);
+  font-weight: 800; font-size: .8rem; letter-spacing: .04em;
+  color: var(--muted);
 }
-.zone-node.complete .zone-index { background: var(--good); color: #fff; }
-.zone-title { font-weight: 800; }
-.zone-tagline { display: block; color: var(--muted); font-size: .9rem; }
-.zone-meta { display: block; font-size: .8rem; color: var(--muted); margin-top: 4px; }
+.zone-dot.diamond { border-radius: 8px; transform: rotate(45deg); }
+.zone-dot.diamond .zone-abbr { transform: rotate(-45deg); }
+.zone-dot.square { border-radius: 8px; border-style: dashed; }
+
+.zone-node.open .zone-dot,
+.zone-node.started .zone-dot { border-color: var(--quest); color: var(--quest); }
+.zone-node.started .zone-dot { background: var(--quest-soft); }
+.zone-node.complete .zone-dot {
+  border-color: var(--quest); background: var(--quest-soft); color: var(--quest);
+}
+.zone-node.side .zone-dot { border-color: var(--side); color: var(--side); }
+.zone-node.side.locked .zone-dot { border-color: var(--border); color: var(--muted); }
+
+/* The cleared tick rides on the rim, the way a stamp sits on a passport. */
+.zone-tick {
+  position: absolute; right: -5px; bottom: -5px;
+  width: 19px; height: 19px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--warm); color: #1a1206;
+  font-size: .7rem; font-weight: 900; line-height: 1;
+}
+.zone-dot.diamond .zone-tick { transform: rotate(-45deg); }
+
+.zone-label { display: flex; flex-direction: column; min-width: 0; }
+.zone-title { font-weight: 700; line-height: 1.25; }
+.zone-state { font-size: .8rem; color: var(--muted); }
+.zone-why { font-size: .8rem; color: var(--muted); }
+.zone-node.open .zone-state { color: var(--quest); }
+.zone-node.side .zone-state { color: var(--side); }
+
+/* Focus has to survive the redesign: this is the primary navigation. */
+a.zone-node:focus-visible {
+  outline: 2px solid var(--quest); outline-offset: 3px; border-color: var(--quest);
+}
 
 .map-legend {
   list-style: none; display: flex; flex-wrap: wrap; gap: 6px 18px;
-  padding: 0; margin: 22px 0 0; font-size: .82rem; color: var(--muted);
+  padding: 0; margin: 20px 0 0; font-size: .82rem; color: var(--muted);
 }
 .map-legend li { display: flex; align-items: center; gap: 7px; }
 .swatch {
-  width: 12px; height: 12px; border-radius: 4px;
-  border: 1.5px solid var(--border); background: var(--panel);
+  width: 11px; height: 11px; border-radius: 50%;
+  border: 2px solid var(--border); background: transparent;
 }
-.swatch.complete { border-color: var(--good); background: var(--good); }
-.swatch.started { border-color: var(--warm); background: var(--warm); }
+.swatch.open { border-color: var(--quest); }
+.swatch.started { border-color: var(--quest); background: var(--quest-soft); }
+.swatch.complete { border-color: var(--quest); background: var(--quest); }
 .swatch.locked { opacity: .5; }
 
-/* On a roomy screen the same list becomes a map along a drawn path.
-   1100px, not 900: the trail is 4 zone cards wide, and below this the
-   cards touch. A clean stacked list beats a cramped map. */
+/* The three cards under the board: what to do next, and what you are
+   chasing. Progress you can see beats progress you have to remember. */
+.status-cards {
+  list-style: none; padding: 0; margin: 26px 0 0;
+  display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+.status-card {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--panel); padding: 14px 16px;
+}
+.card-kind {
+  margin: 0 0 6px; font-size: .68rem; font-weight: 700; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--muted);
+}
+.card-title { margin: 0 0 4px; font-weight: 700; }
+.card-body { margin: 0; font-size: .88rem; color: var(--muted); line-height: 1.5; }
+
+/* On a roomy screen the list becomes a trail: nodes pinned to their
+   authored positions, names underneath, the road drawn behind them.
+   1100px is where the labels stop colliding - below it the stacked
+   list above is genuinely the better read. */
 @media (min-width: 1100px) {
-  /* The min-height is what keeps the trail readable. Zones are placed
-     as percentages of this box, so on a short-but-wide window 16/9
-     alone would squash the rows of cards into each other. */
-  .map-board { aspect-ratio: 16 / 9; min-height: 660px; }
-  .map-path {
-    display: block; position: absolute; inset: 0; width: 100%; height: 100%;
+  .map-board {
+    aspect-ratio: 16 / 10; min-height: 600px;
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-soft); padding: 8px;
   }
-  .map-path polyline {
-    fill: none; stroke: var(--border); stroke-width: .6;
-    stroke-dasharray: 2 1.6; stroke-linejoin: round;
-  }
+  .map-scenery { display: block; position: absolute; inset: 0; width: 100%; height: 100%; }
+  /* Texture, not information. If you notice it, it is too strong. */
+  .map-contour { fill: none; stroke: var(--border); opacity: .3; }
+  /* Out on the trail the lock REASON is dropped - it wraps onto three
+     lines and lands on the next zone's name. The tooltip still has it,
+     and so does the stacked layout. */
+  .zone-why { display: none; }
+  .trail { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .trail-open { stroke: var(--quest); stroke-width: 3; }
+  .trail-locked { stroke: var(--dim); stroke-width: 2; stroke-dasharray: 1 7; opacity: .8; }
+  .trail-side { stroke: var(--side); stroke-width: 2; stroke-dasharray: 6 6; opacity: .85; }
+
   .quest-map { display: block; height: 100%; position: relative; }
   .zone-item {
     position: absolute; left: var(--x); top: var(--y);
-    transform: translate(-50%, -50%); width: 210px;
+    transform: translate(-50%, -50%); width: 132px;
   }
+
+  /* Node above, name below, both centred on the authored point. The
+     card chrome is dropped entirely - out here the trail is the
+     structure, so a border round every zone is just twelve boxes. */
+  .zone-node {
+    flex-direction: column; gap: 7px; text-align: center;
+    padding: 0; border: 0; background: none; border-radius: 0;
+  }
+  a.zone-node:hover { border: 0; }
+  a.zone-node:hover .zone-dot { transform: scale(1.08); }
+  a.zone-node.side:hover .zone-dot { transform: rotate(45deg) scale(1.08); }
+  .zone-dot { transition: transform .15s ease; background: var(--bg); }
+  .zone-node.complete .zone-dot,
+  .zone-node.started .zone-dot { background: var(--quest-soft); }
+  a.zone-node:focus-visible { outline: none; }
+  a.zone-node:focus-visible .zone-dot {
+    outline: 2px solid var(--quest); outline-offset: 4px;
+  }
+  .zone-label { align-items: center; }
+  .zone-title { font-size: .86rem; }
+  .zone-state { font-size: .72rem; line-height: 1.35; }
+
+  /* A side quest wears its name ABOVE the node. Its branch always comes
+     up off the main road from below, so a label underneath would have a
+     dashed gold line drawn straight through it. */
+  .zone-node.side { flex-direction: column-reverse; }
+
+  /* The one the learner is actually on should be the biggest thing on
+     the board - it is the answer to "where was I?". */
+  .zone-node.started .zone-dot, .zone-node.open .zone-dot {
+    width: 54px; height: 54px; font-size: .86rem;
+  }
+
+  .map-legend {
+    position: absolute; right: 14px; bottom: 12px; margin: 0;
+    flex-direction: column; gap: 5px; font-size: .74rem;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zone-dot { transition: none; }
+  a.zone-node:hover .zone-dot,
+  a.zone-node.side:hover .zone-dot { transform: none; }
+  a.zone-node.side .zone-dot { transform: rotate(45deg); }
 }
 
 /* ------------------------------------------------------------------ zone */

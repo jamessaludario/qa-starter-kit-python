@@ -187,13 +187,13 @@ def load_zone(folder: Path) -> dict:
 
 
 # Measured, not guessed. At the narrowest width the map is drawn at
-# (1100px, see app.css) a zone card is 210px wide in a ~1040px board and
-# up to 175px tall in a 660px board - about 20% x 27% of the map. Two
-# cards closer than that in BOTH axes visibly overlap, so these
-# thresholds sit just above the real card, leaving room for a tagline
-# that wraps onto a third line.
-MIN_MAP_GAP_X = 22
-MIN_MAP_GAP_Y = 29
+# (1100px, see app.css) a zone is a 132px-wide label under a 54px node,
+# in a board about 1090px by 640px - roughly 12% x 16% of the map. Two
+# zones closer than that in BOTH axes collide, so these thresholds sit
+# just above the real thing, leaving room for a title that wraps onto a
+# second line.
+MIN_MAP_GAP_X = 13
+MIN_MAP_GAP_Y = 17
 
 
 def check_map_spacing(zones: list):

@@ -2,6 +2,7 @@
   "id": "cart-caverns",
   "order": 4,
   "badge": "4",
+  "abbr": "CC",
   "title": "Cart Caverns",
   "tagline": "State that survives across pages - and the assertions that pin it down.",
   "teaches": "Multi-step journeys, counting rows, quantities, removal, and asserting a thing is GONE",
@@ -13,7 +14,7 @@
     "pages/cart_page.py"
   ],
   "requires": ["form-marshes"],
-  "map": { "x": 87, "y": 50 },
+  "map": { "x": 63, "y": 31 },
   "objectives": [
     "Carry state across three pages without letting the test lose track of what it added",
     "Count rows with to_have_count() instead of reading a number out of the page and trusting it",

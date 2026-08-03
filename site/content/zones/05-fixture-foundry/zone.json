@@ -2,6 +2,7 @@
   "id": "fixture-foundry",
   "order": 5,
   "badge": "5",
+  "abbr": "FF",
   "title": "Fixture Foundry",
   "tagline": "Setup and teardown that runs even when the test explodes.",
   "teaches": "conftest.py, fixtures, yield, scope, and why cleanup belongs after the yield",
@@ -13,7 +14,7 @@
     "conftest.py"
   ],
   "requires": ["cart-caverns"],
-  "map": { "x": 62.5, "y": 50 },
+  "map": { "x": 77, "y": 40 },
   "objectives": [
     "Explain what pytest does when it sees an argument name it recognises as a fixture",
     "Write a fixture that yields, and put the cleanup where a failing test cannot skip it",

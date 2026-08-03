@@ -2,6 +2,7 @@
   "id": "runners-gate",
   "order": 9,
   "badge": "9",
+  "abbr": "RG",
   "title": "The Runner's Gate",
   "tagline": "A suite nobody can run on demand is a suite nobody runs.",
   "teaches": "Markers, smoke vs regression, selecting tests, HTML and Allure reports, and CI",
@@ -13,7 +14,7 @@
     ".github/workflows"
   ],
   "requires": ["checkout-citadel"],
-  "map": { "x": 37.5, "y": 16 },
+  "map": { "x": 40, "y": 70 },
   "objectives": [
     "Tag a test with a marker and register it, so a typo is an error instead of a silent skip",
     "Split a suite into smoke and regression, and defend which tests went where",

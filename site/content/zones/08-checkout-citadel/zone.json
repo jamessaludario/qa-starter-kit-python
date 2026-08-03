@@ -2,6 +2,7 @@
   "id": "checkout-citadel",
   "order": 8,
   "badge": "8",
+  "abbr": "CQ",
   "title": "Checkout Citadel",
   "tagline": "The long journey: register, shop, check out, pay, and clean up after yourself.",
   "teaches": "Full end-to-end flows built from helpers, self-contained data, and teardown that always runs",
@@ -14,7 +15,7 @@
     "utils/data.py"
   ],
   "requires": ["flaky-swamp"],
-  "map": { "x": 13, "y": 16 },
+  "map": { "x": 56, "y": 76 },
   "objectives": [
     "Build a ten-step journey that still reads like a paragraph, because the steps are helpers",
     "Create the data the test needs instead of depending on data somebody else left behind",

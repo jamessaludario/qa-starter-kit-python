@@ -2,6 +2,8 @@
   "id": "endgame-ship-it",
   "order": 11,
   "badge": "★",
+  "abbr": "SI",
+  "endgame": true,
   "title": "Endgame: Ship It",
   "tagline": "Stop practising. Scaffold a real suite for an app you actually care about.",
   "teaches": "Turning everything learned here into a working project for your own application",
@@ -12,7 +14,7 @@
     "README.md"
   ],
   "requires": ["runners-gate"],
-  "map": { "x": 87, "y": 16 },
+  "map": { "x": 22, "y": 83 },
   "objectives": [
     "Scaffold a fresh project for your own app and get its smoke test green",
     "Choose which parts of the framework you actually need, and leave the rest out",

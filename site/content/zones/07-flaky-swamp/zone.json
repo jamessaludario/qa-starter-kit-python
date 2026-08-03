@@ -2,6 +2,7 @@
   "id": "flaky-swamp",
   "order": 7,
   "badge": "7",
+  "abbr": "FS",
   "title": "The Flaky Swamp",
   "tagline": "The test that passes on your machine and fails in CI at 3 a.m.",
   "teaches": "Races, fixed waits, order dependence, and how to debug a failure you cannot reproduce",
@@ -12,7 +13,7 @@
     "pytest.ini"
   ],
   "requires": ["page-object-peaks"],
-  "map": { "x": 13, "y": 50 },
+  "map": { "x": 72, "y": 71 },
   "objectives": [
     "Name the four usual causes of a flaky test and spot which one you are looking at",
     "Replace every fixed wait with an assertion that says what you are actually waiting for",
