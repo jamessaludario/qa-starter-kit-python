@@ -22,6 +22,16 @@ fixtures, and requirements-desktop.txt — because pywinauto is Windows-only
 and the web track must stay installable everywhere. Section 12 of
 docs/qa-automation-guide.html is its tutorial; keep the two in step.
 
+And a fourth, **the quest site** (site/): "Quest for Automation", a
+static browser game that teaches the same material by running the
+learner's real Playwright Python in the page. Pyodide executes it; a
+shim (site/src/pylib/playwright_lite/) drives a mock shop's DOM with
+faithful auto-waiting, strict mode and Playwright's own error messages.
+It is a re-presentation of assets that already exist — learn/, pages/,
+helpers/ and docs/qa-automation-guide.html stay authoritative. Read
+site/ARCHITECTURE.md before touching site/src/; it records the bridge
+decision, the grading model, and what was deliberately not built.
+
 ## Conventions when editing here
 
 - Comment style: this is teaching material. Every non-obvious line gets
@@ -34,11 +44,29 @@ docs/qa-automation-guide.html is its tutorial; keep the two in step.
 - Windows-friendliness matters: write files as UTF-8 explicitly, keep
   CLI output ASCII (learners' consoles are often cp1252).
 
-## Keep the halves in sync
+## Keep the tracks in sync
 
 If you improve the framework (pages/base_page.py, fixtures/, run_tests.py,
 pytest.ini, requirements.txt), mirror the improvement into template/
 (its generic, app-agnostic version) — and vice versa.
+
+The quest site is a fourth thing to keep in step, in one direction:
+learn/, pages/, helpers/ and the guide are the source of truth, and
+site/content/ re-presents them. So:
+
+- Change a convention (a new rubric rule, a different locator habit)?
+  Update rubric.py in site/src/pylib/quest/ AND the lesson that teaches
+  it, or the site starts marking learners against a rule nobody told
+  them about.
+- Change a learn/ test the site rebuilds as a challenge (TC01-03, 05-07,
+  09, 12, 13, 17)? Re-check that challenge's `solution` still passes —
+  site/tests/test_site_solutions.py runs every shipped solution and will
+  tell you.
+- Never teach a technique in site/content/ that the kit's own tests do
+  not use, and never let a lesson contradict
+  docs/qa-automation-guide.html. The guide wins.
+- Adding a challenge or a zone should be a data change only. If it needs
+  engine code, say so out loud — see site/CONTRIBUTING-CONTENT.md.
 
 
 ## Testing changes
@@ -57,3 +85,10 @@ pytest.ini, requirements.txt), mirror the improvement into template/
   truth), rebuild with `python docs/build_site.py --no-open`. New sections
   must also be registered in build_site.py (SECTIONS + SIDEBAR_GROUPS) and
   in the guide's own table of contents.
+- Quest site check: `python site/build_site.py --build-only` (it
+  validates the content and fails loudly on a missing key), then
+  `python -m pytest site/tests/`. The fast half needs no Python runtime;
+  the `slow` half boots Pyodide in a real browser and needs
+  `python site/fetch_vendor.py` to have run once. `-m "not slow"` while
+  iterating. The site that teaches Playwright is tested with Playwright,
+  page objects and all — keep it that way.

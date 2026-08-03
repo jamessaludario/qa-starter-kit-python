@@ -26,6 +26,7 @@ Everyone lands here for a different reason. Find your row:
 | You are... | Do this |
 |---|---|
 | 🌱 Brand new to test automation | Run the **[guided tour](#-start-the-guided-tour-15-minutes-zero-experience-needed)** below — no reading required |
+| 🎮 I learn by doing, and I want it to be fun | Play the **[Quest for Automation](#-quest-for-automation-learn-by-playing)** — write real Playwright in your browser, earn XP |
 | 📖 The type who wants concepts explained first | Open the **[interactive docs guide](docs/qa-automation-guide.html)** — Playwright, locators, assertions, reports, all from zero |
 | 🚀 Comfortable with the basics, testing my own app now | Jump straight to **[Test your own app](#-test-your-own-app)** |
 | 🤖 Want an AI agent to write the tests for me | Jump to **[How the AI workflow works](#-how-the-ai-workflow-works)** |
@@ -56,6 +57,41 @@ By the end, you'll have:
 
 Quit any time with `q` — `python tour.py` always drops you back at the
 same menu. Something not working? See [Troubleshooting](#-troubleshooting).
+
+---
+
+## 🎮 Quest for Automation (learn by playing)
+
+The same material as the tour, as a game you play in your browser.
+Read a short lesson, then **write real Playwright Python and watch it
+drive a real shop right there in the page** — earning XP, badges and
+zone completions on a quest map.
+
+```bash
+python site/fetch_vendor.py      # one time: downloads the Python runtime
+python site/build_site.py        # builds, serves, opens a browser
+```
+
+- **It really runs your code.** Python (compiled to WebAssembly)
+  executes what you type against a live DOM. Nothing is simulated or
+  pattern-matched.
+- **It grades what your test did**, not whether it matches our answer.
+  Find a better locator than ours and you pass; bolt a `time.sleep()`
+  onto our answer and you don't.
+- **The feedback is a code review**, in the voice of a senior colleague
+  explaining *why* — not a red X.
+- **Everything transfers.** The import line is
+  `from playwright.sync_api import Page, expect`, so a solution you
+  write in the browser can be pasted into `tour-tests/` and run against
+  the real site unchanged.
+- **No install, no account, no server.** Progress lives in your browser
+  and can be exported to a file.
+
+Zones 0–2 (Base Camp, the Locator Forest, Assertion Ridge) are fully
+playable; the rest of the map is laid out with its objectives and
+challenge titles. See [site/README.md](site/README.md), and
+[site/CONTRIBUTING-CONTENT.md](site/CONTRIBUTING-CONTENT.md) if you want
+to add a challenge — it's one JSON file.
 
 ---
 
@@ -190,6 +226,8 @@ Grow the suite:
 | `python run_tests.py` | Run everything + open the Allure report |
 | `python scaffold.py` | Create a test project for your own app |
 | `python desktop/run_tests.py` | Run the desktop-app tests (Windows Calculator) |
+| `python site/build_site.py` | Build + serve the Quest for Automation game |
+| `python -m pytest site/tests/` | Test the quest site itself (add `-m "not slow"` to skip the Python-runtime ones) |
 | `ruff check .` | Lint the code — catch unused imports & typos in seconds (first: `pip install ruff`) |
 
 > In your scaffolded project: the same commands, minus the tour.
@@ -216,6 +254,8 @@ qa-starter-kit-python/
 ├── utils/           ← pure-Python tools (unique test data)
 ├── desktop/         ← the desktop-app track: same layering, pywinauto instead
 │                      of Playwright (pages/, helpers/, fixtures/, tests/)
+├── site/            ← the Quest for Automation: the browser game that runs
+│                      real Playwright Python in the page (content/, src/, tests/)
 ├── constants.py     ← site URL + shared test data
 ├── conftest.py      ← thin loader that plugs the fixtures in
 ├── tour.py          ← the interactive learning tour
