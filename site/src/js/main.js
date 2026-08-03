@@ -20,38 +20,107 @@ function navigate(path) {
 
 // ------------------------------------------------------------------ header
 
-function header() {
+/** Comma-grouped, so 1180 reads as 1,180 at a glance. */
+function grouped(value) {
+  return String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+function navLink(href, label, active) {
+  return h("a", {
+    href: href, text: label,
+    // aria-current is what tells a screen reader which tab you are on;
+    // the bold weight is only the sighted half of the same statement.
+    "aria-current": active ? "page" : null
+  });
+}
+
+function header(route) {
   var xp = Store.data.xp;
   var level = Game.level(xp);
-  var badgeCount = Object.keys(Store.data.badges).length;
+  var here = route[0] || "map";
+
+  var nav = h("nav", { class: "hud-links", "aria-label": "Sections" }, [
+    navLink("#/", "Map", here === "map"),
+    navLink("#/badges", "Trophies", here === "badges"),
+    navLink("#/progress", "Profile", here === "progress"),
+    navLink("#/about", "About", here === "about")
+  ]);
+
+  var bar = h("div", {
+    class: "hud-bar", role: "progressbar",
+    "aria-valuenow": String(Math.round(level.progress * 100)),
+    "aria-valuemin": "0", "aria-valuemax": "100",
+    "aria-label": level.next ? "Progress to " + level.next.title : "Top level reached"
+  }, [
+    h("div", { class: "hud-bar-fill", style: "width:" + (level.progress * 100) + "%" })
+  ]);
+
+  // "1,180 / 1,600" beats a bare "1,180": a bar with no numbers cannot
+  // tell you how much further, which is the only question it is asked.
+  var counter = level.next
+    ? grouped(xp) + " / " + grouped(level.next.xp)
+    : grouped(xp) + " XP";
 
   return h("header", { class: "site-header" }, [
-    h("a", { class: "brand", href: "#/" }, [
-      h("span", { class: "brand-mark", "aria-hidden": "true", text: "▲" }),
-      h("span", { text: "Quest for Automation" })
+    h("div", { class: "header-left" }, [
+      h("a", { class: "brand", href: "#/" }, [
+        h("span", { class: "brand-mark", "aria-hidden": "true", text: "▲" }),
+        h("span", { text: "Quest for Automation" })
+      ]),
+      nav
     ]),
     h("div", { class: "hud" }, [
-      h("div", { class: "hud-level" }, [
-        h("span", { class: "hud-title", text: level.title }),
-        h("span", { class: "hud-xp", text: xp + " XP" })
-      ]),
-      h("div", {
-        class: "hud-bar", role: "progressbar",
-        "aria-valuenow": String(Math.round(level.progress * 100)),
-        "aria-valuemin": "0", "aria-valuemax": "100",
-        "aria-label": level.next
-          ? "Progress to " + level.next.title
-          : "Top level reached"
-      }, [
-        h("div", { class: "hud-bar-fill", style: "width:" + (level.progress * 100) + "%" })
-      ]),
-      h("nav", { class: "hud-links" }, [
-        h("a", { href: "#/badges", text: "Badges (" + badgeCount + ")" }),
-        h("a", { href: "#/progress", text: "Progress" }),
-        h("a", { href: "#/about", text: "About" })
-      ])
+      h("span", { class: "hud-level", text: "LV " + (level.index + 1) }),
+      h("span", { class: "hud-title", text: level.title }),
+      bar,
+      h("span", { class: "hud-xp", text: counter }),
+      Store.data.streak.days > 1
+        ? h("span", { class: "hud-streak", title: "Day streak" }, [
+            h("span", { "aria-hidden": "true", text: "▲" }),
+            h("span", { text: Store.data.streak.days + "d" })
+          ])
+        : null,
+      themeToggle()
     ])
   ]);
+}
+
+// ------------------------------------------------------------------- theme
+
+var THEME_KEY = "quest-for-automation.theme";
+
+function systemTheme() {
+  return window.matchMedia
+    && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function savedTheme() {
+  try { return window.localStorage.getItem(THEME_KEY); } catch (error) { return null; }
+}
+
+/**
+ * Put the resolved theme on <html>.
+ *
+ * Resolved in JS rather than by a media query so an explicit choice and
+ * the system default use the same mechanism - otherwise the toggle and
+ * the OS end up fighting over CSS specificity.
+ */
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme || systemTheme());
+}
+
+function themeToggle() {
+  var current = savedTheme() || systemTheme();
+  var next = current === "dark" ? "light" : "dark";
+  return h("button", {
+    class: "theme-toggle", type: "button",
+    "aria-label": "Switch to the " + next + " theme",
+    onclick: function () {
+      try { window.localStorage.setItem(THEME_KEY, next); } catch (error) { /* no storage */ }
+      applyTheme(next);
+      render();
+    }
+  }, [next]);
 }
 
 // ------------------------------------------------------------- extra views
@@ -150,7 +219,7 @@ function render() {
   var parts = parseHash();
   var root = qs("#app");
   clear(root);
-  root.appendChild(header());
+  root.appendChild(header(parts));
 
   var main = h("main", { id: "main", tabindex: "-1" });
   root.appendChild(main);
@@ -184,6 +253,16 @@ function render() {
 
 Store.load();
 Game.init(content);
+applyTheme(savedTheme());
+
+// Follow the system only while the learner has expressed no preference
+// of their own. Once they pick, their pick wins.
+if (window.matchMedia) {
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () {
+    if (!savedTheme()) { applyTheme(null); }
+  });
+}
+
 window.addEventListener("hashchange", function () {
   render();
   var main = qs("#main");
@@ -193,7 +272,7 @@ window.addEventListener("hashchange", function () {
 window.addEventListener("quest:progress", function () {
   // Keep the XP bar honest without redrawing the challenge you are on.
   var current = qs(".site-header");
-  if (current) current.replaceWith(header());
+  if (current) current.replaceWith(header(parseHash()));
 });
 render();
 announce("Quest map loaded");

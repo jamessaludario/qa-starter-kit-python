@@ -25,8 +25,14 @@ class ZonePage(BasePage):
 
     @property
     def progress_line(self):
-        """"2 of 6 challenges cleared", or the stub's stand-in."""
-        return self.page.locator(".zone-progress")
+        """The line under the title: what the zone teaches, then how far
+        through it you are - or "mapped, not built yet" for a stub."""
+        return self.page.locator(".zone-sub")
+
+    @property
+    def call_to_action(self):
+        """"Start ..." / "Continue ..." at the foot of the lesson."""
+        return self.page.locator(".zone-cta .btn")
 
     @property
     def objectives(self):
@@ -57,4 +63,4 @@ class ZonePage(BasePage):
     @property
     def planned_challenges(self):
         """The titles a stub zone lists instead of real challenges."""
-        return self.page.locator(".challenge-list.stub .planned")
+        return self.page.locator(".rail-list.stub .planned")

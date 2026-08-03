@@ -200,7 +200,10 @@ def test_a_zone_page_lists_its_challenges(page: Page):
 
     expect(base_camp.challenges).to_have_count(6)
     expect(base_camp.challenge("Your first test")).to_be_visible()
-    expect(base_camp.progress_line).to_contain_text("0 of 6 challenges cleared")
+    expect(base_camp.progress_line).to_contain_text("0 of 6 cleared")
+
+    # And the lesson ends by pointing at the first thing to do.
+    expect(base_camp.call_to_action).to_have_text("Start · Your first test")
 
 
 def test_progress_survives_a_reload(page: Page):
@@ -217,6 +220,34 @@ def test_progress_survives_a_reload(page: Page):
     assert quest_map.xp() == earned
     expect(quest_map.summary).to_contain_text("6 challenges cleared")
     assert passed_challenge_count(page) == 6
+
+
+def test_the_theme_can_be_switched_and_is_remembered(page: Page):
+    """A learner reading lessons for an hour gets to choose the palette.
+
+    The site follows the operating system until they say otherwise, and
+    then their choice wins - including across a reload, which is the
+    part that makes it a preference rather than a party trick.
+    """
+    quest_map = MapPage(page).open()
+    started_as = quest_map.theme()
+    assert started_as in ("dark", "light")
+
+    quest_map.theme_button.click()
+    flipped = "light" if started_as == "dark" else "dark"
+    assert quest_map.theme() == flipped
+
+    page.reload()
+    assert quest_map.theme() == flipped, "The theme choice did not survive a reload"
+
+
+def test_the_header_says_where_you_are(page: Page):
+    """A nav that does not mark the current section is decoration."""
+    quest_map = MapPage(page).open()
+    expect(page.locator('.hud-links a[aria-current="page"]')).to_have_text("Map")
+
+    quest_map.go_to_badges()
+    expect(page.locator('.hud-links a[aria-current="page"]')).to_have_text("Trophies")
 
 
 def test_erasing_progress_locks_the_map_again(page: Page):

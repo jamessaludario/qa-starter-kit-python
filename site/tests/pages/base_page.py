@@ -41,7 +41,7 @@ class BasePage:
 
     @property
     def xp_readout(self):
-        """The "530 XP" in the top right."""
+        """"1,180 / 1,600" in the top right, or "2,400 XP" at the top level."""
         return self.page.locator(".hud-xp")
 
     @property
@@ -49,15 +49,33 @@ class BasePage:
         """"Intern", "Junior Tester", ... - the level name beside the XP."""
         return self.page.locator(".hud-title")
 
+    @property
+    def level_badge(self):
+        """The "LV 4" chip."""
+        return self.page.locator(".hud-level")
+
+    @property
+    def theme_button(self):
+        return self.page.locator(".theme-toggle")
+
     def xp(self) -> int:
-        """The XP as a number, so a test can say `> 0` and mean it."""
-        return int(self.xp_readout.inner_text().split()[0])
+        """The XP as a number, so a test can say `> 0` and mean it.
+
+        The readout is "1,180 / 1,600", so take the part before the
+        slash and drop the grouping commas.
+        """
+        earned = self.xp_readout.inner_text().split("/")[0]
+        return int(earned.replace(",", "").replace("XP", "").strip())
+
+    def theme(self) -> str:
+        """Which palette is actually applied, read off <html>."""
+        return self.page.locator("html").get_attribute("data-theme")
 
     def go_to_badges(self):
-        self.page.get_by_role("link", name="Badges").click()
+        self.page.get_by_role("link", name="Trophies").click()
 
     def go_to_progress(self):
-        self.page.get_by_role("link", name="Progress").click()
+        self.page.get_by_role("link", name="Profile").click()
 
     def go_to_map(self):
         """The brand in the top left is the way home."""
