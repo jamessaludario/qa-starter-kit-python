@@ -282,6 +282,43 @@ main:focus { outline: none; }
    chosen for reading. Squeezed to it, the zone labels touch. */
 .view-map { max-width: 1240px; }
 
+/* The map should be a SCREEN, not a page you scroll: the whole point of
+   a map is seeing the whole thing at once. So on a window with room for
+   it, the app becomes a full-height flex column and the board takes
+   whatever is left after the header, the intro, the cards and the
+   footer have had their share.
+
+   Guarded on min-height too, and the number is measured rather than
+   picked: header, intro, cards, footer and padding come to ~470px, and
+   a board smaller than ~300px is not worth looking at. Below 800px the
+   page simply scrolls, which beats a squashed map. */
+@media (min-width: 1100px) and (min-height: 800px) {
+  #app { display: flex; flex-direction: column; min-height: 100dvh; }
+  /* Only the map page becomes a flex column - :has() scopes it, so the
+     lesson and challenge pages keep their ordinary block flow and stay
+     free to be as long as they need. A percentage height here would not
+     do: a flex item's height is not a containing block a child can
+     resolve 100% against. */
+  main:has(> .view-map) { display: flex; flex-direction: column; }
+  main { flex: 1 1 auto; min-height: 0; }
+  .view-map {
+    flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column;
+    padding-top: 20px; padding-bottom: 18px;
+    /* width:100% is needed because .view centres itself with auto side
+       margins, and an auto margin on a flex item's cross axis eats the
+       free space instead of stretching - the board would shrink to its
+       content width without this. */
+    width: 100%;
+  }
+  /* flex-basis 0 with min-height 0 is what lets it shrink as well as
+     grow; without both, the aspect-ratio wins and the page scrolls. */
+  .view-map .map-board {
+    flex: 1 1 0; min-height: 300px; aspect-ratio: auto;
+  }
+  .view-map .map-intro { padding-bottom: 14px; }
+  .view-map .status-cards { flex: none; margin-top: 16px; }
+}
+
 /* ------------------------------------------------------------- quest map */
 
 .map-intro {
@@ -397,10 +434,19 @@ a.zone-node:focus-visible {
     background: var(--bg-soft); padding: 8px;
   }
   .map-scenery { display: block; position: absolute; inset: 0; width: 100%; height: 100%; }
-  /* Texture, not information. If you notice it, it is too strong.
-     --terrain is its own token because it has to be fainter than any
+
+  /* The ground: blueprint grid, and on it the wireframes of web pages -
+     the terrain a learner actually crosses. Texture, not information.
+     --terrain is its own token because it has to sit fainter than any
      border in both themes. */
-  .map-contour { fill: none; stroke: var(--terrain); }
+  .grid-dot { fill: var(--terrain); }
+  .map-terrain .wire rect { fill: none; stroke: var(--terrain); }
+  .map-terrain .wire .wire-solid { fill: var(--terrain); stroke: none; }
+  .map-terrain .wire .wire-page { stroke: var(--terrain); }
+  /* Dialled well back. At full strength the wireframes read as content
+     and start competing with the zone names, which is the opposite of
+     what a background is for. */
+  .map-terrain { opacity: .55; }
   /* Out on the trail the lock REASON is dropped - it wraps onto three
      lines and lands on the next zone's name. The tooltip still has it,
      and so does the stacked layout. */

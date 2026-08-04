@@ -82,7 +82,86 @@ function nearest(point, candidates) {
 }
 
 /**
- * The scenery layer: contour rings, the main trail, and any side branch.
+ * What the ground of this world is made of.
+ *
+ * A blueprint grid, and laid on it the faint wireframes of web pages -
+ * a header bar, a nav, a grid of product cards, a form. That is the
+ * terrain a learner is actually crossing: the quest is not through
+ * mountains, it is through pages, and these are the shapes their
+ * locators will have to find things in.
+ *
+ * Drawn in one <g> at a low opacity, aria-hidden, and behind everything
+ * else. Texture, never information - if you find yourself reading it,
+ * it is too strong.
+ */
+function terrain() {
+  var group = svg("g", { class: "map-terrain" });
+
+  // Graph paper. A pattern rather than hundreds of dots, so the browser
+  // draws it once and tiles it.
+  var defs = svg("defs", {});
+  var pattern = svg("pattern", {
+    id: "qfa-grid", width: "4", height: "6", patternUnits: "userSpaceOnUse"
+  });
+  pattern.appendChild(svg("circle", { cx: "0.4", cy: "0.4", r: "0.16", class: "grid-dot" }));
+  defs.appendChild(pattern);
+  group.appendChild(defs);
+  group.appendChild(svg("rect", { x: 0, y: 0, width: 100, height: 100, fill: "url(#qfa-grid)" }));
+
+  // Three page skeletons: [x, y, w, h, kind]. Positions are chosen
+  // against the zone coordinates in content/zones/*/zone.json - they
+  // sit in the gaps the trail leaves, because a wireframe behind a zone
+  // label is not texture, it is interference.
+  [[5, 45, 23, 25, "cards"],     // the empty left flank, under Base Camp
+   [30, 50, 20, 17, "form"],     // the middle, above the Runner's Gate
+   [43, 6, 18, 17, "list"]]      // top centre, above Assertion Ridge
+    .forEach(function (spec) {
+      group.appendChild(pageWireframe(spec[0], spec[1], spec[2], spec[3], spec[4]));
+    });
+
+  return group;
+}
+
+/** One faint wireframe of a page: chrome, nav, then a body that varies. */
+function pageWireframe(x, y, w, h, kind) {
+  var page = svg("g", { class: "wire" });
+  function box(bx, by, bw, bh, cls) {
+    page.appendChild(svg("rect", {
+      x: bx, y: by, width: bw, height: bh, rx: 0.6,
+      class: cls || "", "vector-effect": "non-scaling-stroke"
+    }));
+  }
+
+  box(x, y, w, h, "wire-page");
+  box(x + 1.5, y + 1.6, w * 0.42, 1.6, "wire-solid");        // the logo
+  box(x + w - 9, y + 1.7, 7.5, 1.4, "wire-solid");           // the menu
+
+  var top = y + 6;
+  if (kind === "cards") {
+    // A product grid - what Cart Caverns and the Locator Forest are full of.
+    for (var row = 0; row < 2; row++) {
+      for (var col = 0; col < 3; col++) {
+        box(x + 1.6 + col * ((w - 3.2) / 3), top + row * 11, (w - 3.2) / 3 - 1.4, 9);
+      }
+    }
+  } else if (kind === "form") {
+    // Labelled fields - the Form Marshes.
+    for (var field = 0; field < 4; field++) {
+      box(x + 1.6, top + field * 5, w * 0.3, 1.3, "wire-solid");
+      box(x + 1.6, top + field * 5 + 1.9, w - 3.2, 2.4);
+    }
+  } else {
+    // Rows with a total at the foot - a cart.
+    for (var line = 0; line < 4; line++) {
+      box(x + 1.6, top + line * 4.4, w - 3.2, 3.2);
+    }
+    box(x + w - 10, top + 18.5, 8.4, 2.6, "wire-solid");
+  }
+  return page;
+}
+
+/**
+ * The scenery layer: terrain, the main trail, and any side branch.
  *
  * preserveAspectRatio="none" lets the SVG share one coordinate system
  * with the nodes - both are plain percentages - so the path always meets
@@ -103,14 +182,7 @@ function scenery(zones) {
   var main = zones.filter(function (zone) { return !zone.sideQuest; }).map(pointOf);
   var sides = zones.filter(function (zone) { return zone.sideQuest; }).map(pointOf);
 
-  // Faint terrain under the trail. Placed off the path on purpose - they
-  // are texture, and texture behind text is just noise.
-  [[24, 30, 13], [62, 26, 9], [78, 62, 15], [34, 74, 11]].forEach(function (ring) {
-    board.appendChild(svg("ellipse", {
-      class: "map-contour", cx: ring[0], cy: ring[1], rx: ring[2], ry: ring[2] * 0.72,
-      "vector-effect": "non-scaling-stroke"
-    }));
-  });
+  board.appendChild(terrain());
 
   // How far along the trail the learner has actually reached. The
   // segment INTO a zone is lit when that zone is open, so the bright
@@ -133,10 +205,19 @@ function scenery(zones) {
     }));
   }
 
-  // A side quest hangs off the nearest point of the main road, which is
-  // exactly what it is: a detour you can take, not a gate you must pass.
+  // A side quest hangs off the main road, which is exactly what it is:
+  // a detour you can take, not a gate you must pass.
+  //
+  // It branches from the zone it REQUIRES when it names one, falling
+  // back to the nearest node. Anchoring on geometry alone meant nudging
+  // a node for spacing could silently re-point the branch at an
+  // unrelated zone - the line should say something true about the
+  // content, not about the coordinates.
   sides.forEach(function (side) {
-    var anchor = nearest(side, main);
+    var required = (side.zone.requires || [])[0];
+    var anchor = main.filter(function (point) {
+      return point.zone.id === required;
+    })[0] || nearest(side, main);
     if (!anchor) return;
     board.appendChild(svg("path", {
       class: "trail trail-side",

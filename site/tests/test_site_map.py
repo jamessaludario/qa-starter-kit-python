@@ -15,6 +15,8 @@ earned by actually solving a challenge. This one catches a broken
 storage layer in a second; that one proves the whole loop.
 """
 
+import re
+
 import pytest
 from helpers.progress import mark_zone_cleared, passed_challenge_count
 from pages.map_page import MapPage
@@ -152,15 +154,23 @@ def test_clearing_base_camp_opens_the_locator_forest(page: Page):
     expect(quest_map.locked_zone("The Form Marshes")).to_be_visible()
 
 
-def test_an_open_zone_with_no_content_yet_says_coming_soon(page: Page):
+def test_the_side_quest_is_a_detour_off_the_main_road(page: Page):
+    """The Desktop Outpost hangs off the trail, not on it.
+
+    It opens once Cart Caverns is behind you - late enough that a
+    learner has met auto-waiting before being told it does not exist
+    outside the browser. Being a detour is carried by shape and colour
+    before any text: a diamond, on a gold branch, rather than a circle
+    on the mint road.
+    """
     quest_map = MapPage(page).open()
 
-    # The Desktop Outpost is a side quest: it needs no prerequisite, so
-    # it is open from the start and has nothing to play yet. A stub is a
-    # shipped zone, not a bug - it admits the gap rather than showing a
-    # meaningless "0 / 0 cleared".
-    expect(quest_map.zone_link("Desktop Outpost")).to_be_visible()
-    expect(quest_map.zone_status("Desktop Outpost")).to_have_text("Coming soon")
+    expect(quest_map.zone_shape("Desktop Outpost")).to_have_class(re.compile("diamond"))
+    expect(quest_map.zone_status("Desktop Outpost")).to_have_text("Locked")
+    expect(quest_map.lock_reason("Desktop Outpost")).to_have_text("Clear Cart Caverns first.")
+
+    # Drawn as a branch, not as part of the main line.
+    expect(page.locator(".trail-side")).to_have_count(1)
 
 
 def test_a_zone_that_is_mapped_but_not_built_shows_its_shape(page: Page):

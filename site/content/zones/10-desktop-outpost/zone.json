@@ -5,7 +5,7 @@
   "abbr": "DO",
   "sideQuest": true,
   "title": "Desktop Outpost",
-  "tagline": "Side quest: what to do when the thing you must test is not a web page.",
+  "tagline": "Side quest, open once Cart Caverns is behind you: what to do when the thing you must test is not a web page.",
   "teaches": "pywinauto, the Windows accessibility tree, and how the same layering applies outside the browser",
   "source": [
     "guide §12 Testing desktop apps",
@@ -13,8 +13,8 @@
     "desktop/helpers",
     "desktop/run_tests.py"
   ],
-  "requires": [],
-  "map": { "x": 91, "y": 15 },
+  "requires": ["cart-caverns"],
+  "map": { "x": 90, "y": 12 },
   "objectives": [
     "Say why Playwright cannot drive a native window, and what pywinauto does instead",
     "Find a control by its accessibility name, the desktop cousin of get_by_role()",
