@@ -1,0 +1,96 @@
+# Publishes the learning site to GitHub Pages.
+#
+#   Quest for Automation, at the root:
+#     https://jamessaludario.github.io/qa-starter-kit-python/
+#   The written guide, alongside it:
+#     https://jamessaludario.github.io/qa-starter-kit-python/docs/
+#
+# Deliberately SEPARATE from tests.yml. The test suite drives a real
+# browser against a third-party practice site, so it is slow and
+# occasionally down through no fault of ours - and none of that should
+# decide whether a learner can open the site. Publishing now depends
+# only on things in this repository.
+#
+# The quest site needs no base-path setting to run from /qa-starter-kit-python/:
+# every URL it emits is relative and its routing is hash-based, which was
+# a deployment decision as much as a design one.
+#
+# One-time setup: the first run creates the gh-pages branch. Then check
+# Settings -> Pages is set to deploy from gh-pages (GitHub usually does
+# this for you).
+
+name: Pages
+
+on:
+  push:
+    branches: [main]
+    # Only when the published material actually changes. A README typo
+    # should not re-upload 12 MB of WebAssembly.
+    paths:
+      - "site/**"
+      - "docs/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write           # to push the built site to gh-pages
+
+# One deploy at a time, and never cancel one half-done: gh-pages is
+# replaced wholesale, so an interrupted push is a broken site.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Both builders are stdlib-only on purpose - no pip install here.
+
+      # ~12 MB of pinned Pyodide, plus the IBM Plex Latin subsets. The
+      # key carries fetch_vendor.py's hash, so bumping the pinned
+      # version misses the cache and fetches the new one.
+      - name: Cache the vendored runtime and fonts
+        uses: actions/cache@v4
+        with:
+          path: site/vendor
+          key: quest-vendor-${{ hashFiles('site/fetch_vendor.py') }}
+
+      # No continue-on-error, on purpose. If this fails the job fails,
+      # nothing is deployed, and the previous site stays live - much
+      # better than publishing a quest whose challenges cannot run.
+      - name: Fetch the runtime and fonts
+        run: python site/fetch_vendor.py
+
+      - name: Build the quest site
+        run: python site/build_site.py --build-only
+
+      - name: Build the guide
+        run: python docs/build_site.py --no-open
+
+      # gh-pages is replaced whole on every deploy, so everything that
+      # should stay live goes out together: the game at the root, the
+      # guide under /docs/.
+      - name: Assemble the site
+        run: |
+          mkdir pages-root
+          cp -r site/dist/. pages-root/
+          cp -r docs/site pages-root/docs
+
+      - name: Publish to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: pages-root
+          # Replace the branch rather than adding to it, so gh-pages
+          # stays the size of one deploy instead of growing by 12 MB a
+          # time.
+          force_orphan: true

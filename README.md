@@ -72,6 +72,9 @@ Read a short lesson, then **write real Playwright Python and watch it
 drive a real shop right there in the page** — earning XP, badges and
 zone completions on a quest map.
 
+**[Play it now](https://jamessaludario.github.io/qa-starter-kit-python/)**
+— nothing to install. Or run it locally:
+
 ```bash
 python site/fetch_vendor.py      # one time: downloads the Python runtime
 python site/build_site.py        # builds, serves, opens a browser
@@ -125,8 +128,10 @@ A hybrid **learning playground** and **ready-made test suite scaffold**:
   → e2e → fix) and a `CLAUDE.md` convention file any agent can follow
 - 📊 **Reports built in** — one-file HTML report, Allure dashboards with
   trends and failure screenshots, automatic retries for flaky moments
-- 🚀 **CI included** — GitHub Actions runs the suite and publishes the
-  live Allure report to GitHub Pages
+- 🚀 **CI included** — GitHub Actions runs the suite and attaches the
+  reports to each run, and publishes the
+  [playable quest site](https://jamessaludario.github.io/qa-starter-kit-python/)
+  and the guide to GitHub Pages
 - 🖥️ **A desktop-app track** — [desktop/](desktop/), the same layered
   approach applied to native Windows apps with pywinauto, since
   Playwright only drives browsers (Windows-only, so it installs
@@ -409,23 +414,31 @@ system.)
 <details>
 <summary><strong>Click to see how CI reporting works</strong></summary>
 
-[.github/workflows/tests.yml](.github/workflows/tests.yml) runs the
-suite on every push to `main` and delivers the reports (and docs) three
-ways:
+Two workflows, deliberately separate.
 
-- **Live Allure report on GitHub Pages** — every run publishes to
-  <https://jamessaludario.github.io/qa-starter-kit-python/>, history
-  carried between runs so the trend graphs grow in CI too.
-- **Live docs site** — the same deploy also publishes the learning guide
-  to <https://jamessaludario.github.io/qa-starter-kit-python/docs/>,
-  rebuilt fresh from `docs/` by `docs/build_site.py` on every run.
-- **Downloadable artifact** — each run attaches `test-reports` (the
-  self-contained `report.html` plus the Allure folder).
+**[tests.yml](.github/workflows/tests.yml)** runs the suite on every push
+to `main` and attaches `test-reports` to the run — the self-contained
+`report.html` plus the Allure folder. Allure's trend history is carried
+between runs through the Actions cache, so the graphs still grow one
+point per run. The workflow turns red when tests fail, but only *after*
+the reports are attached, so a red run always has its evidence.
 
-The workflow still turns red when tests fail — the report is published
-*first*, then the real test result is reported, so a red run always has
-its report attached. Scaffolded projects get a simpler artifact-only
-workflow in `template/.github/workflows/tests.yml`.
+**[pages.yml](.github/workflows/pages.yml)** publishes the learning site
+and nothing else:
+
+- **[Quest for Automation](https://jamessaludario.github.io/qa-starter-kit-python/)**
+  at the root — playable in the browser, Python runtime and all.
+- **[The written guide](https://jamessaludario.github.io/qa-starter-kit-python/docs/)**
+  under `/docs/`.
+
+They are separate on purpose. The suite drives a real browser against a
+third-party practice site, so it is slow and occasionally down through
+no fault of ours — and none of that should decide whether a learner can
+open a lesson. Publishing depends only on files in this repo, and only
+runs when `site/` or `docs/` actually changed.
+
+Scaffolded projects get a simpler artifact-only workflow in
+`template/.github/workflows/tests.yml`, and no Pages deploy at all.
 
 </details>
 
