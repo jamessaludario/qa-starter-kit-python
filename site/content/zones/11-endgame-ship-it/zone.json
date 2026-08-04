@@ -1,0 +1,34 @@
+{
+  "id": "endgame-ship-it",
+  "order": 11,
+  "badge": "★",
+  "abbr": "SI",
+  "endgame": true,
+  "title": "Endgame: Ship It",
+  "tagline": "Stop practising. Scaffold a real suite for an app you actually care about.",
+  "teaches": "Turning everything learned here into a working project for your own application",
+  "source": [
+    "scaffold.py",
+    "template/",
+    "prompts/",
+    "README.md"
+  ],
+  "requires": ["runners-gate"],
+  "map": { "x": 22, "y": 83 },
+  "objectives": [
+    "Scaffold a fresh project for your own app and get its smoke test green",
+    "Choose which parts of the framework you actually need, and leave the rest out",
+    "Write the first three tests for a site nobody has written tests for yet",
+    "Use the kit's AI prompts to draft page objects without letting them draft your judgement",
+    "Leave behind a suite a colleague can run on day one without asking you how"
+  ],
+  "plannedChallenges": [
+    "Pick the app: what makes a good first target",
+    "Scaffold it: python scaffold.py --name my-suite --url ...",
+    "Your first green smoke test against your own site",
+    "Which components do you actually need? (--include)",
+    "Prompting for page objects without outsourcing the thinking",
+    "The three tests worth writing first",
+    "Boss: hand your suite to someone else and watch them run it"
+  ]
+}

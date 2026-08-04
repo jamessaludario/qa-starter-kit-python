@@ -69,7 +69,12 @@ export function renderChallenge(content, zoneId, challengeId, navigate) {
   if (!challenge) return h("p", { text: "No such challenge." });
 
   var record = Store.record(zoneId, challengeId);
-  var results = h("div", { class: "results", role: "status", "aria-live": "polite" });
+  var results = h("div", { class: "results", role: "status", "aria-live": "polite" }, [
+    // An empty panel looks broken. Say what it is waiting for.
+    h("p", { class: "small muted results-idle",
+      text: "Nothing has run yet. Write your test, hit Run, and this is where "
+        + "the review, the failure and the checks appear." })
+  ]);
   var startedAt = Date.now();
 
   // --- the shop under test -------------------------------------------
@@ -278,55 +283,158 @@ export function renderChallenge(content, zoneId, challengeId, navigate) {
 
   // --- assembly ---------------------------------------------------------
 
+  var isQuiz = challenge.kind === "quiz" || challenge.kind === "predict-the-error"
+    || challenge.kind === "read-the-trace";
+
   var runButton = h("button", { class: "btn primary run-btn", type: "button", onclick: run },
                     ["Run test"]);
   var resetButton = h("button", {
-    class: "btn ghost", type: "button",
+    class: "btn ghost small", type: "button",
     onclick: function () {
       if (Runner.bridge) Runner.bridge.reset_app(JSON.stringify(challenge.scenario || {}));
       announce("Shop reset");
     }
   }, ["Reset the shop"]);
 
-  var toolbar = challenge.kind === "quiz" || challenge.kind === "predict-the-error"
-    || challenge.kind === "read-the-trace"
-    ? null
-    : h("div", { class: "toolbar" }, [
-        runButton, resetButton,
-        h("span", { class: "small muted", text: "Ctrl+Enter runs. Esc then Tab leaves the editor." })
-      ]);
-
-  var left = h("div", { class: "challenge-main" }, [
+  var topBar = h("div", { class: "challenge-bar" }, [
     h("p", { class: "crumb" }, [
-      h("a", { href: "#/", text: "Quest map" }),
+      h("a", { href: "#/", text: "Map" }),
       h("span", { text: " / " }),
-      h("a", { href: "#/zone/" + zoneId, text: zone.title })
+      h("a", { href: "#/zone/" + zoneId, text: zone.title }),
+      h("span", { text: " / " }),
+      h("span", { text: challenge.title })
     ]),
-    h("h1", { text: challenge.title }),
-    h("p", { class: "challenge-tags" }, [
-      challenge.boss ? h("span", { class: "tag tag-boss", text: "Boss" }) : null,
-      h("span", { class: "tag tag-xp", text: challenge.xp + " XP" }),
-      record.status === "passed" ? h("span", { class: "tag tag-done", text: "Cleared" }) : null
-    ]),
+    isQuiz ? null : h("div", { class: "bar-actions" }, [resetButton, runButton])
+  ]);
+
+  // Left rail: what to do, help if you want it, and what it pays.
+  var rail = h("aside", { class: "challenge-rail" }, [
+    objectivePanel(challenge, record),
+    hintsBox,
+    scoringPanel(challenge, record)
+  ]);
+
+  var centre = h("div", { class: "challenge-work" }, [
     h("div", { class: "brief", html: challenge.brief || "" }),
     work,
-    toolbar,
-    hintsBox,
-    results
+    isQuiz ? null : h("p", { class: "small muted run-hint",
+      text: "Ctrl+Enter runs. Esc then Tab leaves the editor." })
   ]);
 
-  var right = h("aside", { class: "challenge-side" }, [
-    h("h2", { class: "side-title", text: "The shop under test" }),
-    iframe,
+  // Right rail: the app under test, then whatever the last run said.
+  var side = h("aside", { class: "challenge-side" }, [
+    h("div", { class: "browser-frame" }, [
+      h("div", { class: "browser-chrome" }, [
+        h("span", { class: "browser-dots", "aria-hidden": "true" }),
+        h("span", { class: "browser-url", text: "automationville.test" }),
+        h("span", { class: "browser-badge", text: "MOCK" })
+      ]),
+      iframe
+    ]),
     h("p", { class: "small muted",
              text: "A stand-in for automationexercise.com with the same ids and "
-               + "class names, so your locators transfer straight to the real site." })
+               + "class names, so your locators transfer straight to the real site." }),
+    h("div", { class: "results-panel" }, [
+      h("p", { class: "panel-kind", text: "Results" }),
+      results
+    ])
   ]);
 
-  return h("div", { class: "view view-challenge" }, [left, right]);
+  return h("div", { class: "view view-challenge" }, [
+    topBar,
+    h("div", { class: "challenge-layout" }, [rail, centre, side])
+  ]);
+}
+
+// ----------------------------------------------------------------- panels
+
+/**
+ * What the challenge is asking for, as a checklist.
+ *
+ * Built from the same `checks` the grader runs, so it can never drift
+ * from what is actually marked - a brief that promises one thing while
+ * the grader wants another is the worst bug this site could have.
+ */
+function objectivePanel(challenge, record) {
+  var checks = (challenge.checks || []).filter(function (check) { return check.label; });
+  return h("section", { class: "rail-card objective" }, [
+    h("p", { class: "panel-kind", text: "Objective" }),
+    h("p", { class: "objective-title", text: challenge.title }),
+    checks.length
+      ? h("ul", { class: "objective-list" }, checks.map(function (check) {
+          return h("li", {}, [
+            h("span", { class: "objective-box", "aria-hidden": "true" }),
+            h("span", { text: check.label })
+          ]);
+        }))
+      : null,
+    record.status === "passed"
+      ? h("p", { class: "objective-done", text: "Cleared - " + record.xp + " XP banked." })
+      : null
+  ]);
+}
+
+/** What this attempt can pay, and what would cost you. */
+function scoringPanel(challenge, record) {
+  var base = challenge.xp || 20;
+  var rules = Game.content.game.xp;
+  var spent = (record.hints || []).reduce(function (sum, hint) {
+    return sum + (hint.cost || 0);
+  }, 0);
+
+  function line(label, value, muted) {
+    return h("li", { class: muted ? "muted" : "" }, [
+      h("span", { text: label }),
+      h("strong", { text: value })
+    ]);
+  }
+
+  return h("section", { class: "rail-card scoring" }, [
+    h("p", { class: "panel-kind", text: "Scoring" }),
+    h("ul", { class: "scoring-list" }, [
+      line("Challenge passed", "+" + base),
+      line("First try", "+" + Math.round(base * rules.firstTryBonus),
+           record.attempts > 0),
+      line("Clean review", "+" + Math.round(base * rules.cleanBonus)),
+      spent ? line("Hints spent", "-" + spent) : null
+    ]),
+    h("p", { class: "small muted",
+      text: "Clean means no advisory findings: a role or label locator where one "
+        + "fits, no time.sleep(), no XPath. Hints never take you below "
+        + Math.round(base * rules.hintFloor) + " XP." })
+  ]);
 }
 
 // ------------------------------------------------------------- work areas
+
+/** One file: a name tab, the editor, and optionally a status strip. */
+function editorCard(name, editor, status) {
+  return h("div", { class: "editor-card" }, [
+    h("div", { class: "editor-tabs" }, [
+      h("span", { class: "editor-tab active", text: name })
+    ]),
+    editor.element,
+    status
+  ]);
+}
+
+/**
+ * The strip under the editor.
+ *
+ * Says what is ACTUALLY running. The temptation is to write "pytest 8.2
+ * - chromium" because it looks the part, but this is CPython compiled to
+ * WebAssembly driving a mock DOM through a shim, and a teaching site
+ * that misstates its own runtime has no business grading anybody's
+ * honesty about theirs.
+ */
+function statusBar() {
+  return h("div", { class: "editor-status" }, [
+    h("span", { text: "python · pyodide" }),
+    h("span", { text: "playwright_lite" }),
+    h("span", { text: "UTF-8" }),
+    h("span", { class: "status-run", text: "Ctrl+Enter to run" })
+  ]);
+}
 
 function codeArea(zoneId, challenge, record, run) {
   var draft = loadDraft(zoneId, challenge.id);
@@ -347,15 +455,9 @@ function codeArea(zoneId, challenge, record, run) {
 
   var element = h("div", { class: "work" },
     cells.map(function (cell) {
-      return h("div", { class: "cell" }, [
-        h("p", { class: "cell-name", text: cell.spec.name }),
-        cell.editor.element
-      ]);
+      return editorCard(cell.spec.name, cell.editor, null);
     }).concat([
-      h("div", { class: "cell" }, [
-        h("p", { class: "cell-name", text: "test_challenge.py" }),
-        editor.element
-      ]),
+      editorCard("test_challenge.py", editor, statusBar()),
       h("p", { class: "reset-code" }, [
         h("button", {
           class: "linky", type: "button",
@@ -481,8 +583,13 @@ function quizArea(challenge, onDone) {
 function hintPanel(challenge, record) {
   var hints = challenge.hints || [];
   if (!hints.length) return h("div");
-  var box = h("div", { class: "hints" });
-  box.appendChild(h("h3", { text: "Stuck?" }));
+  var spent = (record.hints || []).length;
+  var box = h("section", { class: "rail-card hints" });
+  box.appendChild(h("p", { class: "panel-kind" }, [
+    h("span", { text: "Hints" }),
+    h("span", { class: "hints-spent",
+      text: spent ? spent + " of " + hints.length + " spent" : "none spent" })
+  ]));
   box.appendChild(h("p", { class: "small muted",
     text: "Each hint costs a little XP - not as a punishment, but because "
       + "the struggle before the hint is where the learning happens." }));
@@ -509,6 +616,9 @@ function hintPanel(challenge, record) {
 function successCard(zone, challenge, award, badges, detail, navigate) {
   var index = zone.challenges.indexOf(challenge);
   var next = zone.challenges[index + 1];
+  // Clearing the last one in a zone is the moment the whole game layer
+  // exists for, so it does not just drop you back on the map.
+  var cleared = Game.zoneProgress(zone.id).complete;
   var lines = award
     ? award.reasons.map(function (reason) {
         return h("li", {}, [
@@ -526,11 +636,14 @@ function successCard(zone, challenge, award, badges, detail, navigate) {
       text: "New badge: " + badges.map(function (b) { return b.name; }).join(", ") }) : null,
     challenge.reveal ? h("div", { class: "reveal", html: challenge.reveal }) : null,
     h("p", { class: "next-up" }, [
-      next
-        ? h("a", { class: "btn primary", href: "#/zone/" + zone.id + "/" + next.id },
-            ["Next: " + next.title])
-        : h("a", { class: "btn primary", href: "#/", onclick: function () { navigate("/"); } },
-            ["Back to the quest map"])
+      cleared
+        ? h("a", { class: "btn primary", href: "#/cleared/" + zone.id },
+            [zone.title + " cleared"])
+        : next
+          ? h("a", { class: "btn primary", href: "#/zone/" + zone.id + "/" + next.id },
+              ["Next: " + next.title])
+          : h("a", { class: "btn primary", href: "#/", onclick: function () { navigate("/"); } },
+              ["Back to the quest map"])
     ])
   ]);
 }

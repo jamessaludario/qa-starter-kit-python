@@ -1,0 +1,39 @@
+{
+  "id": "meet-get-by-role",
+  "title": "Meet get_by_role",
+  "kind": "locator-match",
+  "xp": 25,
+  "brief": "Write a locator that matches **exactly one** element: the **Products** link in the shop's menu.\n\nType only the part after `page.` - the site wraps it in a real test that asserts the match count, and outlines whatever you matched in the shop panel.\n\nStart with the top of the priority order. A link's role is `link`; its name is the text you can see.",
+  "scenario": { "route": "/" },
+  "expectCount": 1,
+  "starter": "",
+  "placeholder": "get_by_role(\"link\", name=\"Products\")",
+  "solution": "get_by_role(\"link\", name=\"Products\")",
+  "rubric": [],
+  "checks": [
+    {
+      "kind": "locatorKind",
+      "name": "role",
+      "label": "You used get_by_role - the top of the priority order",
+      "feedback": "It matched, but with something other than a role locator. A CSS selector like `.shop-menu a:nth-child(2)` is tied to the page's shape; `get_by_role(\"link\", name=\"Products\")` is tied to what a user sees. Try the role version here."
+    },
+    {
+      "kind": "matcher",
+      "name": "to_have_count",
+      "label": "It matches exactly one element"
+    }
+  ],
+  "hints": [
+    {
+      "cost": 3,
+      "label": "Nudge",
+      "text": "get_by_role takes the role first and the visible name second: get_by_role(\"role\", name=\"...\")."
+    },
+    {
+      "cost": 5,
+      "label": "Solution",
+      "text": "get_by_role(\"link\", name=\"Products\")"
+    }
+  ],
+  "reveal": "Notice what you did **not** have to know: no id, no class, no position in the menu. You described the element the way a person would, and that description survives redesigns.\n\nNow one trap worth meeting before the next challenge. Try `get_by_role(\"link\", name=\"Cart\")` in the same box and watch the count come back as **7**, not 1.\n\nName matching finds a **substring**, so `\"Cart\"` matches the menu's *Cart* link and every *Add to cart* link on the page. That is real Playwright behaviour, not a quirk of this shop - and `exact=True` is how you turn it off when you need to."
+}

@@ -1,0 +1,19 @@
+{
+  "id": "assertion-ridge",
+  "order": 2,
+  "badge": "2",
+  "abbr": "AR",
+  "title": "Assertion Ridge",
+  "tagline": "Web-first checks that wait for the page instead of racing it.",
+  "teaches": "expect(), auto-waiting, choosing a matcher, negation, counts",
+  "source": ["guide §7 Assertions", "learn/test_tc09", "learn/test_tc12", "learn/test_tc17"],
+  "requires": ["locator-forest"],
+  "map": { "x": 36, "y": 25 },
+  "objectives": [
+    "Explain why expect() waits and a bare assert does not",
+    "Pick the matcher that says what you actually mean",
+    "Assert that something is gone, not just that it was never there",
+    "Know the one case where a plain assert is still the right tool"
+  ],
+  "plannedChallenges": []
+}

@@ -186,6 +186,49 @@ def load_zone(folder: Path) -> dict:
     return zone
 
 
+# Measured, not guessed, and measured against the WORST case.
+#
+# A zone is a 132px-wide label under a 54px node - about 95px tall once
+# the title wraps to two lines. The board is now flexible: it fills
+# whatever height the window leaves, which is ~305px on a 1280x800
+# screen and ~585px on a 1920x1080 one. Percentages that clear on the
+# tall board collide on the short one, so the vertical threshold is
+# taken from the SHORT board (95/305) and the horizontal one from the
+# narrowest width the map is drawn at (132/1090).
+#
+# Two zones closer than this in BOTH axes overlap somewhere.
+MIN_MAP_GAP_X = 13
+MIN_MAP_GAP_Y = 32
+
+
+def check_map_spacing(zones: list):
+    """Refuse to build a map whose zone cards would sit on top of each other.
+
+    Zone positions are hand-authored percentages, which is lovely until
+    somebody adds the thirteenth zone and discovers the overlap by
+    screenshot. Failing the build names both zones and the fix.
+    """
+    clashes = []
+    for index, first in enumerate(zones):
+        for second in zones[index + 1:]:
+            gap_x = abs(first["map"]["x"] - second["map"]["x"])
+            gap_y = abs(first["map"]["y"] - second["map"]["y"])
+            if gap_x < MIN_MAP_GAP_X and gap_y < MIN_MAP_GAP_Y:
+                clashes.append(
+                    f"  '{first['id']}' at ({first['map']['x']},{first['map']['y']}) "
+                    f"and '{second['id']}' at ({second['map']['x']},{second['map']['y']})"
+                    f" - only {gap_x} apart in x and {gap_y} in y"
+                )
+    if clashes:
+        raise SystemExit(
+            "ERROR: these zone cards would overlap on the quest map:\n"
+            + "\n".join(clashes)
+            + f"\nMove one of each pair: centres need to differ by at least "
+            f"{MIN_MAP_GAP_X} in x OR {MIN_MAP_GAP_Y} in y.\n"
+            "The map is laid out as a serpentine - see site/CONTRIBUTING-CONTENT.md."
+        )
+
+
 def load_content() -> dict:
     game = json.loads((CONTENT / "game.json").read_text(encoding="utf-8"))
     zones = [load_zone(folder) for folder in sorted(CONTENT.glob("zones/*")) if folder.is_dir()]
@@ -196,6 +239,8 @@ def load_content() -> dict:
         unknown = [need for need in zone["requires"] if need not in known]
         if unknown:
             raise SystemExit(f"ERROR: zone '{zone['id']}' requires unknown zone(s) {unknown}")
+
+    check_map_spacing(zones)
 
     about = (CONTENT / "about.md")
     return {
@@ -221,7 +266,47 @@ def collect_pylib() -> dict:
 
 # ---------------------------------------------------------------- the page
 
-def index_html(build_id: str) -> str:
+def shell_urls(build_id: str) -> list:
+    """Everything the service worker must have to open the site offline.
+
+    Generated rather than hand-listed, because a hand-listed shell goes
+    stale the first time somebody adds a JS module and nobody notices
+    until a learner on a train sees a blank page.
+
+    Deliberately EXCLUDES vendor/pyodide: it is 11 MB and the whole
+    loading story is that it arrives only when a coding challenge needs
+    it. Precaching it at install would undo that. It is still cached
+    lazily once fetched, so challenges work offline after their first
+    run.
+    """
+    urls = ["./"]
+    # The four entry points index.html asks for by version.
+    urls += [f"{name}?v={build_id}" for name in
+             ("app.css", "content.js", "pylib.js", "js/main.js")]
+    # The vendored typefaces, when they were fetched. Small enough to
+    # precache, and a lesson set in the fallback stack on a train would
+    # reflow the moment the network came back.
+    if (VENDOR / "fonts" / "fonts.css").exists():
+        urls.append("fonts/fonts.css")
+        for path in sorted((VENDOR / "fonts").glob("*.woff2")):
+            urls.append("fonts/" + path.name)
+    # The ES modules main.js imports, plus the mock shop the iframe
+    # loads. These are requested without a ?v=, so list them as they are.
+    for path in sorted((SRC / "js").rglob("*.js")):
+        relative = path.relative_to(SRC).as_posix()
+        if relative != "js/main.js":
+            urls.append(relative)
+    for path in sorted((SRC / "mockapp").rglob("*")):
+        if path.is_file():
+            urls.append(path.relative_to(SRC).as_posix())
+    return urls
+
+
+def index_html(build_id: str, has_fonts: bool) -> str:
+    # Linked BEFORE app.css so the faces are known by the time the first
+    # rule using them is parsed. Absent when nobody ran fetch_vendor.py,
+    # and the system stack in app.css takes over.
+    fonts = '<link rel="stylesheet" href="fonts/fonts.css">\n' if has_fonts else ""
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -231,7 +316,7 @@ def index_html(build_id: str) -> str:
 <meta name="description" content="A gamified, browser-based adventure that
 teaches Playwright and pytest. Write real Python, watch it drive a real shop,
 earn XP. No install, no account.">
-<link rel="stylesheet" href="app.css?v={build_id}">
+{fonts}<link rel="stylesheet" href="app.css?v={build_id}">
 <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg'
  viewBox='0 0 16 16'&gt;&lt;text y='14' font-size='14'&gt;&#9650;&lt;/text&gt;&lt;/svg&gt;">
 </head>
@@ -295,9 +380,17 @@ def build() -> str:
         "/* Generated by site/build_site.py from site/src/pylib/. */\n"
         f"window.QUEST_PYLIB = {json.dumps(pylib, ensure_ascii=False)};\n",
         encoding="utf-8")
-    (DIST / "index.html").write_text(index_html(build_id), encoding="utf-8")
+    fonts = VENDOR / "fonts"
+    has_fonts = (fonts / "fonts.css").exists()
+    if has_fonts:
+        copy_tree(fonts, DIST / "fonts")
+
+    (DIST / "index.html").write_text(index_html(build_id, has_fonts), encoding="utf-8")
+    shell = shell_urls(build_id)
     (DIST / "sw.js").write_text(
-        (SRC / "sw.js").read_text(encoding="utf-8").replace("__BUILD_ID__", build_id),
+        (SRC / "sw.js").read_text(encoding="utf-8")
+        .replace("__BUILD_ID__", build_id)
+        .replace('"__SHELL__"', json.dumps(shell)),
         encoding="utf-8")
 
     pyodide = VENDOR / "pyodide"
@@ -316,10 +409,31 @@ def build() -> str:
     return build_id
 
 
+PREFERRED_PORT = 8000
+
+
+def open_server(handler):
+    """Bind port 8000, or the next thing the OS will give us.
+
+    Something is often already on 8000 - another copy of this script, a
+    dev server, a leftover from an editor. Falling back beats greeting a
+    learner with a WinError 10048 traceback for a problem that is not
+    theirs and not interesting.
+    """
+    try:
+        return socketserver.TCPServer(("127.0.0.1", PREFERRED_PORT), handler)
+    except OSError:
+        # Port 0 = "any free port"; the OS picks and tells us which.
+        server = socketserver.TCPServer(("127.0.0.1", 0), handler)
+        print(f"  (port {PREFERRED_PORT} is busy - using "
+              f"{server.server_address[1]} instead)")
+        return server
+
+
 def serve(open_browser: bool):
     handler = partial(http.server.SimpleHTTPRequestHandler, directory=str(DIST))
-    with socketserver.TCPServer(("127.0.0.1", 8000), handler) as httpd:
-        url = "http://127.0.0.1:8000/"
+    with open_server(handler) as httpd:
+        url = f"http://127.0.0.1:{httpd.server_address[1]}/"
         print(f"\nServing {DIST} at {url}  (Ctrl+C to stop)")
         if open_browser:
             webbrowser.open(url)

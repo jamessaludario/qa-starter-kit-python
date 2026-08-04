@@ -1,0 +1,34 @@
+{
+  "id": "runners-gate",
+  "order": 9,
+  "badge": "9",
+  "abbr": "RG",
+  "title": "The Runner's Gate",
+  "tagline": "A suite nobody can run on demand is a suite nobody runs.",
+  "teaches": "Markers, smoke vs regression, selecting tests, HTML and Allure reports, and CI",
+  "source": [
+    "guide §9 Categorization of tests",
+    "guide §10 How to run tests and check reports",
+    "pytest.ini",
+    "run_tests.py",
+    ".github/workflows"
+  ],
+  "requires": ["checkout-citadel"],
+  "map": { "x": 38, "y": 72 },
+  "objectives": [
+    "Tag a test with a marker and register it, so a typo is an error instead of a silent skip",
+    "Split a suite into smoke and regression, and defend which tests went where",
+    "Select exactly the tests you want with -m and -k, and know which one you reached for",
+    "Read an HTML report and an Allure report and say what each is actually for",
+    "Explain what changes when the same suite runs in CI instead of on your laptop"
+  ],
+  "plannedChallenges": [
+    "Tag it: @pytest.mark.smoke",
+    "Register the marker, or pay for it later",
+    "-m or -k? Pick the right selector",
+    "skip, xfail, and the difference that matters",
+    "Read the report: which failure do you open first?",
+    "Headed on your laptop, headless in CI",
+    "Boss: split a 26-test suite into a 3-minute smoke run and a nightly regression run"
+  ]
+}

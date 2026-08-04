@@ -295,7 +295,13 @@ class Locator:
         return int(_runtime.BRIDGE.count(self._chain_json()))
 
     def all_inner_texts(self):
-        return json.loads(_runtime.BRIDGE.all_texts(self._chain_json()))
+        """Every match's text, as a plain list. Zero matches is fine here -
+        this is the one read that does not insist on finding anything."""
+        texts = json.loads(_runtime.BRIDGE.all_texts(self._chain_json()))
+        # Recorded (unlike count(), which expect().to_have_count polls in a
+        # loop) because a learner calls this once, on purpose.
+        _runtime.record("all_inner_texts", _describe(self._chain), self._chain)
+        return texts
 
     def _immediate(self, action, default):
         if self.count() == 0:

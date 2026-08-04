@@ -1,0 +1,20 @@
+{
+  "id": "locator-forest",
+  "order": 1,
+  "badge": "1",
+  "abbr": "LF",
+  "title": "The Locator Forest",
+  "tagline": "Finding the right element among hundreds - and only that one.",
+  "teaches": "Locator priority order, chaining, filtering, strict mode, actionability",
+  "source": ["guide §6 Locators", "learn/test_tc07", "learn/test_tc09", "pages/base_page.py"],
+  "requires": ["base-camp"],
+  "map": { "x": 22, "y": 15 },
+  "objectives": [
+    "Choose a locator from the priority order instead of grabbing the first thing that works",
+    "Scope a search to part of the page by chaining locators",
+    "Narrow a list with .filter(), .first and .nth()",
+    "Recognise a strict-mode violation and fix the cause rather than the symptom",
+    "Explain why Playwright refuses to click an element that something is covering"
+  ],
+  "plannedChallenges": []
+}

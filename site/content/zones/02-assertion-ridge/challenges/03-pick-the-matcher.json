@@ -1,0 +1,50 @@
+{
+  "id": "pick-the-matcher",
+  "title": "Pick the right matcher",
+  "kind": "fill-the-blank",
+  "xp": 30,
+  "brief": "The cart holds one Blue Top at Rs. 500. The locators are written for you; the matchers are not.\n\nReplace each `REPLACE_ME(...)` with the matcher that says what the comment above it means. One of them is a trap: read what the element actually contains before you choose.",
+  "scenario": { "route": "/view_cart", "cart": [{ "id": 1, "qty": 1 }] },
+  "starter": "from playwright.sync_api import Page, expect\n\n\ndef test_the_cart_shows_one_blue_top(page: Page):\n    page.goto(\"https://automationexercise.com/view_cart\")\n\n    # There is exactly one row in the cart table.\n    expect(page.locator(\"#cart_info_table tbody tr\")).REPLACE_ME(1)\n\n    # The quantity cell says exactly \"1\".\n    expect(page.locator(\".cart_quantity\")).REPLACE_ME(\"1\")\n\n    # The price cell mentions rupees somewhere in it.\n    expect(page.locator(\".cart_price\")).REPLACE_ME(\"Rs.\")\n\n    # The checkout link can be clicked.\n    expect(page.get_by_role(\"link\", name=\"Proceed To Checkout\")).REPLACE_ME()\n",
+  "solution": "from playwright.sync_api import Page, expect\n\n\ndef test_the_cart_shows_one_blue_top(page: Page):\n    page.goto(\"https://automationexercise.com/view_cart\")\n\n    expect(page.locator(\"#cart_info_table tbody tr\")).to_have_count(1)\n    expect(page.locator(\".cart_quantity\")).to_have_text(\"1\")\n    expect(page.locator(\".cart_price\")).to_contain_text(\"Rs.\")\n    expect(page.get_by_role(\"link\", name=\"Proceed To Checkout\")).to_be_enabled()\n",
+  "rubric": ["test-function", "has-assertion", "expect-over-assert"],
+  "checks": [
+    {
+      "kind": "matcher",
+      "name": "to_have_count",
+      "label": "Row count: to_have_count(1)",
+      "feedback": "\"There is exactly one row\" is a count. to_have_count(1) is the only matcher that can express it - and unlike counting by hand it retries while the table renders."
+    },
+    {
+      "kind": "matcher",
+      "name": "to_have_text",
+      "label": "Quantity: to_have_text(\"1\")",
+      "feedback": "\"Says exactly 1\" is to_have_text. to_contain_text(\"1\") would also pass here, and would keep passing if the cell said 21 - so it is the weaker check."
+    },
+    {
+      "kind": "matcher",
+      "name": "to_contain_text",
+      "label": "Price: to_contain_text(\"Rs.\")",
+      "feedback": "This is the trap. The price cell reads \"Rs. 500\", so to_have_text(\"Rs.\") fails - it compares the whole string. When you only care about part of the text, to_contain_text is the honest matcher."
+    },
+    {
+      "kind": "matcher",
+      "name": "to_be_enabled",
+      "label": "Checkout link: to_be_enabled()",
+      "feedback": "\"Can be clicked\" is to_be_enabled(). Note it takes no argument - it is a question about the element, not a comparison."
+    }
+  ],
+  "hints": [
+    {
+      "cost": 4,
+      "label": "Nudge",
+      "text": "Four matchers, all in the table in the lesson above. The trap is the price: look at what the cell really says."
+    },
+    {
+      "cost": 7,
+      "label": "Strategy",
+      "text": "to_have_count for the rows, to_have_text for the exact quantity, to_contain_text for the price (the cell reads \"Rs. 500\", not \"Rs.\"), to_be_enabled for the link."
+    }
+  ],
+  "reveal": "The difference between `to_have_text` and `to_contain_text` is where most matcher bugs live.\n\n`to_have_text` is stricter, so prefer it **when you genuinely know the whole string**. When the element also holds a price, a currency symbol or trailing whitespace you do not control, `to_contain_text` says what you mean instead of what you hope."
+}

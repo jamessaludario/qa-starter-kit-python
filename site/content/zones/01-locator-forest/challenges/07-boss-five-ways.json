@@ -1,0 +1,75 @@
+{
+  "id": "boss-five-ways",
+  "title": "Boss: five ways to find a thing",
+  "kind": "write-the-test",
+  "boss": true,
+  "xp": 70,
+  "brief": "One test, five assertions, and **five different locator strategies** - one each. No starter code.\n\nOn the products page, prove that:\n\n1. the **All Products** heading is visible — by *role*\n2. the search box is visible — by *placeholder*\n3. **Blue Top** is on the page — by *text*\n4. there are exactly **8** product cards — by *CSS class*\n5. the **third** card is the *Sleeveless Dress* — by *position*, chained onto the CSS locator\n\nFor 5, `.nth(2)` is the third card (counting starts at zero) and `to_contain_text` is friendlier than `to_have_text`, because the card also holds a price.\n\nThis is the zone's whole toolkit in one function. A reviewer would want each line to use the *simplest* address that could work.",
+  "scenario": { "route": "/products" },
+  "starter": "from playwright.sync_api import Page, expect\n\n\n",
+  "solution": "from playwright.sync_api import Page, expect\n\n\ndef test_the_products_page_shows_the_catalogue(page: Page):\n    page.goto(\"https://automationexercise.com/products\")\n\n    # 1. by role\n    expect(page.get_by_role(\"heading\", name=\"All Products\")).to_be_visible()\n\n    # 2. by placeholder\n    expect(page.get_by_placeholder(\"Search Product\")).to_be_visible()\n\n    # 3. by text\n    expect(page.get_by_text(\"Blue Top\")).to_be_visible()\n\n    # 4. by CSS class\n    cards = page.locator(\".productinfo\")\n    expect(cards).to_have_count(8)\n\n    # 5. by position, chained onto the CSS locator\n    expect(cards.nth(2)).to_contain_text(\"Sleeveless Dress\")\n",
+  "rubric": ["test-function", "has-assertion", "expect-over-assert", "no-xpath"],
+  "checks": [
+    {
+      "kind": "locatorKind",
+      "name": "role",
+      "label": "You used a role locator",
+      "feedback": "No get_by_role in the run. The heading is the one to use it on: get_by_role(\"heading\", name=\"All Products\")."
+    },
+    {
+      "kind": "locatorKind",
+      "name": "placeholder",
+      "label": "You used a placeholder locator",
+      "feedback": "No get_by_placeholder in the run. The search box has no label, so its grey hint text is the best handle it has: get_by_placeholder(\"Search Product\")."
+    },
+    {
+      "kind": "locatorKind",
+      "name": "text",
+      "label": "You used a text locator",
+      "feedback": "No get_by_text in the run. get_by_text(\"Blue Top\") matches the smallest element containing that text - the product name itself."
+    },
+    {
+      "kind": "locatorKind",
+      "name": "css",
+      "label": "You used a CSS locator",
+      "feedback": "No CSS locator in the run. The product cards have no role and no unique text, which is exactly the case CSS is for: locator(\".productinfo\")."
+    },
+    {
+      "kind": "locatorKind",
+      "name": "nth",
+      "label": "You picked one card by position",
+      "feedback": "No .nth() in the run. Position is the right tool here because 'the third card' is genuinely what the requirement says."
+    },
+    {
+      "kind": "matcher",
+      "name": "to_have_count",
+      "label": "You assert there are 8 cards"
+    },
+    {
+      "kind": "matcher",
+      "name": "to_be_visible",
+      "atLeast": 3,
+      "label": "Three visibility assertions",
+      "feedback": "I counted fewer than three to_be_visible checks. If one of your assertions failed, the ones below it never ran - fix the first failure and run again."
+    },
+    {
+      "kind": "matcher",
+      "name": "to_contain_text",
+      "label": "You check the third card's name",
+      "feedback": "No to_contain_text check ran. to_have_text would fail here: the card holds the price as well as the name, and to_have_text wants the whole string."
+    }
+  ],
+  "hints": [
+    {
+      "cost": 6,
+      "label": "Nudge",
+      "text": "Five assertions, five different locator methods: get_by_role, get_by_placeholder, get_by_text, locator, and .nth() chained onto the last one."
+    },
+    {
+      "cost": 10,
+      "label": "Strategy",
+      "text": "Give the CSS locator a name - cards = page.locator(\".productinfo\") - and reuse it for both the count and the .nth(2) check. A locator is just an address, so holding on to one costs nothing."
+    }
+  ],
+  "reveal": "The Locator Forest is cleared.\n\nThe habit worth taking out of it: **pick the address that describes what the thing is, not where it happens to sit.** Reach down the priority list only when the level above genuinely cannot express what you mean, and leave a note when you do.\n\nNext: **Assertion Ridge**, where you stop finding elements and start making promises about them - and find out why `expect()` waits and `assert` does not."
+}

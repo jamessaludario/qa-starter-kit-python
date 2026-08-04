@@ -1,0 +1,34 @@
+{
+  "id": "fixture-foundry",
+  "order": 5,
+  "badge": "5",
+  "abbr": "FF",
+  "title": "Fixture Foundry",
+  "tagline": "Setup and teardown that runs even when the test explodes.",
+  "teaches": "conftest.py, fixtures, yield, scope, and why cleanup belongs after the yield",
+  "source": [
+    "guide §8 Setup and teardown",
+    "guide §4 Configurations",
+    "fixtures/browser.py",
+    "fixtures/reporting.py",
+    "conftest.py"
+  ],
+  "requires": ["cart-caverns"],
+  "map": { "x": 77, "y": 40 },
+  "objectives": [
+    "Explain what pytest does when it sees an argument name it recognises as a fixture",
+    "Write a fixture that yields, and put the cleanup where a failing test cannot skip it",
+    "Choose a scope on purpose - function, module, session - and say what you traded away",
+    "Put a fixture in conftest.py so every test in the folder can use it without importing anything",
+    "Name the one thing a fixture must never do: leave the next test a page it did not ask for"
+  ],
+  "plannedChallenges": [
+    "Where does `page` come from?",
+    "Your first fixture: a logged-in session",
+    "yield, and the cleanup that always runs",
+    "Fix the broken test: teardown that never fires because the test failed first",
+    "Scope: why session-scoped state is a loaded gun",
+    "Move it to conftest.py and delete the import",
+    "Boss: build the fixture that creates a user and deletes it afterwards, whatever happens"
+  ]
+}

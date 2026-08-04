@@ -1,0 +1,51 @@
+{
+  "id": "count-them",
+  "title": "Count them - and be careful what you promise",
+  "kind": "write-the-test",
+  "xp": 35,
+  "brief": "Search for **women** and check the results. There are **7** matching products.\n\n1. search for `women`\n2. assert there are exactly 7 `.productinfo` cards\n3. read every product name with `.all_inner_texts()` on `.productinfo p`, print them, and assert that **at least one** name contains \"women\"\n\nStep 3 is a plain `assert`, and that is correct here - by then you are comparing a list you already hold, not waiting for the page.\n\nWhy \"at least one\" rather than \"all of them\"? Run it and look at what gets printed. The answer is the point of this challenge.",
+  "scenario": { "route": "/products" },
+  "starter": "from playwright.sync_api import Page, expect\n\n\ndef test_searching_for_women_returns_the_womens_range(page: Page):\n    page.goto(\"https://automationexercise.com/products\")\n\n    # 1. run the search\n\n    # 2. assert the number of results\n\n    # 3. read the names, print them, and assert at least one matches\n",
+  "solution": "from playwright.sync_api import Page, expect\n\n\ndef test_searching_for_women_returns_the_womens_range(page: Page):\n    page.goto(\"https://automationexercise.com/products\")\n\n    page.locator(\"#search_product\").fill(\"women\")\n    page.locator(\"#submit_search\").click()\n\n    results = page.locator(\".productinfo\")\n    expect(results).to_have_count(7)\n\n    # The search matches the product's CATEGORY as well as its name, so we\n    # can only promise that SOME result mentions women - not all of them.\n    names = page.locator(\".productinfo p\").all_inner_texts()\n    print(f\"Products found: {names}\")\n    matches = [name for name in names if \"women\" in name.lower()]\n    assert len(matches) > 0, \"Expected at least one product with 'women' in its name\"\n",
+  "rubric": ["test-function", "has-assertion", "expect-over-assert"],
+  "checks": [
+    {
+      "kind": "state",
+      "path": "searchResults",
+      "equals": 7,
+      "label": "The shop ran the search and found 7 products",
+      "feedback": "The shop is not showing 7 results. Check the search term - and remember expect() will wait out the 600 ms response for you."
+    },
+    {
+      "kind": "matcher",
+      "name": "to_have_count",
+      "label": "You assert the result count with to_have_count",
+      "feedback": "No to_have_count check ran. Counting with len(locator.all_inner_texts()) would work but takes a snapshot - to_have_count retries while the results render."
+    },
+    {
+      "kind": "action",
+      "method": "all_inner_texts",
+      "label": "You read every product name with .all_inner_texts()",
+      "feedback": "No all_inner_texts() call reached the page. It returns a plain Python list of strings - one per matching element."
+    },
+    {
+      "kind": "printed",
+      "contains": "Blue Top",
+      "label": "You printed the names you found",
+      "feedback": "Nothing printed containing the product names. print() the list - seeing the real data is the whole reason this challenge exists."
+    }
+  ],
+  "hints": [
+    {
+      "cost": 5,
+      "label": "Nudge",
+      "text": "Same search code as before. Then: expect(page.locator(\".productinfo\")).to_have_count(7), then names = page.locator(\".productinfo p\").all_inner_texts()."
+    },
+    {
+      "cost": 8,
+      "label": "Strategy",
+      "text": "For the last assert: matches = [name for name in names if \"women\" in name.lower()] then assert len(matches) > 0 with a message explaining what you expected."
+    }
+  ],
+  "reveal": "Look at what printed. Seven results, and only **Madame Top For Women** actually has \"women\" in its name.\n\nThe search matches the **category** too, and every product in *Women > Tops* and *Women > Dress* came back. If you had written the obvious-looking assertion -\n\n```python\nassert all(\"women\" in name.lower() for name in names)   # WRONG\n```\n\n- you would have written a test that fails on correct behaviour, then \"fixed\" the product to satisfy it.\n\nThis is the lesson `learn/test_tc09_search_product.py` stops to make in a comment: **find out how a feature actually behaves before writing a strict assertion about it.** The assertion is a promise, and you should only promise what is true."
+}

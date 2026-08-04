@@ -6,9 +6,14 @@
 
 [![Use this template](https://img.shields.io/badge/Use%20this%20template-2ea44f?style=for-the-badge&logo=github)](https://github.com/jamessaludario/qa-starter-kit-python/generate)
 
-Click **Use this template** to get your own independent copy of the kit
-on GitHub — the original stays untouched, and your copy is 100% yours
-to edit.
+Click **Use this template** when you want a **clean test project for
+your own app**. Your copy strips the learning material out of itself on
+the first push — no practice tests, no quest site, no guide, no tour —
+leaving a plain Playwright + pytest suite ready to point at your URL.
+
+**Here to learn instead?** Clone or fork this repo rather than
+templating it; the whole point of the learning tracks is that they come
+with you. See [Pick your path](#pick-your-path).
 
 **Jump to:** [Pick your path](#pick-your-path) ·
 [Guided tour](#-start-the-guided-tour-15-minutes-zero-experience-needed) ·
@@ -26,6 +31,7 @@ Everyone lands here for a different reason. Find your row:
 | You are... | Do this |
 |---|---|
 | 🌱 Brand new to test automation | Run the **[guided tour](#-start-the-guided-tour-15-minutes-zero-experience-needed)** below — no reading required |
+| 🎮 I learn by doing, and I want it to be fun | Play the **[Quest for Automation](#-quest-for-automation-learn-by-playing)** — write real Playwright in your browser, earn XP |
 | 📖 The type who wants concepts explained first | Open the **[interactive docs guide](docs/qa-automation-guide.html)** — Playwright, locators, assertions, reports, all from zero |
 | 🚀 Comfortable with the basics, testing my own app now | Jump straight to **[Test your own app](#-test-your-own-app)** |
 | 🤖 Want an AI agent to write the tests for me | Jump to **[How the AI workflow works](#-how-the-ai-workflow-works)** |
@@ -59,6 +65,44 @@ same menu. Something not working? See [Troubleshooting](#-troubleshooting).
 
 ---
 
+## 🎮 Quest for Automation (learn by playing)
+
+The same material as the tour, as a game you play in your browser.
+Read a short lesson, then **write real Playwright Python and watch it
+drive a real shop right there in the page** — earning XP, badges and
+zone completions on a quest map.
+
+**[Play it now](https://jamessaludario.github.io/qa-starter-kit-python/)**
+— nothing to install. Or run it locally:
+
+```bash
+python site/fetch_vendor.py      # one time: downloads the Python runtime
+python site/build_site.py        # builds, serves, opens a browser
+```
+
+- **It really runs your code.** Python (compiled to WebAssembly)
+  executes what you type against a live DOM. Nothing is simulated or
+  pattern-matched.
+- **It grades what your test did**, not whether it matches our answer.
+  Find a better locator than ours and you pass; bolt a `time.sleep()`
+  onto our answer and you don't.
+- **The feedback is a code review**, in the voice of a senior colleague
+  explaining *why* — not a red X.
+- **Everything transfers.** The import line is
+  `from playwright.sync_api import Page, expect`, so a solution you
+  write in the browser can be pasted into `tour-tests/` and run against
+  the real site unchanged.
+- **No install, no account, no server.** Progress lives in your browser
+  and can be exported to a file.
+
+Zones 0–2 (Base Camp, the Locator Forest, Assertion Ridge) are fully
+playable; the rest of the map is laid out with its objectives and
+challenge titles. See [site/README.md](site/README.md), and
+[site/CONTRIBUTING-CONTENT.md](site/CONTRIBUTING-CONTENT.md) if you want
+to add a challenge — it's one JSON file.
+
+---
+
 ## What's inside
 
 A hybrid **learning playground** and **ready-made test suite scaffold**:
@@ -84,8 +128,10 @@ A hybrid **learning playground** and **ready-made test suite scaffold**:
   → e2e → fix) and a `CLAUDE.md` convention file any agent can follow
 - 📊 **Reports built in** — one-file HTML report, Allure dashboards with
   trends and failure screenshots, automatic retries for flaky moments
-- 🚀 **CI included** — GitHub Actions runs the suite and publishes the
-  live Allure report to GitHub Pages
+- 🚀 **CI included** — GitHub Actions runs the suite and attaches the
+  reports to each run, and publishes the
+  [playable quest site](https://jamessaludario.github.io/qa-starter-kit-python/)
+  and the guide to GitHub Pages
 - 🖥️ **A desktop-app track** — [desktop/](desktop/), the same layered
   approach applied to native Windows apps with pywinauto, since
   Playwright only drives browsers (Windows-only, so it installs
@@ -114,7 +160,8 @@ A hybrid **learning playground** and **ready-made test suite scaffold**:
 
 ### 🏁 Learn first (recommended)
 
-Click **Use this template** above (or clone this repo), then:
+**Clone or fork** this repo (not *Use this template* — that strips the
+learning material out on purpose), then:
 
 ```bash
 pip install -r requirements.txt
@@ -132,7 +179,32 @@ needs Node.js — everything else works without it.)
 
 ### 🚀 Test your own app
 
-**A. Fresh project next to the kit:**
+**A. On GitHub — click [Use this template](https://github.com/jamessaludario/qa-starter-kit-python/generate):**
+
+Your new repo cleans itself up on the first push: a workflow removes the
+practice tests, the quest site, the guide, the desktop track and the
+tour, promotes the project skeleton to the root, commits once, and
+deletes itself. You are left with exactly what `scaffold.py` produces.
+Then:
+
+```bash
+cp .env.example .env      # put your app's name and URL in here
+pip install -r requirements.txt
+playwright install chromium
+pytest
+```
+
+If you have Actions disabled, do the same thing by hand **in your copy**
+— it lists what it will delete and waits for you to type `delete`:
+
+```bash
+python .github/template-cleanup.py --yes
+```
+
+> It refuses to run in a checkout of the kit itself (it checks the git
+> remote), so you cannot wipe your learning copy with it by accident.
+
+**B. Fresh project next to the kit:**
 
 ```bash
 python scaffold.py
@@ -159,10 +231,9 @@ Files you already have are never touched; only missing ones are added.
 
 </details>
 
-**Then, either way:**
+**Then, whichever route you took:**
 
 ```bash
-cd ../my-app-tests
 pytest tests/test_smoke.py     # proves the toolchain end to end
 ```
 
@@ -190,6 +261,8 @@ Grow the suite:
 | `python run_tests.py` | Run everything + open the Allure report |
 | `python scaffold.py` | Create a test project for your own app |
 | `python desktop/run_tests.py` | Run the desktop-app tests (Windows Calculator) |
+| `python site/build_site.py` | Build + serve the Quest for Automation game |
+| `python -m pytest site/tests/` | Test the quest site itself (add `-m "not slow"` to skip the Python-runtime ones) |
 | `ruff check .` | Lint the code — catch unused imports & typos in seconds (first: `pip install ruff`) |
 
 > In your scaffolded project: the same commands, minus the tour.
@@ -216,6 +289,8 @@ qa-starter-kit-python/
 ├── utils/           ← pure-Python tools (unique test data)
 ├── desktop/         ← the desktop-app track: same layering, pywinauto instead
 │                      of Playwright (pages/, helpers/, fixtures/, tests/)
+├── site/            ← the Quest for Automation: the browser game that runs
+│                      real Playwright Python in the page (content/, src/, tests/)
 ├── constants.py     ← site URL + shared test data
 ├── conftest.py      ← thin loader that plugs the fixtures in
 ├── tour.py          ← the interactive learning tour
@@ -339,23 +414,31 @@ system.)
 <details>
 <summary><strong>Click to see how CI reporting works</strong></summary>
 
-[.github/workflows/tests.yml](.github/workflows/tests.yml) runs the
-suite on every push to `main` and delivers the reports (and docs) three
-ways:
+Two workflows, deliberately separate.
 
-- **Live Allure report on GitHub Pages** — every run publishes to
-  <https://jamessaludario.github.io/qa-starter-kit-python/>, history
-  carried between runs so the trend graphs grow in CI too.
-- **Live docs site** — the same deploy also publishes the learning guide
-  to <https://jamessaludario.github.io/qa-starter-kit-python/docs/>,
-  rebuilt fresh from `docs/` by `docs/build_site.py` on every run.
-- **Downloadable artifact** — each run attaches `test-reports` (the
-  self-contained `report.html` plus the Allure folder).
+**[tests.yml](.github/workflows/tests.yml)** runs the suite on every push
+to `main` and attaches `test-reports` to the run — the self-contained
+`report.html` plus the Allure folder. Allure's trend history is carried
+between runs through the Actions cache, so the graphs still grow one
+point per run. The workflow turns red when tests fail, but only *after*
+the reports are attached, so a red run always has its evidence.
 
-The workflow still turns red when tests fail — the report is published
-*first*, then the real test result is reported, so a red run always has
-its report attached. Scaffolded projects get a simpler artifact-only
-workflow in `template/.github/workflows/tests.yml`.
+**[pages.yml](.github/workflows/pages.yml)** publishes the learning site
+and nothing else:
+
+- **[Quest for Automation](https://jamessaludario.github.io/qa-starter-kit-python/)**
+  at the root — playable in the browser, Python runtime and all.
+- **[The written guide](https://jamessaludario.github.io/qa-starter-kit-python/docs/)**
+  under `/docs/`.
+
+They are separate on purpose. The suite drives a real browser against a
+third-party practice site, so it is slow and occasionally down through
+no fault of ours — and none of that should decide whether a learner can
+open a lesson. Publishing depends only on files in this repo, and only
+runs when `site/` or `docs/` actually changed.
+
+Scaffolded projects get a simpler artifact-only workflow in
+`template/.github/workflows/tests.yml`, and no Pages deploy at all.
 
 </details>
 

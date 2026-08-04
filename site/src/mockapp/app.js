@@ -498,6 +498,9 @@
 
   function navigate(path) {
     state.route = path;
+    // Leaving the page takes the add-to-cart modal with it, exactly as a
+    // real page load would.
+    state.cartModal = "closed";
     if (path.indexOf("/product_details/") === 0) {
       state.viewing = path.split("/")[2];
       state.forms.quantity = "1";

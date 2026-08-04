@@ -1,25 +1,14 @@
-# Runs the test suite in GitHub Actions and delivers the reports:
+# Runs the test suite in GitHub Actions and attaches the reports to the
+# run as a downloadable artifact (Actions tab -> the run -> "test-reports").
 #
-#   1. The Allure report is published to GitHub Pages, so every run
-#      updates a live URL the whole team can open:
-#        https://jamessaludario.github.io/qa-starter-kit-python/
-#      History is carried between runs (same trick as run_tests.py),
-#      so the trend graphs build up one data point per CI run.
+# report.html is self-contained and opens anywhere. The Allure folder
+# needs "allure open" locally; its trend history is carried between runs
+# through the cache below, so the graphs still build up a point per run.
 #
-#   2. The learning docs site (built from docs/ by docs/build_site.py)
-#      is published alongside the report, under /docs/:
-#        https://jamessaludario.github.io/qa-starter-kit-python/docs/
-#      Both are assembled into one folder and deployed in a single
-#      atomic push, so neither can wipe out the other.
-#
-#   3. Both reports are also attached to the run as a downloadable
-#      artifact (Actions tab -> the run -> "test-reports").
-#      report.html is self-contained and opens anywhere; the Allure
-#      folder needs "allure open" locally, so use the Pages URL instead.
-#
-# One-time setup after pushing this file: the first run creates the
-# gh-pages branch. Then check Settings -> Pages is set to deploy from
-# the gh-pages branch (GitHub usually configures this automatically).
+# This workflow does NOT publish anything. GitHub Pages serves the
+# learning site instead - see pages.yml - because a suite driving a
+# third-party practice site is too slow and too occasionally-down to sit
+# in front of a learner opening a lesson.
 
 name: Tests
 
@@ -29,12 +18,7 @@ on:
   workflow_dispatch:        # adds a manual "Run workflow" button
 
 permissions:
-  contents: write           # needed to push the report to gh-pages
-
-# Never let two runs publish to gh-pages at the same time.
-concurrency:
-  group: tests-and-report
-  cancel-in-progress: false
+  contents: read            # nothing is published from here
 
 jobs:
   test:
@@ -61,26 +45,27 @@ jobs:
 
       # continue-on-error: a failed test run is exactly when we want the
       # report, so don't stop here. The last step restores the real
-      # pass/fail status once the report is safely published.
+      # pass/fail status once the reports are safely attached.
       - name: Run tests
         id: tests
         run: pytest
         continue-on-error: true
 
-      # The previous report (with its accumulated history) lives on the
-      # gh-pages branch. continue-on-error covers the very first run,
-      # when that branch doesn't exist yet.
-      - name: Fetch previous report history
-        uses: actions/checkout@v4
-        continue-on-error: true
+      # Allure builds its trend graphs from a history/ folder carried
+      # forward between runs. It used to ride along on the gh-pages
+      # branch; with nothing published from here, the cache does the
+      # same job. restore-keys means run N picks up run N-1's history.
+      - name: Restore the report history
+        uses: actions/cache@v4
         with:
-          ref: gh-pages
-          path: previous-report
+          path: reports/allure-history
+          key: allure-history-${{ github.run_id }}
+          restore-keys: allure-history-
 
       - name: Carry history into the new results
         run: |
-          if [ -d previous-report/history ]; then
-            cp -r previous-report/history reports/allure-results/history
+          if [ -d reports/allure-history ]; then
+            cp -r reports/allure-history reports/allure-results/history
           fi
 
       - name: Generate the Allure report
@@ -89,31 +74,12 @@ jobs:
           allure generate reports/allure-results -o reports/allure-report --clean \
             --report-name "AutomationExercise Test Report"
 
-      # The docs site is plain static HTML - the build is a stdlib-only
-      # Python script, no extra installs needed. --no-open skips the
-      # "open in a browser" convenience, which has no meaning in CI.
-      - name: Build the docs site
-        run: python docs/build_site.py --no-open
-
-      # gh-pages is deployed with force_orphan (the whole branch is
-      # replaced every run), so everything that should stay live must go
-      # out in ONE deploy: report at the root URL, docs under /docs/.
-      - name: Assemble the Pages site (report + docs)
+      # Keep this run's history for the next one to build on.
+      - name: Save the report history
+        if: always()
         run: |
-          mkdir pages-root
-          cp -r reports/allure-report/. pages-root/
-          cp -r docs/site pages-root/docs
-
-      - name: Publish to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: pages-root
-          # Each deploy REPLACES the branch history instead of adding to it,
-          # so gh-pages stays the size of one deploy forever. (Trends are
-          # unaffected — they live in the report's history/ folder, which is
-          # part of the deployed content, not in git history.)
-          force_orphan: true
+          rm -rf reports/allure-history
+          cp -r reports/allure-report/history reports/allure-history 2>/dev/null || true
 
       - name: Attach reports to this run as a download
         if: always()
@@ -124,7 +90,7 @@ jobs:
             reports/report.html
             reports/allure-report
 
-      # Reports are delivered — now let the workflow show the true result.
+      # Reports are attached - now let the workflow show the true result.
       - name: Fail the workflow if tests failed
         if: steps.tests.outcome == 'failure'
         run: exit 1

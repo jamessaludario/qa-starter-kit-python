@@ -1,0 +1,56 @@
+{
+  "id": "not-there-anymore",
+  "title": "Prove it is gone",
+  "kind": "write-the-test",
+  "xp": 35,
+  "brief": "The cart holds a **Blue Top** and a **Men Tshirt**. Remove the Blue Top and prove it left.\n\n1. click the **X** next to the Blue Top — it is a link, and its accessible name is `Remove Blue Top`\n2. assert its row (`#product-1`) is no longer visible\n3. assert the table is down to **1** row\n\nRemoval takes 300 ms, so the row is still there the instant after you click. Negative assertions retry as well: they wait for the thing to *go away*.",
+  "scenario": {
+    "route": "/view_cart",
+    "cart": [{ "id": 1, "qty": 1 }, { "id": 2, "qty": 1 }]
+  },
+  "starter": "from playwright.sync_api import Page, expect\n\n\ndef test_removing_a_product_takes_it_out_of_the_cart(page: Page):\n    page.goto(\"https://automationexercise.com/view_cart\")\n\n    # Sanity check: we start with two rows.\n    rows = page.locator(\"#cart_info_table tbody tr\")\n    expect(rows).to_have_count(2)\n\n    # 1. remove the Blue Top\n\n    # 2. its row should disappear\n\n    # 3. one row should be left\n",
+  "solution": "from playwright.sync_api import Page, expect\n\n\ndef test_removing_a_product_takes_it_out_of_the_cart(page: Page):\n    page.goto(\"https://automationexercise.com/view_cart\")\n\n    rows = page.locator(\"#cart_info_table tbody tr\")\n    expect(rows).to_have_count(2)\n\n    page.get_by_role(\"link\", name=\"Remove Blue Top\").click()\n\n    expect(page.locator(\"#product-1\")).not_to_be_visible()\n    expect(rows).to_have_count(1)\n",
+  "rubric": ["test-function", "has-assertion", "expect-over-assert"],
+  "checks": [
+    {
+      "kind": "state",
+      "path": "cartCount",
+      "equals": 1,
+      "label": "One product is left in the cart",
+      "feedback": "The cart does not hold exactly one product. Did the X get clicked - and did your test wait the 300 ms for the removal to land?"
+    },
+    {
+      "kind": "state",
+      "path": "cartItems.0.name",
+      "equals": "Men Tshirt",
+      "label": "It is the Blue Top that went, not the other one",
+      "feedback": "The wrong product was removed. Each X has its own accessible name: \"Remove Blue Top\" and \"Remove Men Tshirt\"."
+    },
+    {
+      "kind": "matcher",
+      "name": "not_to_be_visible",
+      "label": "You assert the row is gone with not_to_be_visible()",
+      "feedback": "No negative visibility check ran. expect(page.locator(\"#product-1\")).not_to_be_visible() waits for the row to disappear - a plain `assert not ....is_visible()` would check too early and pass for the wrong reason."
+    },
+    {
+      "kind": "matcher",
+      "name": "to_have_count",
+      "atLeast": 2,
+      "label": "You check the row count before and after",
+      "feedback": "I only saw one to_have_count. Keep the starting check as well - it proves the test began from the state you thought it did, so a later failure means something real."
+    }
+  ],
+  "hints": [
+    {
+      "cost": 5,
+      "label": "Nudge",
+      "text": "The X links have aria-labels, so get_by_role(\"link\", name=\"Remove Blue Top\") finds exactly the right one without any CSS."
+    },
+    {
+      "cost": 8,
+      "label": "Strategy",
+      "text": "expect(page.locator(\"#product-1\")).not_to_be_visible() for the row, then expect(rows).to_have_count(1) - you can reuse the `rows` locator from the top, because a locator is only an address."
+    }
+  ],
+  "reveal": "Two things worth keeping.\n\n**Negative assertions wait too.** `not_to_be_visible()` retried for the 300 ms the removal took. `assert not row.is_visible()` would have passed instantly - and would also have passed if you had clicked the wrong button entirely, because the row would still be there but the assertion would have looked before the page moved.\n\n**Assert your starting state.** The `to_have_count(2)` at the top costs one line and turns \"the test failed\" into \"the test failed *after* the setup was correct\"."
+}

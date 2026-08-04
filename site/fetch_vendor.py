@@ -12,6 +12,7 @@ Everything here is stdlib only - no pip install, on purpose.
 """
 
 import hashlib
+import re
 import sys
 import urllib.request
 from pathlib import Path
@@ -34,6 +35,90 @@ PYODIDE_FILES = [
     "python_stdlib.zip",    # the standard library
     "pyodide-lock.json",    # package index; loadPyodide reads it at startup
 ]
+
+
+# --------------------------------------------------------------------------
+# Fonts
+# --------------------------------------------------------------------------
+
+# IBM Plex, the three families the design is built on: a serif for
+# headings and lesson prose, a mono for the small uppercase labels and
+# all code, a sans for the interface.
+#
+# LATIN SUBSETS ONLY. Google serves this family in 38 slices (Cyrillic,
+# Greek, Vietnamese, ...) totalling ~700 KB; the seven Latin ones are
+# ~113 KB, and Plex Sans is a variable font so its three weights are one
+# file. Everything is font-display:swap, so text paints immediately in
+# the fallback stack and swaps when the font lands - fonts must never be
+# the reason a lesson is blank.
+#
+# Optional by design: skip this and the site uses the system stack. It
+# looks plainer and works identically.
+FONT_CSS = (
+    "https://fonts.googleapis.com/css2?"
+    "family=IBM+Plex+Mono:wght@400;600"
+    "&family=IBM+Plex+Sans:wght@400;600;700"
+    "&family=IBM+Plex+Serif:wght@400;600"
+    "&display=swap"
+)
+# Without a browser-shaped User-Agent Google returns TrueType instead of
+# woff2, which is roughly three times the bytes for the same glyphs.
+BROWSER_UA = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+)
+FACE = re.compile(r"/\*\s*([\w\-\[\]]+)\s*\*/\s*@font-face\s*\{(.*?)\}", re.DOTALL)
+
+
+def get(url: str) -> bytes:
+    request = urllib.request.Request(url, headers={"User-Agent": BROWSER_UA})
+    with urllib.request.urlopen(request, timeout=120) as response:
+        return response.read()
+
+
+def fetch_fonts(out: Path, force: bool) -> int:
+    """Vendor the Latin IBM Plex faces and a stylesheet pointing at them."""
+    out.mkdir(parents=True, exist_ok=True)
+    css = get(FONT_CSS).decode("utf-8")
+
+    rules = []
+    seen = {}
+    total = 0
+    for subset, body in FACE.findall(css):
+        if subset != "latin":
+            continue
+        family = re.search(r"font-family:\s*'([^']+)'", body).group(1)
+        weight = re.search(r"font-weight:\s*(\d+)", body).group(1)
+        remote = re.search(r"url\(([^)]+)\)", body).group(1)
+
+        # Plex Sans is variable: one file serves 400, 600 and 700, so
+        # key the download on the URL and let the weights share it.
+        name = seen.get(remote)
+        if name is None:
+            name = f"{family.replace(' ', '')}-{weight}.woff2"
+            seen[remote] = name
+            target = out / name
+            if target.exists() and not force:
+                total += target.stat().st_size
+                print(f"  cached  {name:26} {target.stat().st_size / 1024:8.0f} KB")
+            else:
+                blob = get(remote)
+                target.write_bytes(blob)
+                total += len(blob)
+                print(f"  fetched {name:26} {len(blob) / 1024:8.0f} KB")
+
+        rules.append(
+            f"@font-face{{font-family:'{family}';font-style:normal;"
+            f"font-weight:{weight};font-display:swap;"
+            f"src:url('{name}') format('woff2');}}"
+        )
+
+    (out / "fonts.css").write_text(
+        "/* Vendored by site/fetch_vendor.py - do not edit. IBM Plex is\n"
+        "   licensed under the SIL Open Font License 1.1. */\n"
+        + "\n".join(rules) + "\n",
+        encoding="utf-8")
+    return total
 
 
 def fetch(url: str, target: Path) -> int:
@@ -80,6 +165,15 @@ def main() -> int:
         digest = hashlib.sha256(blob).hexdigest()[:16]
         lines.append(f"{digest}  {len(blob):>10}  {name}")
     (VENDOR / "MANIFEST.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    # Fonts are a nice-to-have, so a failure here is a warning, not an
+    # exit code: the site falls back to the system stack and works.
+    print(f"\nIBM Plex (Latin subsets) -> {VENDOR / 'fonts'}")
+    try:
+        total += fetch_fonts(VENDOR / "fonts", force)
+    except Exception as error:                           # noqa: BLE001
+        print(f"  SKIPPED: {error}")
+        print("  The site will use the system font stack instead.")
 
     print(f"\nTotal {total / 1024 / 1024:.1f} MB. Manifest: site/vendor/MANIFEST.txt")
     return 0

@@ -1,0 +1,34 @@
+{
+  "id": "cart-caverns",
+  "order": 4,
+  "badge": "4",
+  "abbr": "CC",
+  "title": "Cart Caverns",
+  "tagline": "State that survives across pages - and the assertions that pin it down.",
+  "teaches": "Multi-step journeys, counting rows, quantities, removal, and asserting a thing is GONE",
+  "source": [
+    "guide §7 Assertions",
+    "learn/test_tc12_add_products_in_cart",
+    "learn/test_tc13_product_quantity_in_cart",
+    "learn/test_tc17_remove_product_from_cart",
+    "pages/cart_page.py"
+  ],
+  "requires": ["form-marshes"],
+  "map": { "x": 63, "y": 31 },
+  "objectives": [
+    "Carry state across three pages without letting the test lose track of what it added",
+    "Count rows with to_have_count() instead of reading a number out of the page and trusting it",
+    "Assert a row's quantity and price by scoping to that row, not to the whole table",
+    "Prove a removal happened with not_to_be_visible() - the check most suites forget",
+    "Recognise the moment a test has grown too long to read, which is the door to Zone 6"
+  ],
+  "plannedChallenges": [
+    "Add one product and prove it landed",
+    "Add two, and count the rows",
+    "Scope to one row: the right price on the right line",
+    "Change the quantity on the product page and check it survived",
+    "Fix the broken test: it asserts on the wrong row",
+    "Remove it, and prove it is gone",
+    "Boss: rebuild Test Case 17, add and remove with both states proved"
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "id": "priority-order",
+  "title": "Which locator would you approve?",
+  "kind": "quiz",
+  "xp": 20,
+  "brief": "You are reviewing a colleague's pull request. Four locators, four judgement calls.",
+  "questions": [
+    {
+      "prompt": "The page has `<button class=\"btn btn-primary\" data-qa=\"login-button\">Login</button>`. Which locator would you ask for?",
+      "options": [
+        "page.locator(\".btn.btn-primary\")",
+        "page.get_by_role(\"button\", name=\"Login\")",
+        "page.locator(\"//button[@data-qa='login-button']\")",
+        "page.locator(\"button\").nth(3)"
+      ],
+      "answer": 1,
+      "why": "It has a visible name, so the role locator wins: it is the only one of the four that still works after a redesign, and the only one a reader understands without opening the page. The data-qa attribute is a fine second choice - page.locator('[data-qa=\"login-button\"]') - and the kit uses it for inputs that have no visible label. The class selector matches every primary button on the page, and .nth(3) is a bug waiting for someone to add a button."
+    },
+    {
+      "prompt": "A search box renders as `<input type=\"text\" id=\"search_product\" placeholder=\"Search Product\">` with no `<label>`. The kit uses `page.locator(\"#search_product\")`. Is that a problem?",
+      "options": [
+        "Yes - CSS is always worse than get_by_*",
+        "No - with no label, an id is a reasonable, stable address",
+        "Yes - it must be an XPath for inputs",
+        "No, but only because the id starts with 'search'"
+      ],
+      "answer": 1,
+      "why": "The priority order is a default, not a law. An id is stable, unique and readable, and this input has no accessible name to grab. get_by_placeholder(\"Search Product\") is also good here. What you should not do is invent an aria-label in your test's imagination and then wonder why nothing matches."
+    },
+    {
+      "prompt": "`page.get_by_role(\"link\", name=\"Cart\")` fails with a strict mode violation because a pop-up contains a \"View Cart\" link. Best fix?",
+      "options": [
+        "Add .first",
+        "Use exact=True so it only matches the exact text \"Cart\"",
+        "Scope the search: page.locator(\".shop-menu\").get_by_role(\"link\", name=\"Cart\")",
+        "Wait for the pop-up to close with a sleep, then click"
+      ],
+      "answer": 2,
+      "why": "Scoping is best because it states the intention: the Cart link in the menu. exact=True also fixes this particular clash and is a perfectly good tool - but it fixes the symptom (the substring match) rather than saying which region you meant, and it breaks if the menu ever says \"Cart (2)\". .first depends on document order. The sleep is wrong for all the usual reasons, and would not help anyway - the menu link is under the pop-up's backdrop."
+    },
+    {
+      "prompt": "When is `page.locator(\"//div[@class='features_items']//p\")` the right call?",
+      "options": [
+        "Never - XPath is banned",
+        "When you need to select by text content, which CSS cannot do",
+        "When nothing higher on the priority list fits and CSS cannot express the relationship - and then with a comment saying why",
+        "Whenever the element has no id"
+      ],
+      "answer": 2,
+      "why": "XPath is a legitimate last resort, not a sin - it can walk upwards and match on text, which CSS cannot. The rule is simply that it is last, and that you leave a comment explaining what forced you there. (This particular one is a plain CSS selector wearing a costume: '.features_items p' says the same thing more clearly.)"
+    }
+  ],
+  "reveal": "The priority order is about **how long the test survives**, not about purity. Ask one question of any locator you review:\n\n> If a developer redesigns this page next month without changing what it does, does this still work?\n\nRole and label locators usually survive. Positions and class names usually do not."
+}

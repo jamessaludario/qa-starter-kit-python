@@ -1,0 +1,34 @@
+{
+  "id": "form-marshes",
+  "order": 3,
+  "badge": "3",
+  "abbr": "FM",
+  "title": "The Form Marshes",
+  "tagline": "Filling things in, and proving the page pushed back when it should.",
+  "teaches": "fill, check, uncheck, select_option, press, and the negative cases most suites forget",
+  "source": [
+    "guide §6 Locators",
+    "learn/test_tc01_register_user",
+    "learn/test_tc05_register_existing_email",
+    "learn/test_tc06_contact_us_form",
+    "pages/login_page.py"
+  ],
+  "requires": ["assertion-ridge"],
+  "map": { "x": 50, "y": 38 },
+  "objectives": [
+    "Fill text inputs, radios, checkboxes and dropdowns with the method each one actually needs",
+    "Reach a field by its visible label instead of by the id a developer happened to choose",
+    "Write the negative case: prove the form REFUSES bad input, not just that it accepts good input",
+    "Generate your own test data so two runs never collide over the same email address",
+    "Explain why select_option() takes a value, a label or an index - and which one survives a redesign"
+  ],
+  "plannedChallenges": [
+    "Fill the signup form by label",
+    "Radios, checkboxes and the difference between check() and click()",
+    "Dropdowns: value, label, or index?",
+    "Fix the broken test: it fills the box but never submits",
+    "The negative case: registering an email that already exists",
+    "Data that does not collide: unique_email() and why it exists",
+    "Boss: rebuild Test Case 6, the Contact Us form end to end"
+  ]
+}

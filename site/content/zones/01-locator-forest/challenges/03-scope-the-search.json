@@ -1,0 +1,57 @@
+{
+  "id": "scope-the-search",
+  "title": "Scope the search",
+  "kind": "write-the-test",
+  "xp": 40,
+  "brief": "You are on the products page. Write a test that:\n\n1. adds the **first** product to the cart\n2. waits for the *Added!* pop-up to appear\n3. opens the cart using the **View Cart** link **inside that pop-up**\n4. checks the address is `https://automationexercise.com/view_cart`\n\nStep 3 is the hard one, and it is hard for two reasons at once. Try the obvious thing first and read what Playwright tells you - both failures are worth meeting.\n\n:::tip Remember\nName matching is a substring, and while the pop-up is open there is a *Cart* link in the menu **and** a *View Cart* link in the pop-up.\n:::",
+  "scenario": { "route": "/products" },
+  "starter": "from playwright.sync_api import Page, expect\n\n\ndef test_view_cart_from_the_added_popup(page: Page):\n    page.goto(\"https://automationexercise.com/products\")\n\n    # 1. add the first product\n\n    # 2. wait for the pop-up\n\n    # 3. click View Cart INSIDE the pop-up\n\n    # 4. check where you ended up\n",
+  "solution": "from playwright.sync_api import Page, expect\n\n\ndef test_view_cart_from_the_added_popup(page: Page):\n    page.goto(\"https://automationexercise.com/products\")\n\n    page.get_by_role(\"link\", name=\"Add to cart\").first.click()\n\n    modal = page.locator(\"#cartModal\")\n    expect(modal).to_be_visible()\n\n    modal.get_by_role(\"link\", name=\"Cart\").click()\n\n    expect(page).to_have_url(\"https://automationexercise.com/view_cart\")\n",
+  "rubric": ["test-function", "has-assertion", "expect-over-assert"],
+  "checks": [
+    {
+      "kind": "state",
+      "path": "cartCount",
+      "equals": 1,
+      "label": "Exactly one product is in the cart",
+      "feedback": "The cart does not hold exactly one product. There are eight 'Add to cart' links on this page, so an unqualified locator is a strict-mode violation - add .first."
+    },
+    {
+      "kind": "action",
+      "method": "click",
+      "targetContains": "#cartModal",
+      "label": "You scoped the Cart link to the pop-up",
+      "feedback": "You got to the cart, but not by scoping. If you used .last you relied on the pop-up being the last thing in the document - true today, and one layout change from being false. Say what you mean instead: page.locator(\"#cartModal\").get_by_role(\"link\", name=\"Cart\")."
+    },
+    {
+      "kind": "matcher",
+      "name": "to_be_visible",
+      "label": "You wait for the pop-up before clicking into it",
+      "feedback": "No to_be_visible check ran. The pop-up takes 300 ms to appear; without that wait you are clicking at a moment that may or may not exist yet."
+    },
+    {
+      "kind": "state",
+      "path": "route",
+      "equals": "/view_cart",
+      "label": "You end up on the cart page"
+    }
+  ],
+  "hints": [
+    {
+      "cost": 5,
+      "label": "Nudge",
+      "text": "Two separate problems. Adding: eight links say 'Add to cart', so pick one. Opening the cart: two links match name=\"Cart\", and the one in the menu is underneath the pop-up's grey backdrop."
+    },
+    {
+      "cost": 8,
+      "label": "Strategy",
+      "text": "Give the pop-up a name: modal = page.locator(\"#cartModal\"). Wait for it with expect(modal).to_be_visible(). Then search INSIDE it: modal.get_by_role(\"link\", name=\"Cart\").click()."
+    },
+    {
+      "cost": 12,
+      "label": "Solution",
+      "text": "page.get_by_role(\"link\", name=\"Add to cart\").first.click(); modal = page.locator(\"#cartModal\"); expect(modal).to_be_visible(); modal.get_by_role(\"link\", name=\"Cart\").click(); expect(page).to_have_url(\"https://automationexercise.com/view_cart\")"
+    }
+  ],
+  "reveal": "Two lessons in one challenge.\n\n**Ambiguity is fixed by saying what you mean.** `.first` and `.last` work by position; scoping works by meaning. `pages/base_page.py` in the kit does exactly this, with a comment explaining the same trap:\n\n```python\nself.page.locator(\".shop-menu\").get_by_role(\"link\", name=\"Cart\").click()\n```\n\n**Playwright will not click through an overlay.** If you tried the menu link, you got `intercepts pointer events` rather than a click that silently went to the backdrop. A real user could not have clicked it either."
+}

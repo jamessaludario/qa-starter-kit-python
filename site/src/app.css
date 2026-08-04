@@ -1,61 +1,158 @@
 /* Quest for Automation - stylesheet.
  *
- * Same family as docs/build_site.py's theme (teal, warm amber) so the
- * three tracks look related, with a violet accent for the game layer.
- * Light and dark both come from prefers-color-scheme; there is no theme
- * switch, because there is no page reload to lose it across.
+ * A trail-map palette: deep green-black ground, one mint accent for the
+ * road you are on, and warm gold reserved for side quests. Two accents,
+ * each with a job - mint means "this is the way", gold means "this is a
+ * detour" - so colour carries meaning rather than decoration.
+ *
+ * Typography carries as much of the look as colour does, and each family
+ * has one job: a serif for headings and lesson prose (long reading), a
+ * mono for the small uppercase labels AND all code, a sans for the
+ * interface.
+ *
+ * The families are IBM Plex, vendored by site/fetch_vendor.py - but only
+ * the LATIN subsets, ~113 KB rather than the ~700 KB of every script,
+ * and every face is font-display:swap. Skip the fetch and the system
+ * stacks below take over: plainer, identical to use. Fonts are never
+ * allowed to be the reason a lesson is blank.
+ *
+ * Both palettes are keyed off data-theme, which main.js sets from the
+ * saved preference or the system one. Doing the resolving in JS rather
+ * than with a media query means the toggle and the OS setting live in
+ * the same mechanism instead of fighting over specificity.
  */
 
-:root {
-  --brand: #0e7a70;
-  --brand-strong: #0a5f57;
-  --brand-soft: #dcf1ee;
-  --quest: #6d3fd4;
-  --quest-soft: #ede7fb;
-  --warm: #c9761a;
-  --good: #0d9573;
-  --bad: #c0392b;
-  --bg: #fdfcfa;
-  --bg-soft: #f4f2ed;
-  --panel: #ffffff;
-  --text: #29323a;
-  --muted: #64707c;
-  --border: #e6e2da;
-  --code-bg: #f4f2ed;
+:root, :root[data-theme="light"] {
+  --brand: #1c8a60;
+  --brand-strong: #146b4a;
+  --brand-soft: rgba(28, 138, 96, .10);
+  --quest: #1c8a60;
+  --quest-soft: rgba(28, 138, 96, .10);
+  --quest-line: rgba(28, 138, 96, .32);
+  --accent-ink: #ffffff;
+  --side: #8a6a2c;
+  --side-soft: rgba(138, 106, 44, .12);
+  --warm: #8a6a2c;
+  --good: #1c8a60;
+  --bad: #ad552f;
+  --bad-soft: rgba(173, 85, 47, .10);
+  /* A warm paper cream, not a white. The dark theme is a green-black
+     ground, and the light one has to be its daylight equivalent rather
+     than a different design. */
+  --bg: #f2efe6;
+  --bg-soft: #f5f2e8;
+  --panel: #fbfaf4;
+  --panel-3: #eeeadd;
+  --text: #1b201e;
+  --muted: #4e5955;
+  --dim: #7f8983;
+  --border: #dcd6c4;
+  --border-soft: #e7e2d4;
+  --code-bg: #f7f4ea;
+  --terrain: rgba(60, 70, 66, .10);
   --radius: 12px;
-  --shadow: 0 1px 2px rgba(41, 50, 58, .05), 0 10px 28px rgba(41, 50, 58, .06);
+  --shadow: 0 1px 2px rgba(28, 36, 34, .05), 0 10px 28px rgba(28, 36, 34, .06);
+
+  /* Syntax colours, so a code block reads the same in both themes. */
+  --tok-key: #6b39c4; --tok-str: #8f5316; --tok-fn: #1c6597;
+  --tok-cmt: #8a938c; --tok-num: #ad552f; --tok-builtin: #166b5b;
+
+  /* IBM Plex when site/fetch_vendor.py has vendored it, otherwise the
+     nearest system stack. The site is designed for Plex; it is legible
+     without it. */
+  --font-sans: "IBM Plex Sans", "Segoe UI", -apple-system, "Helvetica Neue",
+               Arial, sans-serif;
+  --font-serif: "IBM Plex Serif", Charter, "Bitstream Charter", Georgia,
+                "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Code", Consolas,
+               Menlo, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --brand: #4cc8b9;
-    --brand-strong: #7adcd0;
-    --brand-soft: #113632;
-    --quest: #a98bf5;
-    --quest-soft: #241a3d;
-    --warm: #e8b565;
-    --good: #34d399;
-    --bad: #f87171;
-    --bg: #16191d;
-    --bg-soft: #1d2126;
-    --panel: #1b1f24;
-    --text: #dde1e4;
-    --muted: #98a2ac;
-    --border: #2e343b;
-    --code-bg: #21262c;
-    --shadow: none;
-  }
+:root[data-theme="dark"] {
+  --brand: #5fd0a0;
+  --brand-strong: #8ce0bd;
+  --brand-soft: rgba(95, 208, 160, .13);
+  --quest: #5fd0a0;
+  --quest-soft: rgba(95, 208, 160, .13);
+  --quest-line: rgba(95, 208, 160, .34);
+  --accent-ink: #07130d;
+  --side: #c9a15c;
+  --side-soft: rgba(201, 161, 92, .14);
+  --warm: #c9a15c;
+  --good: #5fd0a0;
+  --bad: #e08a6a;
+  --bad-soft: rgba(224, 138, 106, .13);
+  --bg: #0d100f;
+  --bg-soft: #141917;
+  --panel: #141917;
+  --panel-3: #212927;
+  --text: #e8ede9;
+  --muted: #a4b2ad;
+  --dim: #6f807b;
+  --border: #26302d;
+  --border-soft: #1e2724;
+  --code-bg: #0a0d0c;
+  --terrain: rgba(164, 178, 173, .09);
+  --shadow: none;
+
+  --tok-key: #c2a5f5; --tok-str: #dba36f; --tok-fn: #7fc0f0;
+  --tok-cmt: #5f7370; --tok-num: #e08a6a; --tok-builtin: #8fd6c4;
 }
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  font-family: "Segoe UI", "Trebuchet MS", -apple-system, "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-sans);
   font-size: 16px;
   line-height: 1.65;
   background: var(--bg);
   color: var(--text);
+}
+
+/* Headings are set in the serif at weight 600 with a slight negative
+   tracking - Plex Serif is wide, and headings look loose without it. */
+h1, h2, h3, .serif { font-family: var(--font-serif); font-weight: 600; }
+h1 { letter-spacing: -.015em; }
+
+/* The motion vocabulary. Four movements, each with one job: a card
+   arriving, the trail flowing forward, the zone you are on breathing,
+   and a medal landing. All of it is switched off wholesale below for
+   anyone who asked for less. */
+@keyframes qfa-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes qfa-dash { to { stroke-dashoffset: -24; } }
+@keyframes qfa-pulse {
+  0%   { box-shadow: 0 0 0 0 var(--quest-line); }
+  70%  { box-shadow: 0 0 0 14px rgba(0, 0, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+}
+@keyframes qfa-medal { from { opacity: 0; transform: scale(.88); } to { opacity: 1; transform: scale(1); } }
+@keyframes qfa-fall {
+  0%   { opacity: 0; transform: translateY(-14px) rotate(0deg); }
+  12%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(190px) rotate(220deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}
+
+/* The small uppercase label, in mono - CHAPTER I, OBJECTIVE, HINTS.
+   Mono plus letter-spacing reads as machine-printed, which is exactly
+   the register a testing tool should speak in. */
+.eyebrow, .card-kind, .panel-kind {
+  font-family: var(--font-mono);
+  font-size: .68rem; font-weight: 600; letter-spacing: .14em;
+  text-transform: uppercase;
+}
+/* A panel label often carries a count on the right ("5 earned · 9 to
+   chase"), so it is a row, not a run of text. */
+.panel-kind {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
 }
 
 a { color: var(--brand); text-decoration: none; }
@@ -72,7 +169,7 @@ p { margin: 10px 0; text-wrap: pretty; }
 .crumb { font-size: .86rem; color: var(--muted); margin: 0 0 6px; }
 
 code, pre, .code-editor, .locator-input {
-  font-family: ui-monospace, "Cascadia Code", Consolas, Menlo, monospace;
+  font-family: var(--font-mono);
 }
 code { background: var(--code-bg); border-radius: 4px; padding: 1px 5px; font-size: .88em; }
 pre {
@@ -95,8 +192,12 @@ pre code { background: none; padding: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
 .btn:hover { text-decoration: none; }
-.btn.primary { background: var(--quest); color: #fff; }
-.btn.primary:hover { background: #5a31b8; }
+/* The ink on the accent is a token of its own, because the right
+   answer flips: white on the deep green of the light theme, near-black
+   on the bright mint of the dark one. A primary button is the last
+   thing that may be hard to read. */
+.btn.primary { background: var(--quest); color: var(--accent-ink); }
+.btn.primary:hover { background: var(--brand-strong); }
 .btn.primary:disabled { background: var(--muted); cursor: progress; }
 .btn.ghost { border-color: var(--border); color: var(--text); background: var(--panel); }
 .btn.ghost:hover { border-color: var(--quest); color: var(--quest); }
@@ -112,167 +213,537 @@ pre code { background: none; padding: 0; }
 /* ---------------------------------------------------------------- header */
 
 .site-header {
-  display: flex; flex-wrap: wrap; gap: 12px 24px;
+  display: flex; flex-wrap: wrap; gap: 10px 22px;
   align-items: center; justify-content: space-between;
-  padding: 12px 20px; border-bottom: 1px solid var(--border);
-  background: var(--panel); position: sticky; top: 0; z-index: 5;
+  padding: 10px 22px; border-bottom: 1px solid var(--border);
+  background: var(--bg-soft); position: sticky; top: 0; z-index: 5;
 }
-.brand { display: flex; align-items: center; gap: 9px; font-weight: 800; color: var(--text); }
+.header-left { display: flex; align-items: center; gap: 26px; flex-wrap: wrap; }
+.brand {
+  display: flex; align-items: center; gap: 9px; color: var(--text);
+  font-family: var(--font-mono); font-weight: 600;
+  font-size: .82rem; letter-spacing: .1em; text-transform: uppercase;
+}
 .brand:hover { text-decoration: none; }
 .brand-mark {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 26px; height: 26px; border-radius: 8px;
-  background: var(--quest); color: #fff; font-size: .8rem;
+  width: 24px; height: 24px; border-radius: 7px;
+  background: var(--quest); color: var(--bg); font-size: .72rem;
 }
-.hud { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.hud-level { display: flex; flex-direction: column; line-height: 1.2; }
-.hud-title { font-weight: 700; font-size: .9rem; }
-.hud-xp { font-size: .78rem; color: var(--muted); }
-.hud-bar {
-  width: 130px; height: 8px; border-radius: 999px;
-  background: var(--bg-soft); border: 1px solid var(--border); overflow: hidden;
-}
-.hud-bar-fill { height: 100%; background: var(--quest); }
-.hud-links { display: flex; gap: 4px; font-size: .85rem; font-weight: 600; }
-.hud-links a { color: var(--muted); padding: 4px 10px; border-radius: 999px; }
+
+/* The tabs are where you ARE, so the current one is marked - a nav that
+   does not say which page you are on is decoration. */
+.hud-links { display: flex; gap: 2px; font-size: .88rem; }
+.hud-links a { color: var(--muted); padding: 5px 11px; border-radius: 8px; }
 .hud-links a:hover { background: var(--quest-soft); color: var(--quest); text-decoration: none; }
+.hud-links a[aria-current="page"] { color: var(--text); font-weight: 700; }
+
+.hud { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.hud-level {
+  font-family: var(--font-mono); font-size: .7rem; font-weight: 700;
+  letter-spacing: .08em; color: var(--quest);
+  border: 1px solid var(--quest); border-radius: 6px; padding: 2px 7px;
+}
+.hud-title { font-size: .86rem; font-weight: 600; }
+.hud-bar {
+  width: 150px; height: 7px; border-radius: 999px;
+  background: var(--border); overflow: hidden;
+}
+.hud-bar-fill { height: 100%; background: var(--quest); border-radius: 999px; }
+/* Tabular figures: the XP counter changes constantly, and digits that
+   change width make the whole header twitch. */
+.hud-xp {
+  font-family: var(--font-mono); font-size: .74rem; color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.hud-streak {
+  font-family: var(--font-mono); font-size: .74rem; color: var(--warm);
+  display: flex; align-items: center; gap: 4px;
+}
+.theme-toggle {
+  font-family: var(--font-mono); font-size: .68rem; font-weight: 600;
+  letter-spacing: .1em; text-transform: uppercase;
+  background: none; color: var(--muted); cursor: pointer;
+  border: 1px solid var(--border); border-radius: 6px; padding: 4px 9px;
+}
+.theme-toggle:hover { border-color: var(--quest); color: var(--quest); }
+
+/* Below this the header is two crowded rows; the XP bar is the first
+   thing to go, because the number beside it says the same. */
+@media (max-width: 720px) {
+  .hud-bar, .hud-title { display: none; }
+}
 
 main { display: block; }
 main:focus { outline: none; }
 .view { max-width: 980px; margin: 0 auto; padding: 26px 20px 70px; }
 
+/* The map is a picture, not a column of prose, and 980px is a measure
+   chosen for reading. Squeezed to it, the zone labels touch. */
+.view-map { max-width: 1240px; }
+
+/* The map should be a SCREEN, not a page you scroll: the whole point of
+   a map is seeing the whole thing at once. So on a window with room for
+   it, the app becomes a full-height flex column and the board takes
+   whatever is left after the header, the intro, the cards and the
+   footer have had their share.
+
+   Guarded on min-height too, and the number is measured rather than
+   picked: header, intro, cards, footer and padding come to ~470px, and
+   a board smaller than ~300px is not worth looking at. Below 800px the
+   page simply scrolls, which beats a squashed map. */
+@media (min-width: 1100px) and (min-height: 800px) {
+  #app { display: flex; flex-direction: column; min-height: 100dvh; }
+  /* Only the map page becomes a flex column - :has() scopes it, so the
+     lesson and challenge pages keep their ordinary block flow and stay
+     free to be as long as they need. A percentage height here would not
+     do: a flex item's height is not a containing block a child can
+     resolve 100% against. */
+  main:has(> .view-map) { display: flex; flex-direction: column; }
+  main { flex: 1 1 auto; min-height: 0; }
+  .view-map {
+    flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column;
+    padding-top: 20px; padding-bottom: 18px;
+    /* width:100% is needed because .view centres itself with auto side
+       margins, and an auto margin on a flex item's cross axis eats the
+       free space instead of stretching - the board would shrink to its
+       content width without this. */
+    width: 100%;
+  }
+  /* flex-basis 0 with min-height 0 is what lets it shrink as well as
+     grow; without both, the aspect-ratio wins and the page scrolls. */
+  .view-map .map-board {
+    flex: 1 1 0; min-height: 300px; aspect-ratio: auto;
+  }
+  .view-map .map-intro { padding-bottom: 14px; }
+  .view-map .status-cards { flex: none; margin-top: 16px; }
+}
+
 /* ------------------------------------------------------------- quest map */
 
-.map-intro { text-align: center; padding-bottom: 6px; }
-.map-intro h1 { font-size: 2.3rem; }
-.map-intro .lede { margin: 0 auto; }
-.map-stats { color: var(--muted); font-size: .95rem; }
+.map-intro {
+  display: flex; flex-wrap: wrap; align-items: flex-end;
+  justify-content: space-between; gap: 18px 32px; padding-bottom: 20px;
+}
+.intro-words { max-width: 62ch; }
+.map-intro h1 { font-size: 2.15rem; line-height: 1.2; margin: 2px 0 8px; }
+.map-intro .lede { margin: 0; color: var(--muted); }
+.eyebrow { margin: 0; color: var(--quest); }
+.map-stats { color: var(--muted); font-size: .95rem; margin: 12px 0 0; }
+.intro-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 
-.map-board { position: relative; margin-top: 20px; }
-.map-path { display: none; }
-.quest-map { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+/* The board. Below 1100px this is just a container and the zones stack;
+   the scenery is hidden because a trail with nothing on it is noise. */
+.map-board { position: relative; margin-top: 4px; }
+.map-scenery { display: none; }
+.quest-map { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 
 .zone-node {
-  display: block; background: var(--panel); border: 1.5px solid var(--border);
-  border-radius: var(--radius); padding: 12px 16px; color: var(--text);
-  box-shadow: var(--shadow);
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 14px; border-radius: var(--radius);
+  border: 1px solid var(--border); background: var(--panel);
+  color: var(--text); text-decoration: none;
 }
 a.zone-node:hover { border-color: var(--quest); text-decoration: none; }
-.zone-node.complete { border-color: var(--good); }
-.zone-node.started { border-color: var(--warm); }
-.zone-node.locked { opacity: .62; }
-.zone-label { display: flex; align-items: center; gap: 9px; }
-.zone-index {
+.zone-node.locked { opacity: .55; }
+
+/* The node itself: a shape you can read before any text. A circle is
+   the road, a diamond a detour, a square the end of it. */
+.zone-dot {
+  position: relative; flex: none;
   display: inline-flex; align-items: center; justify-content: center;
-  min-width: 26px; height: 26px; padding: 0 6px; border-radius: 8px;
-  background: var(--quest-soft); color: var(--quest); font-weight: 800; font-size: .82rem;
+  width: 46px; height: 46px; border-radius: 50%;
+  background: var(--bg-soft); border: 2px solid var(--border);
+  font-weight: 800; font-size: .8rem; letter-spacing: .04em;
+  color: var(--muted);
 }
-.zone-node.complete .zone-index { background: var(--good); color: #fff; }
-.zone-title { font-weight: 800; }
-.zone-tagline { display: block; color: var(--muted); font-size: .9rem; }
-.zone-meta { display: block; font-size: .8rem; color: var(--muted); margin-top: 4px; }
+.zone-dot.diamond { border-radius: 8px; transform: rotate(45deg); }
+.zone-dot.diamond .zone-abbr { transform: rotate(-45deg); }
+.zone-dot.square { border-radius: 8px; border-style: dashed; }
+
+.zone-node.open .zone-dot,
+.zone-node.started .zone-dot { border-color: var(--quest); color: var(--quest); }
+.zone-node.started .zone-dot { background: var(--quest-soft); }
+.zone-node.complete .zone-dot {
+  border-color: var(--quest); background: var(--quest-soft); color: var(--quest);
+}
+.zone-node.side .zone-dot { border-color: var(--side); color: var(--side); }
+.zone-node.side.locked .zone-dot { border-color: var(--border); color: var(--muted); }
+
+/* The cleared tick rides on the rim, the way a stamp sits on a passport. */
+.zone-tick {
+  position: absolute; right: -5px; bottom: -5px;
+  width: 19px; height: 19px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--warm); color: #1a1206;
+  font-size: .7rem; font-weight: 900; line-height: 1;
+}
+.zone-dot.diamond .zone-tick { transform: rotate(-45deg); }
+
+.zone-label { display: flex; flex-direction: column; min-width: 0; }
+.zone-title { font-weight: 700; line-height: 1.25; }
+.zone-state { font-size: .8rem; color: var(--muted); }
+.zone-why { font-size: .8rem; color: var(--muted); }
+.zone-node.open .zone-state { color: var(--quest); }
+.zone-node.side .zone-state { color: var(--side); }
+
+/* Focus has to survive the redesign: this is the primary navigation. */
+a.zone-node:focus-visible {
+  outline: 2px solid var(--quest); outline-offset: 3px; border-color: var(--quest);
+}
 
 .map-legend {
   list-style: none; display: flex; flex-wrap: wrap; gap: 6px 18px;
-  padding: 0; margin: 22px 0 0; font-size: .82rem; color: var(--muted);
+  padding: 0; margin: 20px 0 0; font-size: .82rem; color: var(--muted);
 }
 .map-legend li { display: flex; align-items: center; gap: 7px; }
 .swatch {
-  width: 12px; height: 12px; border-radius: 4px;
-  border: 1.5px solid var(--border); background: var(--panel);
+  width: 11px; height: 11px; border-radius: 50%;
+  border: 2px solid var(--border); background: transparent;
 }
-.swatch.complete { border-color: var(--good); background: var(--good); }
-.swatch.started { border-color: var(--warm); background: var(--warm); }
+.swatch.open { border-color: var(--quest); }
+.swatch.started { border-color: var(--quest); background: var(--quest-soft); }
+.swatch.complete { border-color: var(--quest); background: var(--quest); }
 .swatch.locked { opacity: .5; }
 
-/* On a roomy screen the same list becomes a map along a drawn path. */
-@media (min-width: 900px) {
-  .map-board { aspect-ratio: 16 / 9; }
-  .map-path {
-    display: block; position: absolute; inset: 0; width: 100%; height: 100%;
+/* The three cards under the board: what to do next, and what you are
+   chasing. Progress you can see beats progress you have to remember. */
+.status-cards {
+  list-style: none; padding: 0; margin: 26px 0 0;
+  display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+.status-card {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--panel); padding: 14px 16px;
+}
+.card-kind {
+  margin: 0 0 6px; font-size: .68rem; font-weight: 700; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--muted);
+}
+.card-title { margin: 0 0 4px; font-weight: 700; }
+.card-body { margin: 0; font-size: .88rem; color: var(--muted); line-height: 1.5; }
+
+/* On a roomy screen the list becomes a trail: nodes pinned to their
+   authored positions, names underneath, the road drawn behind them.
+   1100px is where the labels stop colliding - below it the stacked
+   list above is genuinely the better read. */
+@media (min-width: 1100px) {
+  .map-board {
+    aspect-ratio: 16 / 10; min-height: 600px;
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-soft); padding: 8px;
   }
-  .map-path polyline {
-    fill: none; stroke: var(--border); stroke-width: .6;
-    stroke-dasharray: 2 1.6; stroke-linejoin: round;
+  .map-scenery { display: block; position: absolute; inset: 0; width: 100%; height: 100%; }
+
+  /* The ground: blueprint grid, and on it the wireframes of web pages -
+     the terrain a learner actually crosses. Texture, not information.
+     --terrain is its own token because it has to sit fainter than any
+     border in both themes. */
+  .grid-dot { fill: var(--terrain); }
+  .map-terrain .wire rect { fill: none; stroke: var(--terrain); }
+  .map-terrain .wire .wire-solid { fill: var(--terrain); stroke: none; }
+  .map-terrain .wire .wire-page { stroke: var(--terrain); }
+  /* Dialled well back. At full strength the wireframes read as content
+     and start competing with the zone names, which is the opposite of
+     what a background is for. */
+  .map-terrain { opacity: .55; }
+  /* Out on the trail the lock REASON is dropped - it wraps onto three
+     lines and lands on the next zone's name. The tooltip still has it,
+     and so does the stacked layout. */
+  .zone-why { display: none; }
+  .trail { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .trail-open { stroke: var(--quest); stroke-width: 3; }
+  /* The road ahead flows towards you. It is the one piece of motion on
+     the map, and it points the way you are going. */
+  .trail-locked {
+    stroke: var(--dim); stroke-width: 2; stroke-dasharray: 1 7; opacity: .8;
+    animation: qfa-dash 3.5s linear infinite;
   }
+  .trail-side {
+    stroke: var(--side); stroke-width: 2; stroke-dasharray: 6 6; opacity: .85;
+  }
+
+  /* The zone you can actually start breathes, so the eye lands on it
+     before it has read a word. */
+  .zone-node.open .zone-dot, .zone-node.started .zone-dot {
+    animation: qfa-pulse 2.6s ease-out infinite;
+  }
+
   .quest-map { display: block; height: 100%; position: relative; }
   .zone-item {
     position: absolute; left: var(--x); top: var(--y);
-    transform: translate(-50%, -50%); width: 210px;
+    transform: translate(-50%, -50%); width: 132px;
   }
+
+  /* Node above, name below, both centred on the authored point. The
+     card chrome is dropped entirely - out here the trail is the
+     structure, so a border round every zone is just twelve boxes. */
+  .zone-node {
+    flex-direction: column; gap: 7px; text-align: center;
+    padding: 0; border: 0; background: none; border-radius: 0;
+  }
+  a.zone-node:hover { border: 0; }
+  a.zone-node:hover .zone-dot { transform: scale(1.08); }
+  a.zone-node.side:hover .zone-dot { transform: rotate(45deg) scale(1.08); }
+  .zone-dot { transition: transform .15s ease; background: var(--bg); }
+  .zone-node.complete .zone-dot,
+  .zone-node.started .zone-dot { background: var(--quest-soft); }
+  a.zone-node:focus-visible { outline: none; }
+  a.zone-node:focus-visible .zone-dot {
+    outline: 2px solid var(--quest); outline-offset: 4px;
+  }
+  .zone-label { align-items: center; }
+  .zone-title { font-size: .86rem; }
+  .zone-state { font-size: .72rem; line-height: 1.35; }
+
+  /* A side quest wears its name ABOVE the node. Its branch always comes
+     up off the main road from below, so a label underneath would have a
+     dashed gold line drawn straight through it. */
+  .zone-node.side { flex-direction: column-reverse; }
+
+  /* The one the learner is actually on should be the biggest thing on
+     the board - it is the answer to "where was I?". */
+  .zone-node.started .zone-dot, .zone-node.open .zone-dot {
+    width: 54px; height: 54px; font-size: .86rem;
+  }
+
+  .map-legend {
+    position: absolute; right: 14px; bottom: 12px; margin: 0;
+    flex-direction: column; gap: 5px; font-size: .74rem;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zone-dot { transition: none; }
+  a.zone-node:hover .zone-dot,
+  a.zone-node.side:hover .zone-dot { transform: none; }
+  a.zone-node.side .zone-dot { transform: rotate(45deg); }
 }
 
 /* ------------------------------------------------------------------ zone */
 
-.zone-head { border-bottom: 1px solid var(--border); padding-bottom: 14px; }
-.objectives ul { padding-left: 20px; }
-.lesson { max-width: 68ch; }
-.lesson h3 { margin-top: 24px; }
+/* A rail plus a reading column. Prose wants a ~65 character measure, so
+   on a wide page something has to fill the rest - and what a learner
+   halfway through a zone most wants beside the lesson is the list of
+   what is still left in it. */
+.view-zone { max-width: 1240px; }
+.zone-layout {
+  display: grid; gap: 34px;
+  grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+  align-items: start;
+}
+.zone-main { max-width: 68ch; }
+
+.zone-rail { position: sticky; top: 78px; display: grid; gap: 14px; }
+.rail-card {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--panel); padding: 14px 16px;
+}
+.rail-card .panel-kind { margin: 0 0 10px; color: var(--muted); }
+
+.rail-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.rail-list.stub { gap: 6px; }
+.rail-list .challenge-link {
+  display: flex; align-items: center; gap: 9px;
+  padding: 6px 8px; border-radius: 8px; color: var(--muted);
+  font-size: .9rem; line-height: 1.35;
+}
+.rail-list .challenge-link:hover {
+  background: var(--quest-soft); color: var(--text); text-decoration: none;
+}
+.rail-list .challenge-link.current { color: var(--text); font-weight: 700; }
+.rail-list .challenge-row.passed .challenge-link { color: var(--text); }
+.rail-index {
+  font-family: var(--font-mono); font-size: .74rem; color: var(--dim);
+  flex: none;
+}
+.rail-list .challenge-title { font-weight: inherit; }
+
+/* A ring you can read at a glance: filled means done, ringed in the
+   accent means "you are here", empty means not yet. */
+.rail-mark {
+  flex: none; width: 15px; height: 15px; border-radius: 50%;
+  border: 1.5px solid var(--border); background: transparent;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: .62rem; font-weight: 900; color: var(--bg); line-height: 1;
+}
+.rail-mark.done { background: var(--quest); border-color: var(--quest); }
+.rail-mark.now { border-color: var(--quest); border-width: 2.5px; }
+
+.source-list {
+  list-style: none; margin: 0 0 8px; padding: 0;
+  font-family: var(--font-mono); font-size: .76rem; line-height: 1.7;
+  color: var(--muted);
+}
+
+/* ------------------------------------------------------------ the lesson */
+
+.zone-head { border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+.zone-head h1 { font-size: 2.05rem; margin: 4px 0 6px; }
+.zone-sub {
+  margin: 0; color: var(--muted); font-size: .9rem;
+  font-family: var(--font-mono);
+}
+.objectives { margin: 22px 0; }
+.objectives .panel-kind { color: var(--quest); margin: 0 0 8px; }
+.objectives ul { padding-left: 20px; margin: 0; }
+.objectives li { margin: 4px 0; }
+
+/* Lesson prose is set in the serif at a slightly larger size. This is
+   the one part of the site meant to be READ rather than operated. */
+.lesson { max-width: 66ch; font-family: var(--font-serif);
+          font-size: 1.12rem; line-height: 1.72; }
+.lesson h2, .lesson h3 { margin-top: 28px; }
+.lesson code, .lesson pre { font-family: var(--font-mono); }
 .lesson .callout {
-  border-left: 4px solid var(--brand); background: var(--brand-soft);
-  border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 16px 0;
+  border-left: 3px solid var(--brand); background: var(--brand-soft);
+  border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 18px 0;
+  font-family: var(--font-sans); font-size: .95rem;
 }
 .lesson .callout.warn { border-left-color: var(--warm);
   background: color-mix(in srgb, var(--warm) 14%, var(--bg)); }
 .zone-source { font-size: .84rem; color: var(--muted); font-style: italic; }
+.zone-cta { margin: 26px 0 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
-.challenge-list ol { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
-.challenge-row { margin: 0; }
-.challenge-link {
-  display: flex; gap: 12px; align-items: flex-start; padding: 11px 14px;
-  border: 1.5px solid var(--border); border-radius: var(--radius);
-  background: var(--panel); color: var(--text);
-}
-.challenge-link:hover { border-color: var(--quest); text-decoration: none; }
-.challenge-row.passed .challenge-link { border-color: var(--good); }
-.challenge-status {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 26px; height: 26px; flex: 0 0 auto; border-radius: 50%;
-  background: var(--bg-soft); font-weight: 800; font-size: .85rem;
-}
-.challenge-row.passed .challenge-status { background: var(--good); color: #fff; }
-.challenge-body { display: flex; flex-direction: column; gap: 3px; }
-.challenge-title { font-weight: 700; }
-.challenge-tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .tag {
-  font-size: .72rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: .05em; padding: 2px 8px; border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: .66rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .06em; padding: 2px 7px; border-radius: 5px;
   background: var(--bg-soft); color: var(--muted);
 }
-.tag-boss { background: var(--quest); color: #fff; }
-.tag-xp { background: var(--brand-soft); color: var(--brand-strong); }
-.tag-done { background: var(--good); color: #fff; }
-.planned { color: var(--muted); padding: 4px 0; }
-.challenge-list.stub .note { font-size: .86rem; color: var(--muted); }
+.tag-boss { background: var(--side-soft); color: var(--side); }
+.tag-xp { background: var(--quest-soft); color: var(--quest); }
+.tag-done { background: var(--quest); color: var(--bg); }
+.planned { color: var(--muted); font-size: .88rem; }
+.challenge-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* One column below this: the rail becomes a header for the lesson,
+   which is the right order to read them in anyway. */
+@media (max-width: 900px) {
+  .zone-layout { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+  .zone-rail { position: static; }
+}
 
 /* ------------------------------------------------------------- challenge */
 
-.view-challenge {
-  max-width: 1280px;
-  display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 420px); gap: 26px;
-  align-items: start;
+/* Three columns: what to do, where you do it, what happened. Each rail
+   holds still while the middle scrolls, so the task and the shop are
+   never scrolled off while you are typing against them. */
+.view-challenge { max-width: 1560px; }
+.challenge-layout {
+  display: grid; gap: 20px; align-items: start;
+  grid-template-columns: minmax(240px, 300px) minmax(0, 1.25fr) minmax(320px, 1fr);
 }
-.challenge-side { position: sticky; top: 86px; }
-.side-title { margin-top: 0; font-size: .95rem; }
-.app-frame {
-  width: 100%; height: 460px; border: 1.5px solid var(--border);
-  border-radius: var(--radius); background: #fff;
+.challenge-rail, .challenge-side { position: sticky; top: 74px; display: grid; gap: 14px; }
+
+.challenge-bar {
+  display: flex; flex-wrap: wrap; gap: 10px 18px;
+  align-items: center; justify-content: space-between; margin-bottom: 16px;
 }
+.bar-actions { display: flex; gap: 8px; align-items: center; }
+
+/* -- the objective and scoring panels -- */
+
+.objective-title { margin: 0 0 10px; font-weight: 700; line-height: 1.35; }
+.objective-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.objective-list li {
+  display: flex; gap: 9px; align-items: flex-start;
+  font-size: .87rem; line-height: 1.45; color: var(--muted);
+}
+.objective-box {
+  flex: none; width: 14px; height: 14px; margin-top: 3px;
+  border: 1.5px solid var(--border); border-radius: 4px;
+}
+.objective-done { margin: 12px 0 0; font-size: .84rem; color: var(--quest); font-weight: 700; }
+
+.scoring-list { list-style: none; margin: 0 0 10px; padding: 0; display: grid; gap: 5px; }
+.scoring-list li {
+  display: flex; justify-content: space-between; gap: 10px;
+  font-size: .86rem;
+}
+.scoring-list strong { font-family: var(--font-mono); color: var(--quest); }
+.scoring-list li.muted strong { color: var(--dim); }
+
+/* -- the shop, in a browser -- */
+
+/* Chrome around the iframe. It is not decoration: it is what tells a
+   learner that the panel is a WEBSITE their code is driving, and not
+   another part of this page. */
+.browser-frame {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  overflow: hidden; background: var(--panel);
+}
+.browser-chrome {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 10px; background: var(--bg-soft);
+  border-bottom: 1px solid var(--border);
+}
+.browser-dots {
+  flex: none; width: 34px; height: 8px; border-radius: 999px;
+  background: repeating-linear-gradient(to right,
+    var(--border) 0 8px, transparent 8px 13px);
+}
+.browser-url {
+  flex: 1 1 auto; font-family: var(--font-mono); font-size: .72rem;
+  color: var(--muted); background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; padding: 3px 9px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.browser-badge {
+  flex: none; font-family: var(--font-mono); font-size: .62rem; font-weight: 700;
+  letter-spacing: .1em; color: var(--warm);
+  border: 1px solid var(--warm); border-radius: 4px; padding: 1px 5px;
+}
+.app-frame { display: block; width: 100%; height: 420px; border: 0; background: #fff; }
+
+.results-panel {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--panel); padding: 14px 16px;
+}
+.results-panel .panel-kind { margin: 0 0 8px; color: var(--muted); }
+
 .brief { max-width: 66ch; }
 .brief ul, .brief ol { padding-left: 20px; }
+.run-hint { margin-top: 10px; }
+
+/* Two columns, then one. The shop follows the editor rather than the
+   task, because once you are typing it is the thing you look at. */
+@media (max-width: 1300px) {
+  .challenge-layout { grid-template-columns: minmax(220px, 280px) minmax(0, 1fr); }
+  .challenge-side { grid-column: 1 / -1; position: static;
+                    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}
+@media (max-width: 900px) {
+  .challenge-layout, .challenge-side { grid-template-columns: minmax(0, 1fr); }
+  .challenge-rail { position: static; }
+}
 
 /* ---------------------------------------------------------------- editor */
 
-.cell { margin: 14px 0; }
-.cell-name {
-  display: inline-block; margin: 0; font-size: .74rem; font-weight: 700;
-  background: var(--brand); color: #fff; border-radius: 8px 8px 0 0; padding: 2px 12px;
-  font-family: ui-monospace, Consolas, monospace;
+/* An editor that looks like an editor: a file tab on top, the code, and
+   a status strip underneath saying what will run it. */
+.editor-card {
+  margin: 14px 0; border: 1px solid var(--border); border-radius: 10px;
+  overflow: hidden; background: var(--code-bg);
 }
-.code-editor {
-  display: flex; border: 1.5px solid var(--border); border-radius: 0 8px 8px 8px;
-  background: var(--code-bg); overflow: hidden;
+.editor-tabs {
+  display: flex; gap: 2px; background: var(--bg-soft);
+  border-bottom: 1px solid var(--border); padding: 0 6px;
 }
+.editor-tab {
+  font-family: var(--font-mono); font-size: .76rem; padding: 7px 12px;
+  color: var(--muted); border-bottom: 2px solid transparent;
+}
+.editor-tab.active { color: var(--text); border-bottom-color: var(--quest); }
+.editor-status {
+  display: flex; flex-wrap: wrap; gap: 14px; padding: 5px 12px;
+  border-top: 1px solid var(--border); background: var(--bg-soft);
+  font-family: var(--font-mono); font-size: .68rem; color: var(--dim);
+}
+.editor-status .status-run { margin-left: auto; }
+.code-editor { display: flex; background: var(--code-bg); overflow: hidden; }
 .code-gutter {
   padding: 12px 8px 12px 12px; text-align: right; color: var(--muted);
   font-size: .85rem; line-height: 1.55; white-space: pre; user-select: none;
@@ -295,12 +766,14 @@ a.zone-node:hover { border-color: var(--quest); text-decoration: none; }
 .code-input::selection { background: color-mix(in srgb, var(--quest) 35%, transparent); }
 .code-input:focus { outline: none; }
 .code-editor:focus-within { border-color: var(--quest); }
-.tok-comment { color: var(--muted); font-style: italic; }
-.tok-string { color: #b3541e; }
-.tok-number { color: #8250df; }
-.tok-key { color: #cf222e; font-weight: 600; }
-.tok-api { color: var(--brand-strong); font-weight: 600; }
-.tok-builtin { color: #0550ae; }
+/* Syntax colours come from the theme, so code reads the same on paper
+   cream as it does on green-black. */
+.tok-comment { color: var(--tok-cmt); font-style: italic; }
+.tok-string { color: var(--tok-str); }
+.tok-number { color: var(--tok-num); }
+.tok-key { color: var(--tok-key); }
+.tok-api { color: var(--tok-fn); }
+.tok-builtin { color: var(--tok-builtin); }
 @media (prefers-color-scheme: dark) {
   .tok-string { color: #e2a06a; }
   .tok-number { color: #c9a6ff; }
@@ -316,7 +789,7 @@ a.zone-node:hover { border-color: var(--quest); text-decoration: none; }
 .inspector-line:focus-within { border-color: var(--quest); }
 .inspector-prefix {
   padding: 10px 4px 10px 12px; color: var(--muted); font-size: .9rem;
-  font-family: ui-monospace, Consolas, monospace;
+  font-family: var(--font-mono);
 }
 .locator-input {
   flex: 1 1 auto; min-width: 0; border: 0; background: transparent; color: var(--text);
@@ -385,11 +858,159 @@ a.zone-node:hover { border-color: var(--quest); text-decoration: none; }
 .next-up { margin-top: 14px; }
 .stdout summary { cursor: pointer; font-size: .88rem; color: var(--muted); }
 
-.hints { margin: 18px 0; padding: 12px 16px; border: 1px dashed var(--border);
-  border-radius: var(--radius); }
-.hints h3 { margin-top: 0; }
+.hints .panel-kind {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 10px; margin: 0 0 6px; color: var(--muted);
+}
+.hints-spent { text-transform: none; letter-spacing: .04em; color: var(--dim); }
 .hint { margin: 8px 0; }
-.hint-body { margin: 6px 0 0; font-size: .93rem; }
+.hint-body { margin: 6px 0 0; font-size: .9rem; }
+.results-idle { margin: 0; }
+
+/* -------------------------------------------------------------- victory */
+
+/* One centred card. This is the only screen on the site with nothing to
+   do on it, so it gets to be quiet - no rail, no map, no next task
+   competing with the thing being celebrated. */
+.view-victory { max-width: 780px; }
+.victory-card {
+  position: relative; overflow: hidden;
+  border: 1px solid var(--border); border-radius: 18px;
+  background: var(--panel); padding: 34px 34px 30px; text-align: center;
+}
+.victory-card .eyebrow { color: var(--quest); margin: 0 0 20px; }
+.victory-card h1 { font-size: 2.3rem; margin: 18px 0 6px; }
+.victory-line { margin: 0 auto; max-width: 46ch; }
+
+.victory-card { animation: qfa-rise .42s cubic-bezier(.2, .8, .2, 1) both; }
+.victory-crest {
+  width: 96px; height: 96px; margin: 0 auto; border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; background: var(--side-soft);
+  border: 2px dashed var(--side); color: var(--side);
+  animation: qfa-medal .5s cubic-bezier(.2, .8, .2, 1) both;
+}
+
+/* Five pieces, staggered, gone in three seconds. Enough to mark the
+   moment; not so much that clearing a zone becomes a cutscene. */
+.confetti { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.confetti i {
+  position: absolute; top: 0; width: 7px; height: 7px; border-radius: 1px;
+  animation: qfa-fall 2.6s ease-in forwards;
+}
+.crest-abbr { font-family: var(--font-mono); font-size: 1.4rem; font-weight: 700; }
+.crest-word {
+  font-family: var(--font-mono); font-size: .56rem;
+  letter-spacing: .18em; text-transform: uppercase; opacity: .8;
+}
+
+.stat-tiles {
+  list-style: none; padding: 0; margin: 26px 0 0;
+  display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+}
+.stat-tile {
+  border: 1px solid var(--border); border-radius: 10px;
+  background: var(--bg-soft); padding: 12px 8px;
+  display: grid; gap: 2px;
+}
+.stat-tile strong {
+  font-family: var(--font-mono); font-size: 1.25rem; color: var(--quest);
+  font-variant-numeric: tabular-nums;
+}
+.stat-tile span { font-size: .74rem; color: var(--muted); }
+
+.victory-panel {
+  margin-top: 22px; text-align: left;
+  border: 1px solid var(--border); border-radius: 12px;
+  background: var(--bg-soft); padding: 16px 18px;
+}
+.victory-panel .panel-kind { margin: 0 0 10px; color: var(--muted); }
+.skill-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
+.skill-list li { display: flex; gap: 10px; align-items: flex-start; font-size: .92rem; }
+.skill-tick { color: var(--quest); font-weight: 900; flex: none; }
+
+.victory-next {
+  margin-top: 16px; text-align: left; display: flex; gap: 14px; align-items: center;
+  border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px;
+}
+.next-mark {
+  flex: none; width: 42px; height: 42px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 2px solid var(--quest); color: var(--quest);
+  font-family: var(--font-mono); font-size: .8rem; font-weight: 700;
+}
+.next-words { display: flex; flex-direction: column; gap: 2px; }
+
+.victory-actions {
+  margin: 26px 0 0; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+}
+
+/* -------------------------------------------------------------- profile */
+
+.view-profile { max-width: 1160px; display: grid; gap: 18px; }
+.profile-head {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--panel); padding: 20px 22px;
+  display: flex; flex-wrap: wrap; gap: 22px 34px;
+  align-items: center; justify-content: space-between;
+}
+.profile-id { display: flex; gap: 18px; align-items: center; min-width: 0; }
+.profile-mark {
+  flex: none; width: 62px; height: 62px; border-radius: 14px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--quest-soft); color: var(--quest);
+  border: 1.5px solid var(--quest);
+  font-family: var(--font-mono); font-size: .82rem; font-weight: 700;
+}
+.profile-head h1 { font-size: 1.6rem; margin: 0 0 2px; }
+.profile-since { margin: 0 0 8px; font-size: .82rem; color: var(--muted);
+                 font-family: var(--font-mono); }
+.profile-bar { width: min(320px, 60vw); }
+.profile-next { margin: 6px 0 0; font-size: .78rem; color: var(--muted);
+                font-family: var(--font-mono); }
+/* min() not a bare min-width: on a 360px phone a 300px floor is wider
+   than the card it sits in, and the whole page scrolls sideways. */
+.profile-head .stat-tiles { margin: 0; min-width: min(300px, 100%); flex: 1 1 300px; }
+
+.profile-grid {
+  display: grid; gap: 18px; align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.habit-list { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 12px; }
+.habit-list li { display: flex; gap: 14px; align-items: baseline; }
+.habit-value {
+  flex: none; min-width: 2.4ch; text-align: right;
+  font-family: var(--font-mono); font-size: 1.15rem; font-weight: 700;
+  color: var(--quest); font-variant-numeric: tabular-nums;
+}
+.habit-words { display: flex; flex-direction: column; gap: 1px; }
+
+.zone-bars { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 7px; }
+.zone-bars li {
+  display: grid; grid-template-columns: minmax(0, 1fr) 90px 42px;
+  gap: 12px; align-items: center; font-size: .86rem;
+}
+.zone-bars li.untouched .zone-bar-name { color: var(--muted); }
+.zone-bar-name { color: var(--text); overflow: hidden; text-overflow: ellipsis;
+                 white-space: nowrap; }
+.zone-bar-name:hover { color: var(--quest); }
+.zone-bar { height: 6px; border-radius: 999px; background: var(--border); overflow: hidden; }
+.zone-bar-fill { display: block; height: 100%; background: var(--quest); border-radius: 999px; }
+.zone-bar-note {
+  font-family: var(--font-mono); font-size: .74rem; color: var(--muted);
+  text-align: right; font-variant-numeric: tabular-nums;
+}
+.profile-data .toolbar { margin-bottom: 6px; }
+
+@media (max-width: 520px) {
+  /* The bar is the first thing to go: the percentage beside it says the
+     same in less room. */
+  .zone-bars li { grid-template-columns: minmax(0, 1fr) 46px; }
+  .zone-bars .zone-bar { display: none; }
+  .profile-id { gap: 12px; }
+  .profile-head { padding: 16px; }
+}
 
 /* --------------------------------------------------------------- badges */
 

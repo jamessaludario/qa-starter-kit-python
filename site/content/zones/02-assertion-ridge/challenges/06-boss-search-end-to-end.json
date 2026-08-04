@@ -1,0 +1,71 @@
+{
+  "id": "boss-search-end-to-end",
+  "title": "Boss: rebuild Test Case 9",
+  "kind": "write-the-test",
+  "boss": true,
+  "xp": 70,
+  "brief": "Write `learn/test_tc09_search_product.py` from scratch, without looking at it. No starter code.\n\n**The behaviour to prove:** searching the products page for *dress* returns dresses.\n\nEverything a reviewer will look for:\n\n- a test function named after the behaviour\n- search for `dress` from the products page\n- the **Searched Products** heading appears\n- at least one product card is visible\n- exactly **2** cards come back\n- the names are read, printed, and checked for at least one containing \"dress\"\n\nEvery technique in this zone, in one function. When it passes, open `learn/test_tc09_search_product.py` and compare - you should recognise your own test.",
+  "scenario": { "route": "/products" },
+  "starter": "from playwright.sync_api import Page, expect\n\n\n",
+  "solution": "from playwright.sync_api import Page, expect\n\n\ndef test_search_for_a_dress(page: Page):\n    page.goto(\"https://automationexercise.com/products\")\n\n    page.locator(\"#search_product\").fill(\"dress\")\n    page.locator(\"#submit_search\").click()\n\n    expect(page.get_by_role(\"heading\", name=\"Searched Products\")).to_be_visible()\n\n    results = page.locator(\".productinfo\")\n    expect(results.first).to_be_visible()\n    expect(results).to_have_count(2)\n\n    names = page.locator(\".productinfo p\").all_inner_texts()\n    print(f\"Products found: {names}\")\n    dresses = [name for name in names if \"dress\" in name.lower()]\n    assert len(dresses) > 0, \"Expected at least one product with 'dress' in its name\"\n",
+  "rubric": ["test-function", "has-assertion", "expect-over-assert", "no-xpath"],
+  "checks": [
+    {
+      "kind": "state",
+      "path": "query",
+      "equals": "dress",
+      "label": "The shop ran a search for \"dress\"",
+      "feedback": "No finished search for \"dress\". Fill #search_product, then click #submit_search."
+    },
+    {
+      "kind": "state",
+      "path": "searchResults",
+      "equals": 2,
+      "label": "Two dresses came back"
+    },
+    {
+      "kind": "matcher",
+      "name": "to_be_visible",
+      "atLeast": 2,
+      "label": "You assert both the heading and the first card are visible",
+      "feedback": "I counted fewer than two to_be_visible checks. Both matter, and they say different things: the heading proves the search ran, the card proves it returned something."
+    },
+    {
+      "kind": "matcher",
+      "name": "to_have_count",
+      "label": "You assert exactly how many results there are",
+      "feedback": "No to_have_count check ran. \"Some results\" is a weak promise - say how many, and the test notices when the search starts over-matching."
+    },
+    {
+      "kind": "action",
+      "method": "all_inner_texts",
+      "label": "You read the product names",
+      "feedback": "No all_inner_texts() call reached the page. You need the actual names to check them."
+    },
+    {
+      "kind": "printed",
+      "contains": "Dress",
+      "label": "You print what you found",
+      "feedback": "Nothing was printed containing a product name. A print here is not debugging litter - when this test fails in CI at 3 a.m., the printed list is what tells you whether the search broke or the catalogue changed."
+    },
+    {
+      "kind": "virtualMs",
+      "atLeast": 600,
+      "label": "Your test waited out the shop's response",
+      "feedback": "Your test finished too early for the results to have arrived, so the assertions were not looking at search results at all."
+    }
+  ],
+  "hints": [
+    {
+      "cost": 7,
+      "label": "Nudge",
+      "text": "Six steps, in order: goto, fill, click, expect the heading, expect the cards (visible and count), then read and check the names."
+    },
+    {
+      "cost": 12,
+      "label": "Strategy",
+      "text": "Hold the cards in a variable: results = page.locator(\".productinfo\"). Then expect(results.first).to_be_visible() and expect(results).to_have_count(2) reuse the same address. .first is needed on the visibility check because eight - well, two - cards match, and strict mode will not pick for you."
+    }
+  ],
+  "reveal": "Assertion Ridge is cleared, and you have just reproduced one of the kit's 26 real tests.\n\nThe habit to carry forward: **an assertion is a promise about behaviour you have verified, waited for properly, and can defend in review.**\n\nAhead lie the Form Marshes, Cart Caverns, and eventually Page Object Peaks - where the question becomes how to keep tests this readable once there are two hundred of them. Those zones are mapped but not yet built; `site/CONTRIBUTING-CONTENT.md` explains how to add one, and it is a single JSON file."
+}
