@@ -64,6 +64,95 @@ class ChallengePage(BasePage):
         return self.page.get_by_label(label)
 
     @property
+    def highlight_layer(self):
+        """The syntax-coloured text painted BEHIND the textarea.
+
+        It is aria-hidden - a screen reader should hear the textarea and
+        not a duplicate copy of the code - so there is no accessible name
+        to grab it by, and a CSS locator is the honest way in.
+        """
+        return self.page.locator(".code-highlight code")
+
+    @property
+    def highlight_box(self):
+        """The <pre> the painted layer sits in.
+
+        Distinct from highlight_layer on purpose: the BOX (padding, and
+        therefore where the first character starts) belongs to the pre,
+        while the TEXT metrics belong to the <code> inside it. Comparing
+        the wrong one against the textarea proves nothing.
+        """
+        return self.page.locator(".code-highlight")
+
+    @property
+    def line_numbers(self):
+        return self.page.locator(".code-gutter")
+
+    # What decides the SHAPE of a character: get any of these wrong
+    # between the two layers and the caret slides off the glyph.
+    TEXT_METRICS = (
+        "fontFamily", "fontSize", "fontWeight", "fontStyle", "fontStretch",
+        "fontVariantLigatures", "fontFeatureSettings", "lineHeight",
+        "letterSpacing", "wordSpacing", "tabSize", "whiteSpace", "textIndent",
+    )
+
+    # What decides WHERE the first character starts.
+    BOX_METRICS = (
+        "paddingTop", "paddingLeft", "borderTopWidth", "borderLeftWidth",
+        "boxSizing",
+    )
+
+    def text_metrics(self, locator) -> dict:
+        """Read the font styles that decide how a character is drawn."""
+        return self._styles(locator, self.TEXT_METRICS)
+
+    def box_metrics(self, locator) -> dict:
+        """Read the styles that decide where the text block begins."""
+        return self._styles(locator, self.BOX_METRICS)
+
+    @staticmethod
+    def _styles(locator, keys) -> dict:
+        return locator.evaluate(
+            """(el, keys) => {
+                 const style = getComputedStyle(el);
+                 return Object.fromEntries(keys.map((k) => [k, style[k]]));
+               }""",
+            list(keys),
+        )
+
+    def paint_drift(self, sample: str) -> float:
+        """How far the painted text and the caret disagree, in pixels.
+
+        Lays the same string out twice - once in the painted layer's
+        font, once in the textarea's - and returns the gap at the end of
+        it. 0 means the caret sits exactly on the character a learner is
+        editing; anything else is drift you can see and feel, and it
+        grows the further along the line you type.
+        """
+        return self.page.locator(".code-surface").evaluate(
+            """(surface, sample) => {
+                 const copied = ["fontFamily", "fontSize", "fontWeight",
+                   "fontStyle", "fontStretch", "fontVariantLigatures",
+                   "fontFeatureSettings", "letterSpacing", "wordSpacing"];
+                 const widthIn = (source) => {
+                   const style = getComputedStyle(source);
+                   const probe = document.createElement("span");
+                   copied.forEach((k) => { probe.style[k] = style[k]; });
+                   probe.style.whiteSpace = "pre";
+                   probe.style.position = "absolute";
+                   probe.textContent = sample;
+                   surface.appendChild(probe);
+                   const width = probe.getBoundingClientRect().width;
+                   probe.remove();
+                   return width;
+                 };
+                 return Math.abs(widthIn(surface.querySelector(".code-highlight code"))
+                               - widthIn(surface.querySelector(".code-input")));
+               }""",
+            sample,
+        )
+
+    @property
     def locator_box(self):
         """The single-line input used by locator-match challenges."""
         return self.page.get_by_label("Locator expression, written after page.")

@@ -176,7 +176,11 @@ pre {
   background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px;
   padding: 12px 14px; overflow-x: auto; font-size: .85rem; line-height: 1.55;
 }
-pre code { background: none; padding: 0; }
+/* font-size:inherit matters more than it looks. The rule above shrinks
+   inline code to .88em, which is right inside a sentence and wrong
+   inside a <pre> - it would render every code block at .748rem and,
+   worse, break the editor's caret alignment (see .code-highlight). */
+pre code { background: none; padding: 0; font-size: inherit; }
 
 .sr-only {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -758,6 +762,17 @@ a.zone-node:focus-visible {
 }
 .code-highlight {
   position: absolute; inset: 0; pointer-events: none; border-radius: 0;
+}
+/* The painted layer has to lay text out EXACTLY like the transparent
+   textarea sitting on top of it. Any difference in font, size, spacing
+   or padding shows up as the caret drifting away from the glyphs - a
+   little on the first character, a whole word by the end of the line.
+   So the <code> takes the pre's metrics wholesale rather than inheriting
+   the .88em that inline code gets in prose.
+   site/tests/test_site_challenge.py asserts these stay identical. */
+.code-highlight code {
+  font: inherit; letter-spacing: inherit; word-spacing: inherit;
+  background: none; padding: 0; border: 0;
 }
 .code-input {
   position: relative; width: 100%; display: block; resize: none;
