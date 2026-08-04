@@ -6,11 +6,15 @@
  * detour" - so colour carries meaning rather than decoration.
  *
  * Typography carries as much of the look as colour does, and each family
- * has one job: a serif for headings and lesson prose (long reading),
- * a mono for the small uppercase labels AND all code, a sans for the
- * interface. System stacks rather than webfonts - the page already has
- * an 11 MB Python runtime to budget for, and 700 KB of woff2 to look
- * like a design mock is a bad trade.
+ * has one job: a serif for headings and lesson prose (long reading), a
+ * mono for the small uppercase labels AND all code, a sans for the
+ * interface.
+ *
+ * The families are IBM Plex, vendored by site/fetch_vendor.py - but only
+ * the LATIN subsets, ~113 KB rather than the ~700 KB of every script,
+ * and every face is font-display:swap. Skip the fetch and the system
+ * stacks below take over: plainer, identical to use. Fonts are never
+ * allowed to be the reason a lesson is blank.
  *
  * Both palettes are keyed off data-theme, which main.js sets from the
  * saved preference or the system one. Doing the resolving in JS rather
@@ -19,53 +23,80 @@
  */
 
 :root, :root[data-theme="light"] {
-  --brand: #0f7d63;
-  --brand-strong: #0b6350;
-  --brand-soft: #dff2ea;
-  --quest: #0f8a63;
-  --quest-soft: #e3f5ec;
-  --side: #8a6626;
-  --side-soft: #f7efdf;
-  --warm: #b8791f;
-  --good: #0d9573;
-  --bad: #c0392b;
-  --bg: #fbfaf7;
-  --bg-soft: #f3f2ed;
-  --panel: #ffffff;
-  --text: #1c2422;
-  --muted: #5d6b66;
-  --dim: #8b968f;
-  --border: #e3e5e0;
-  --code-bg: #f3f2ed;
+  --brand: #1c8a60;
+  --brand-strong: #146b4a;
+  --brand-soft: rgba(28, 138, 96, .10);
+  --quest: #1c8a60;
+  --quest-soft: rgba(28, 138, 96, .10);
+  --quest-line: rgba(28, 138, 96, .32);
+  --accent-ink: #ffffff;
+  --side: #8a6a2c;
+  --side-soft: rgba(138, 106, 44, .12);
+  --warm: #8a6a2c;
+  --good: #1c8a60;
+  --bad: #ad552f;
+  --bad-soft: rgba(173, 85, 47, .10);
+  /* A warm paper cream, not a white. The dark theme is a green-black
+     ground, and the light one has to be its daylight equivalent rather
+     than a different design. */
+  --bg: #f2efe6;
+  --bg-soft: #f5f2e8;
+  --panel: #fbfaf4;
+  --panel-3: #eeeadd;
+  --text: #1b201e;
+  --muted: #4e5955;
+  --dim: #7f8983;
+  --border: #dcd6c4;
+  --border-soft: #e7e2d4;
+  --code-bg: #f7f4ea;
+  --terrain: rgba(60, 70, 66, .10);
   --radius: 12px;
   --shadow: 0 1px 2px rgba(28, 36, 34, .05), 0 10px 28px rgba(28, 36, 34, .06);
 
-  --font-sans: "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;
-  --font-serif: Charter, "Bitstream Charter", "Iowan Old Style", Georgia,
+  /* Syntax colours, so a code block reads the same in both themes. */
+  --tok-key: #6b39c4; --tok-str: #8f5316; --tok-fn: #1c6597;
+  --tok-cmt: #8a938c; --tok-num: #ad552f; --tok-builtin: #166b5b;
+
+  /* IBM Plex when site/fetch_vendor.py has vendored it, otherwise the
+     nearest system stack. The site is designed for Plex; it is legible
+     without it. */
+  --font-sans: "IBM Plex Sans", "Segoe UI", -apple-system, "Helvetica Neue",
+               Arial, sans-serif;
+  --font-serif: "IBM Plex Serif", Charter, "Bitstream Charter", Georgia,
                 "Times New Roman", serif;
-  --font-mono: ui-monospace, "Cascadia Code", Consolas, Menlo, monospace;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Code", Consolas,
+               Menlo, monospace;
 }
 
 :root[data-theme="dark"] {
   --brand: #5fd0a0;
   --brand-strong: #8ce0bd;
-  --brand-soft: #102b22;
+  --brand-soft: rgba(95, 208, 160, .13);
   --quest: #5fd0a0;
   --quest-soft: rgba(95, 208, 160, .13);
+  --quest-line: rgba(95, 208, 160, .34);
+  --accent-ink: #07130d;
   --side: #c9a15c;
   --side-soft: rgba(201, 161, 92, .14);
   --warm: #c9a15c;
   --good: #5fd0a0;
-  --bad: #f0857d;
+  --bad: #e08a6a;
+  --bad-soft: rgba(224, 138, 106, .13);
   --bg: #0d100f;
   --bg-soft: #141917;
   --panel: #141917;
+  --panel-3: #212927;
   --text: #e8ede9;
   --muted: #a4b2ad;
   --dim: #6f807b;
   --border: #26302d;
-  --code-bg: #1a201e;
+  --border-soft: #1e2724;
+  --code-bg: #0a0d0c;
+  --terrain: rgba(164, 178, 173, .09);
   --shadow: none;
+
+  --tok-key: #c2a5f5; --tok-str: #dba36f; --tok-fn: #7fc0f0;
+  --tok-cmt: #5f7370; --tok-num: #e08a6a; --tok-builtin: #8fd6c4;
 }
 
 * { box-sizing: border-box; }
@@ -79,9 +110,36 @@ body {
   color: var(--text);
 }
 
-/* Headings are set in the serif. It is the one signal that says "this is
-   something to read" rather than "this is a control". */
-h1, h2, h3, .serif { font-family: var(--font-serif); }
+/* Headings are set in the serif at weight 600 with a slight negative
+   tracking - Plex Serif is wide, and headings look loose without it. */
+h1, h2, h3, .serif { font-family: var(--font-serif); font-weight: 600; }
+h1 { letter-spacing: -.015em; }
+
+/* The motion vocabulary. Four movements, each with one job: a card
+   arriving, the trail flowing forward, the zone you are on breathing,
+   and a medal landing. All of it is switched off wholesale below for
+   anyone who asked for less. */
+@keyframes qfa-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes qfa-dash { to { stroke-dashoffset: -24; } }
+@keyframes qfa-pulse {
+  0%   { box-shadow: 0 0 0 0 var(--quest-line); }
+  70%  { box-shadow: 0 0 0 14px rgba(0, 0, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+}
+@keyframes qfa-medal { from { opacity: 0; transform: scale(.88); } to { opacity: 1; transform: scale(1); } }
+@keyframes qfa-fall {
+  0%   { opacity: 0; transform: translateY(-14px) rotate(0deg); }
+  12%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(190px) rotate(220deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}
 
 /* The small uppercase label, in mono - CHAPTER I, OBJECTIVE, HINTS.
    Mono plus letter-spacing reads as machine-printed, which is exactly
@@ -134,10 +192,11 @@ pre code { background: none; padding: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
 .btn:hover { text-decoration: none; }
-/* Dark text on the mint fill: the accent is light enough that white
-   would fail contrast, and a primary button is the one thing that must
-   never be hard to read. */
-.btn.primary { background: var(--quest); color: var(--bg); }
+/* The ink on the accent is a token of its own, because the right
+   answer flips: white on the deep green of the light theme, near-black
+   on the bright mint of the dark one. A primary button is the last
+   thing that may be hard to read. */
+.btn.primary { background: var(--quest); color: var(--accent-ink); }
 .btn.primary:hover { background: var(--brand-strong); }
 .btn.primary:disabled { background: var(--muted); cursor: progress; }
 .btn.ghost { border-color: var(--border); color: var(--text); background: var(--panel); }
@@ -338,16 +397,31 @@ a.zone-node:focus-visible {
     background: var(--bg-soft); padding: 8px;
   }
   .map-scenery { display: block; position: absolute; inset: 0; width: 100%; height: 100%; }
-  /* Texture, not information. If you notice it, it is too strong. */
-  .map-contour { fill: none; stroke: var(--border); opacity: .3; }
+  /* Texture, not information. If you notice it, it is too strong.
+     --terrain is its own token because it has to be fainter than any
+     border in both themes. */
+  .map-contour { fill: none; stroke: var(--terrain); }
   /* Out on the trail the lock REASON is dropped - it wraps onto three
      lines and lands on the next zone's name. The tooltip still has it,
      and so does the stacked layout. */
   .zone-why { display: none; }
   .trail { fill: none; stroke-linecap: round; stroke-linejoin: round; }
   .trail-open { stroke: var(--quest); stroke-width: 3; }
-  .trail-locked { stroke: var(--dim); stroke-width: 2; stroke-dasharray: 1 7; opacity: .8; }
-  .trail-side { stroke: var(--side); stroke-width: 2; stroke-dasharray: 6 6; opacity: .85; }
+  /* The road ahead flows towards you. It is the one piece of motion on
+     the map, and it points the way you are going. */
+  .trail-locked {
+    stroke: var(--dim); stroke-width: 2; stroke-dasharray: 1 7; opacity: .8;
+    animation: qfa-dash 3.5s linear infinite;
+  }
+  .trail-side {
+    stroke: var(--side); stroke-width: 2; stroke-dasharray: 6 6; opacity: .85;
+  }
+
+  /* The zone you can actually start breathes, so the eye lands on it
+     before it has read a word. */
+  .zone-node.open .zone-dot, .zone-node.started .zone-dot {
+    animation: qfa-pulse 2.6s ease-out infinite;
+  }
 
   .quest-map { display: block; height: 100%; position: relative; }
   .zone-item {
@@ -473,7 +547,8 @@ a.zone-node:focus-visible {
 
 /* Lesson prose is set in the serif at a slightly larger size. This is
    the one part of the site meant to be READ rather than operated. */
-.lesson { max-width: 68ch; font-family: var(--font-serif); font-size: 1.06rem; }
+.lesson { max-width: 66ch; font-family: var(--font-serif);
+          font-size: 1.12rem; line-height: 1.72; }
 .lesson h2, .lesson h3 { margin-top: 28px; }
 .lesson code, .lesson pre { font-family: var(--font-mono); }
 .lesson .callout {
@@ -645,12 +720,14 @@ a.zone-node:focus-visible {
 .code-input::selection { background: color-mix(in srgb, var(--quest) 35%, transparent); }
 .code-input:focus { outline: none; }
 .code-editor:focus-within { border-color: var(--quest); }
-.tok-comment { color: var(--muted); font-style: italic; }
-.tok-string { color: #b3541e; }
-.tok-number { color: #8250df; }
-.tok-key { color: #cf222e; font-weight: 600; }
-.tok-api { color: var(--brand-strong); font-weight: 600; }
-.tok-builtin { color: #0550ae; }
+/* Syntax colours come from the theme, so code reads the same on paper
+   cream as it does on green-black. */
+.tok-comment { color: var(--tok-cmt); font-style: italic; }
+.tok-string { color: var(--tok-str); }
+.tok-number { color: var(--tok-num); }
+.tok-key { color: var(--tok-key); }
+.tok-api { color: var(--tok-fn); }
+.tok-builtin { color: var(--tok-builtin); }
 @media (prefers-color-scheme: dark) {
   .tok-string { color: #e2a06a; }
   .tok-number { color: #c9a6ff; }
@@ -751,6 +828,7 @@ a.zone-node:focus-visible {
    competing with the thing being celebrated. */
 .view-victory { max-width: 780px; }
 .victory-card {
+  position: relative; overflow: hidden;
   border: 1px solid var(--border); border-radius: 18px;
   background: var(--panel); padding: 34px 34px 30px; text-align: center;
 }
@@ -758,11 +836,21 @@ a.zone-node:focus-visible {
 .victory-card h1 { font-size: 2.3rem; margin: 18px 0 6px; }
 .victory-line { margin: 0 auto; max-width: 46ch; }
 
+.victory-card { animation: qfa-rise .42s cubic-bezier(.2, .8, .2, 1) both; }
 .victory-crest {
   width: 96px; height: 96px; margin: 0 auto; border-radius: 50%;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 2px; background: var(--side-soft);
   border: 2px dashed var(--side); color: var(--side);
+  animation: qfa-medal .5s cubic-bezier(.2, .8, .2, 1) both;
+}
+
+/* Five pieces, staggered, gone in three seconds. Enough to mark the
+   moment; not so much that clearing a zone becomes a cutscene. */
+.confetti { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.confetti i {
+  position: absolute; top: 0; width: 7px; height: 7px; border-radius: 1px;
+  animation: qfa-fall 2.6s ease-in forwards;
 }
 .crest-abbr { font-family: var(--font-mono); font-size: 1.4rem; font-weight: 700; }
 .crest-word {

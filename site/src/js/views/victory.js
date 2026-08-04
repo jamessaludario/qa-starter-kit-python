@@ -100,6 +100,16 @@ export function renderVictory(content, zoneId) {
     h("span", { class: "crest-word", text: "Badge" })
   ]);
 
+  // Five pieces, staggered, gone in three seconds. Decorative only, so
+  // it is hidden from assistive tech and stopped by reduced-motion.
+  var confetti = h("div", { class: "confetti", "aria-hidden": "true" },
+    [[8, 0.05], [28, 0.35], [50, 0.6], [72, 0.2], [92, 0.8]].map(function (bit) {
+      return h("i", {
+        style: "left:" + bit[0] + "%; animation-delay:" + bit[1] + "s; background:"
+          + (bit[0] % 2 ? "var(--side)" : "var(--quest)")
+      });
+    }));
+
   var stats = h("ul", { class: "stat-tiles" }, [
     statTile("+" + totals.xp, "zone XP"),
     statTile(totals.passed + "/" + totals.total, "challenges"),
@@ -142,6 +152,7 @@ export function renderVictory(content, zoneId) {
 
   return h("div", { class: "view view-victory" }, [
     h("div", { class: "victory-card" }, [
+      confetti,
       h("p", { class: "eyebrow", text: "Zone cleared" }),
       crest,
       h("h1", { text: badge ? badge.name : zone.title + " cleared" }),
