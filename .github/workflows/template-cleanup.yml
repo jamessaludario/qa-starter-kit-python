@@ -40,9 +40,11 @@ jobs:
             echo "run=false" >> "$GITHUB_OUTPUT"
           fi
 
+      # --ci skips the interactive confirmation: is_template above has
+      # already established that this is a generated copy.
       - name: Remove the learning material
         if: steps.check.outputs.run == 'true'
-        run: python .github/template-cleanup.py --yes
+        run: python .github/template-cleanup.py --yes --ci
 
       - name: Commit the result
         if: steps.check.outputs.run == 'true'

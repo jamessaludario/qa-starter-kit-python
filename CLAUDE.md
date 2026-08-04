@@ -87,9 +87,20 @@ So: **do not add a new top-level folder to KEEP_AT_ROOT unless a real
 project genuinely needs it.** What the cleanup leaves behind must stay
 identical to what `python scaffold.py` produces - two definitions of "a
 clean project" would drift apart within a month. Check it after any
-change to `template/`, `scaffold.py` or the repo's top level:
+change to `template/`, `scaffold.py` or the repo's top level - and check
+it in a THROWAWAY copy, never here:
 
-    python .github/template-cleanup.py --yes   # in a THROWAWAY copy
+    git archive HEAD | tar -x -C /tmp/kitcheck
+    cd /tmp/kitcheck && git init -q . \
+      && git remote add origin https://example.com/copy.git
+    python .github/template-cleanup.py --yes --ci
+
+The script refuses to run when `origin` points at this repo, which is
+what stops somebody pasting the command out of the README and deleting
+their own learning checkout. Do not weaken that guard: everything it
+removes is committed and restorable with `git restore .`, but
+`site/vendor/` and `site/dist/` are git-ignored and have to be fetched
+and built again.
 
 ## Testing changes
 

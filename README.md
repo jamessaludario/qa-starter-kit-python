@@ -189,11 +189,15 @@ playwright install chromium
 pytest
 ```
 
-If you have Actions disabled, do the same thing by hand:
+If you have Actions disabled, do the same thing by hand **in your copy**
+— it lists what it will delete and waits for you to type `delete`:
 
 ```bash
 python .github/template-cleanup.py --yes
 ```
+
+> It refuses to run in a checkout of the kit itself (it checks the git
+> remote), so you cannot wipe your learning copy with it by accident.
 
 **B. Fresh project next to the kit:**
 

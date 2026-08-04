@@ -22,11 +22,21 @@ hand from the repository root:
 
     python .github/template-cleanup.py --yes
 
-It refuses to do anything without --yes, so nobody deletes their
-checkout of the learning kit by opening the wrong file.
+THIS DELETES THINGS, so it defends itself three ways:
+
+  * --yes is required, so opening the wrong file does nothing;
+  * it refuses outright when the checkout is the learning kit itself,
+    which it works out from the git remote;
+  * run by a human it prints what will go and waits for you to type
+    "delete" (the workflow passes --ci to skip that, having already
+    checked is_template).
+
+The second guard exists because the first one was not enough: --yes is
+exactly what somebody copies out of the README while reading it.
 """
 
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -55,6 +65,31 @@ SELF = [
     ".github/template-cleanup.py",
     ".github/workflows/template-cleanup.yml",
 ]
+
+
+# The kit itself, and anything forked from it. A copy made with "Use
+# this template" has its OWN remote, so this never matches there.
+UPSTREAM = "qa-starter-kit-python"
+
+
+def is_the_learning_kit() -> bool:
+    """Is this checkout the kit rather than a project made from it?
+
+    Asked of the git remote, because the file tree cannot answer it: a
+    fresh template copy is byte-for-byte identical to the original until
+    the moment this script runs.
+    """
+    try:
+        remote = subprocess.run(
+            ["git", "remote", "get-url", "origin"],
+            cwd=ROOT, capture_output=True, text=True, timeout=10,
+            # No remote at all exits non-zero, and that is a fine answer
+            # here - it just means "cannot tell", handled below.
+            check=False,
+        ).stdout.strip()
+    except (OSError, subprocess.SubprocessError):
+        return False        # no git, no remote - cannot tell, do not block
+    return UPSTREAM in remote
 
 
 def remove(relative: str) -> bool:
@@ -104,6 +139,36 @@ def main() -> int:
     if not TEMPLATE.is_dir():
         print("No template/ folder - this repository is already clean.")
         return 0
+
+    if is_the_learning_kit() and "--force" not in sys.argv:
+        print(
+            "Refusing: this checkout IS the learning kit.\n\n"
+            "  origin points at " + UPSTREAM + ", so deleting learn/, site/,\n"
+            "  docs/, desktop/ and the rest is almost certainly not what you\n"
+            "  meant. This script is for a repository made with GitHub's\n"
+            "  \"Use this template\" button, which has its own remote.\n\n"
+            "  If you really do mean it here, pass --force. Everything it\n"
+            "  removes is committed, so `git restore .` brings it back -\n"
+            "  except site/vendor/ and site/dist/, which are git-ignored\n"
+            "  and need `python site/fetch_vendor.py` again."
+        )
+        return 1
+
+    # A human gets one more chance to notice. The workflow passes --ci,
+    # having already established is_template == false.
+    if "--ci" not in sys.argv:
+        print("This will permanently delete, from " + str(ROOT) + ":\n")
+        for entry in sorted(ROOT.iterdir()):
+            if entry.name not in KEEP_AT_ROOT:
+                print("    " + entry.name + ("/" if entry.is_dir() else ""))
+        print("\nand promote template/ to the root in their place.")
+        try:
+            if input('\nType "delete" to go ahead: ').strip().lower() != "delete":
+                print("Nothing was changed.")
+                return 1
+        except (EOFError, KeyboardInterrupt):
+            print("\nNothing was changed.")
+            return 1
 
     print("Removing the learning material...")
     for entry in sorted(ROOT.iterdir()):
