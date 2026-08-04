@@ -6,9 +6,14 @@
 
 [![Use this template](https://img.shields.io/badge/Use%20this%20template-2ea44f?style=for-the-badge&logo=github)](https://github.com/jamessaludario/qa-starter-kit-python/generate)
 
-Click **Use this template** to get your own independent copy of the kit
-on GitHub — the original stays untouched, and your copy is 100% yours
-to edit.
+Click **Use this template** when you want a **clean test project for
+your own app**. Your copy strips the learning material out of itself on
+the first push — no practice tests, no quest site, no guide, no tour —
+leaving a plain Playwright + pytest suite ready to point at your URL.
+
+**Here to learn instead?** Clone or fork this repo rather than
+templating it; the whole point of the learning tracks is that they come
+with you. See [Pick your path](#pick-your-path).
 
 **Jump to:** [Pick your path](#pick-your-path) ·
 [Guided tour](#-start-the-guided-tour-15-minutes-zero-experience-needed) ·
@@ -150,7 +155,8 @@ A hybrid **learning playground** and **ready-made test suite scaffold**:
 
 ### 🏁 Learn first (recommended)
 
-Click **Use this template** above (or clone this repo), then:
+**Clone or fork** this repo (not *Use this template* — that strips the
+learning material out on purpose), then:
 
 ```bash
 pip install -r requirements.txt
@@ -168,7 +174,28 @@ needs Node.js — everything else works without it.)
 
 ### 🚀 Test your own app
 
-**A. Fresh project next to the kit:**
+**A. On GitHub — click [Use this template](https://github.com/jamessaludario/qa-starter-kit-python/generate):**
+
+Your new repo cleans itself up on the first push: a workflow removes the
+practice tests, the quest site, the guide, the desktop track and the
+tour, promotes the project skeleton to the root, commits once, and
+deletes itself. You are left with exactly what `scaffold.py` produces.
+Then:
+
+```bash
+cp .env.example .env      # put your app's name and URL in here
+pip install -r requirements.txt
+playwright install chromium
+pytest
+```
+
+If you have Actions disabled, do the same thing by hand:
+
+```bash
+python .github/template-cleanup.py --yes
+```
+
+**B. Fresh project next to the kit:**
 
 ```bash
 python scaffold.py
@@ -195,10 +222,9 @@ Files you already have are never touched; only missing ones are added.
 
 </details>
 
-**Then, either way:**
+**Then, whichever route you took:**
 
 ```bash
-cd ../my-app-tests
 pytest tests/test_smoke.py     # proves the toolchain end to end
 ```
 

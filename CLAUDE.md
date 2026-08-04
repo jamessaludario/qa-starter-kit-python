@@ -69,6 +69,28 @@ site/content/ re-presents them. So:
   engine code, say so out loud — see site/CONTRIBUTING-CONTENT.md.
 
 
+## "Use this template" must stay clean
+
+GitHub copies a template repo WHOLE - there is no way to exclude a
+folder - so `.github/template-cleanup.py` strips the learning material
+out of a generated copy on its first push, and the workflow beside it
+then deletes both.
+
+It is deliberately a KEEP list (`prompts`, `.github`, `.git`,
+`template`), not a delete list. Add a fifth track tomorrow and it is
+removed by default. That direction is the point: the failure mode should
+be "a new folder went missing from people's projects", which somebody
+notices immediately, and never "the learning kit leaked into every
+project", which nobody notices for months.
+
+So: **do not add a new top-level folder to KEEP_AT_ROOT unless a real
+project genuinely needs it.** What the cleanup leaves behind must stay
+identical to what `python scaffold.py` produces - two definitions of "a
+clean project" would drift apart within a month. Check it after any
+change to `template/`, `scaffold.py` or the repo's top level:
+
+    python .github/template-cleanup.py --yes   # in a THROWAWAY copy
+
 ## Testing changes
 
 - Quick check: `python tour.py --create-tests` then

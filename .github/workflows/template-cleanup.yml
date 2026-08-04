@@ -1,0 +1,66 @@
+# Strips the learning material out of a fresh "Use this template" copy.
+#
+# GitHub copies a template repository whole - there is no way to mark a
+# folder as "template only" - so the exclusion has to happen just after
+# the copy instead. This runs once, on the first push to a generated
+# repository, and leaves behind exactly what `python scaffold.py`
+# produces: a plain Playwright + pytest project for your own app.
+#
+# It CANNOT run on the kit itself. `is_template` is true on the original
+# and false on every copy, which is the guard below; the script adds a
+# second one by refusing to run when template/ is already gone.
+#
+# Then it deletes itself, so it can never fire twice.
+
+name: Template cleanup
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    # The whole safety story in one line: never the original.
+    if: github.event.repository.is_template == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Is there anything to clean up?
+        id: check
+        run: |
+          if [ -d template ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Already cleaned - nothing to do."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Remove the learning material
+        if: steps.check.outputs.run == 'true'
+        run: python .github/template-cleanup.py --yes
+
+      - name: Commit the result
+        if: steps.check.outputs.run == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Start from the template
+
+          Removed the learning kit (the practice tests, the quest site,
+          the guide, the desktop track and the tour) and promoted the
+          project skeleton to the root. What is left is a plain
+          Playwright + pytest suite ready for your own app:
+
+              pip install -r requirements.txt
+              playwright install chromium
+              pytest
+
+          The kit itself lives at
+          https://github.com/jamessaludario/qa-starter-kit-python"
+          git push
