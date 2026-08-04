@@ -616,6 +616,9 @@ function hintPanel(challenge, record) {
 function successCard(zone, challenge, award, badges, detail, navigate) {
   var index = zone.challenges.indexOf(challenge);
   var next = zone.challenges[index + 1];
+  // Clearing the last one in a zone is the moment the whole game layer
+  // exists for, so it does not just drop you back on the map.
+  var cleared = Game.zoneProgress(zone.id).complete;
   var lines = award
     ? award.reasons.map(function (reason) {
         return h("li", {}, [
@@ -633,11 +636,14 @@ function successCard(zone, challenge, award, badges, detail, navigate) {
       text: "New badge: " + badges.map(function (b) { return b.name; }).join(", ") }) : null,
     challenge.reveal ? h("div", { class: "reveal", html: challenge.reveal }) : null,
     h("p", { class: "next-up" }, [
-      next
-        ? h("a", { class: "btn primary", href: "#/zone/" + zone.id + "/" + next.id },
-            ["Next: " + next.title])
-        : h("a", { class: "btn primary", href: "#/", onclick: function () { navigate("/"); } },
-            ["Back to the quest map"])
+      cleared
+        ? h("a", { class: "btn primary", href: "#/cleared/" + zone.id },
+            [zone.title + " cleared"])
+        : next
+          ? h("a", { class: "btn primary", href: "#/zone/" + zone.id + "/" + next.id },
+              ["Next: " + next.title])
+          : h("a", { class: "btn primary", href: "#/", onclick: function () { navigate("/"); } },
+              ["Back to the quest map"])
     ])
   ]);
 }

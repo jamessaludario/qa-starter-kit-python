@@ -116,7 +116,8 @@ function callToAction(zone) {
   if (!next) {
     if (!zone.challenges.length) return null;
     return h("p", { class: "zone-cta" }, [
-      h("a", { class: "btn ghost", href: "#/", text: "Zone cleared - back to the map" })
+      h("a", { class: "btn primary", href: "#/cleared/" + zone.id,
+               text: "See what you earned" })
     ]);
   }
   var started = zone.challenges.some(function (challenge) {

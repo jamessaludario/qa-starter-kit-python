@@ -91,6 +91,11 @@ h1, h2, h3, .serif { font-family: var(--font-serif); }
   font-size: .68rem; font-weight: 600; letter-spacing: .14em;
   text-transform: uppercase;
 }
+/* A panel label often carries a count on the right ("5 earned · 9 to
+   chase"), so it is a row, not a run of text. */
+.panel-kind {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+}
 
 a { color: var(--brand); text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -738,6 +743,140 @@ a.zone-node:focus-visible {
 .hint { margin: 8px 0; }
 .hint-body { margin: 6px 0 0; font-size: .9rem; }
 .results-idle { margin: 0; }
+
+/* -------------------------------------------------------------- victory */
+
+/* One centred card. This is the only screen on the site with nothing to
+   do on it, so it gets to be quiet - no rail, no map, no next task
+   competing with the thing being celebrated. */
+.view-victory { max-width: 780px; }
+.victory-card {
+  border: 1px solid var(--border); border-radius: 18px;
+  background: var(--panel); padding: 34px 34px 30px; text-align: center;
+}
+.victory-card .eyebrow { color: var(--quest); margin: 0 0 20px; }
+.victory-card h1 { font-size: 2.3rem; margin: 18px 0 6px; }
+.victory-line { margin: 0 auto; max-width: 46ch; }
+
+.victory-crest {
+  width: 96px; height: 96px; margin: 0 auto; border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; background: var(--side-soft);
+  border: 2px dashed var(--side); color: var(--side);
+}
+.crest-abbr { font-family: var(--font-mono); font-size: 1.4rem; font-weight: 700; }
+.crest-word {
+  font-family: var(--font-mono); font-size: .56rem;
+  letter-spacing: .18em; text-transform: uppercase; opacity: .8;
+}
+
+.stat-tiles {
+  list-style: none; padding: 0; margin: 26px 0 0;
+  display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+}
+.stat-tile {
+  border: 1px solid var(--border); border-radius: 10px;
+  background: var(--bg-soft); padding: 12px 8px;
+  display: grid; gap: 2px;
+}
+.stat-tile strong {
+  font-family: var(--font-mono); font-size: 1.25rem; color: var(--quest);
+  font-variant-numeric: tabular-nums;
+}
+.stat-tile span { font-size: .74rem; color: var(--muted); }
+
+.victory-panel {
+  margin-top: 22px; text-align: left;
+  border: 1px solid var(--border); border-radius: 12px;
+  background: var(--bg-soft); padding: 16px 18px;
+}
+.victory-panel .panel-kind { margin: 0 0 10px; color: var(--muted); }
+.skill-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
+.skill-list li { display: flex; gap: 10px; align-items: flex-start; font-size: .92rem; }
+.skill-tick { color: var(--quest); font-weight: 900; flex: none; }
+
+.victory-next {
+  margin-top: 16px; text-align: left; display: flex; gap: 14px; align-items: center;
+  border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px;
+}
+.next-mark {
+  flex: none; width: 42px; height: 42px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 2px solid var(--quest); color: var(--quest);
+  font-family: var(--font-mono); font-size: .8rem; font-weight: 700;
+}
+.next-words { display: flex; flex-direction: column; gap: 2px; }
+
+.victory-actions {
+  margin: 26px 0 0; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+}
+
+/* -------------------------------------------------------------- profile */
+
+.view-profile { max-width: 1160px; display: grid; gap: 18px; }
+.profile-head {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--panel); padding: 20px 22px;
+  display: flex; flex-wrap: wrap; gap: 22px 34px;
+  align-items: center; justify-content: space-between;
+}
+.profile-id { display: flex; gap: 18px; align-items: center; min-width: 0; }
+.profile-mark {
+  flex: none; width: 62px; height: 62px; border-radius: 14px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--quest-soft); color: var(--quest);
+  border: 1.5px solid var(--quest);
+  font-family: var(--font-mono); font-size: .82rem; font-weight: 700;
+}
+.profile-head h1 { font-size: 1.6rem; margin: 0 0 2px; }
+.profile-since { margin: 0 0 8px; font-size: .82rem; color: var(--muted);
+                 font-family: var(--font-mono); }
+.profile-bar { width: min(320px, 60vw); }
+.profile-next { margin: 6px 0 0; font-size: .78rem; color: var(--muted);
+                font-family: var(--font-mono); }
+/* min() not a bare min-width: on a 360px phone a 300px floor is wider
+   than the card it sits in, and the whole page scrolls sideways. */
+.profile-head .stat-tiles { margin: 0; min-width: min(300px, 100%); flex: 1 1 300px; }
+
+.profile-grid {
+  display: grid; gap: 18px; align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.habit-list { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 12px; }
+.habit-list li { display: flex; gap: 14px; align-items: baseline; }
+.habit-value {
+  flex: none; min-width: 2.4ch; text-align: right;
+  font-family: var(--font-mono); font-size: 1.15rem; font-weight: 700;
+  color: var(--quest); font-variant-numeric: tabular-nums;
+}
+.habit-words { display: flex; flex-direction: column; gap: 1px; }
+
+.zone-bars { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 7px; }
+.zone-bars li {
+  display: grid; grid-template-columns: minmax(0, 1fr) 90px 42px;
+  gap: 12px; align-items: center; font-size: .86rem;
+}
+.zone-bars li.untouched .zone-bar-name { color: var(--muted); }
+.zone-bar-name { color: var(--text); overflow: hidden; text-overflow: ellipsis;
+                 white-space: nowrap; }
+.zone-bar-name:hover { color: var(--quest); }
+.zone-bar { height: 6px; border-radius: 999px; background: var(--border); overflow: hidden; }
+.zone-bar-fill { display: block; height: 100%; background: var(--quest); border-radius: 999px; }
+.zone-bar-note {
+  font-family: var(--font-mono); font-size: .74rem; color: var(--muted);
+  text-align: right; font-variant-numeric: tabular-nums;
+}
+.profile-data .toolbar { margin-bottom: 6px; }
+
+@media (max-width: 520px) {
+  /* The bar is the first thing to go: the percentage beside it says the
+     same in less room. */
+  .zone-bars li { grid-template-columns: minmax(0, 1fr) 46px; }
+  .zone-bars .zone-bar { display: none; }
+  .profile-id { gap: 12px; }
+  .profile-head { padding: 16px; }
+}
 
 /* --------------------------------------------------------------- badges */
 
