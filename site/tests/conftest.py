@@ -16,14 +16,12 @@ Two things have to exist before a single test can run:
 Both are set up here, once per session.
 """
 
-import http.server
 import socket
 import socketserver
 import sys
 import threading
 from functools import partial
 from pathlib import Path
-from typing import ClassVar
 
 import pytest
 
@@ -66,29 +64,15 @@ import build_site  # noqa: I001
 REQUEST_LOG: list = []
 
 
-class QuietHandler(http.server.SimpleHTTPRequestHandler):
-    """Serve dist/ with the content types a browser insists on.
+class QuietHandler(build_site.DevHandler):
+    """The dev server, plus a request log and no per-request chatter.
 
-    Two of these overrides are not optional:
-
-      * .js as text/javascript - Windows resolves MIME types through the
-        registry, where .js is often text/plain. A browser refuses to
-        run an ES module served as text/plain, so on Windows the whole
-        site would silently fail to boot.
-      * .wasm as application/wasm - WebAssembly.instantiateStreaming()
-        rejects anything else, which is how you get "Pyodide failed to
-        load" with no useful error.
+    Inherits rather than re-declares: the content types a browser
+    insists on and the cache headers that stop a rebuilt site being
+    served stale are part of "how this site must be served", and two
+    copies of that would drift. The suite would then be testing a
+    server the learner never actually uses.
     """
-
-    extensions_map: ClassVar[dict] = {
-        **http.server.SimpleHTTPRequestHandler.extensions_map,
-        ".js": "text/javascript",
-        ".mjs": "text/javascript",
-        ".wasm": "application/wasm",
-        ".json": "application/json",
-        ".css": "text/css",
-        ".html": "text/html",
-    }
 
     def do_GET(self):
         REQUEST_LOG.append(self.path)

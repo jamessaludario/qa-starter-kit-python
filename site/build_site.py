@@ -31,6 +31,7 @@ import sys
 import webbrowser
 from functools import partial
 from pathlib import Path
+from typing import ClassVar
 
 SITE = Path(__file__).parent
 CONTENT = SITE / "content"
@@ -412,6 +413,43 @@ def build() -> str:
 PREFERRED_PORT = 8000
 
 
+class DevHandler(http.server.SimpleHTTPRequestHandler):
+    """Serve dist/ the way a browser needs it served.
+
+    Neither override is a nicety.
+
+    **Content types.** Windows resolves MIME types through the registry,
+    where .js is frequently text/plain. A browser refuses to execute an
+    ES module served as text/plain, and .wasm must be application/wasm
+    or WebAssembly.instantiateStreaming() rejects it - so on some
+    machines the site would simply never boot.
+
+    **Cache-Control: no-cache.** Without it a browser applies HEURISTIC
+    freshness (roughly a tenth of the file's age) and can serve
+    index.html from disk without asking. index.html is what pins every
+    other asset to ?v=<build id>, so a stale copy quietly keeps
+    requesting the previous build's CSS and JavaScript: you rebuild, you
+    reload, and you are still looking at the old site with no way to
+    tell. no-cache means "revalidate", not "do not store" - unchanged
+    files still come back as a 304, so the 11 MB runtime stays fast, and
+    the service worker's own cache is untouched.
+    """
+
+    extensions_map: ClassVar[dict] = {
+        **http.server.SimpleHTTPRequestHandler.extensions_map,
+        ".js": "text/javascript",
+        ".mjs": "text/javascript",
+        ".wasm": "application/wasm",
+        ".json": "application/json",
+        ".css": "text/css",
+        ".html": "text/html",
+    }
+
+    def end_headers(self):
+        self.send_header("Cache-Control", "no-cache")
+        super().end_headers()
+
+
 def open_server(handler):
     """Bind port 8000, or the next thing the OS will give us.
 
@@ -420,18 +458,21 @@ def open_server(handler):
     learner with a WinError 10048 traceback for a problem that is not
     theirs and not interesting.
     """
+    # Threading, not the plain TCPServer: Pyodide pulls several files at
+    # once and a single-threaded server makes them queue up behind each
+    # other, which turns a brisk first load into a slow one.
     try:
-        return socketserver.TCPServer(("127.0.0.1", PREFERRED_PORT), handler)
+        return socketserver.ThreadingTCPServer(("127.0.0.1", PREFERRED_PORT), handler)
     except OSError:
         # Port 0 = "any free port"; the OS picks and tells us which.
-        server = socketserver.TCPServer(("127.0.0.1", 0), handler)
+        server = socketserver.ThreadingTCPServer(("127.0.0.1", 0), handler)
         print(f"  (port {PREFERRED_PORT} is busy - using "
               f"{server.server_address[1]} instead)")
         return server
 
 
 def serve(open_browser: bool):
-    handler = partial(http.server.SimpleHTTPRequestHandler, directory=str(DIST))
+    handler = partial(DevHandler, directory=str(DIST))
     with open_server(handler) as httpd:
         url = f"http://127.0.0.1:{httpd.server_address[1]}/"
         print(f"\nServing {DIST} at {url}  (Ctrl+C to stop)")
