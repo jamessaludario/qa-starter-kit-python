@@ -380,8 +380,39 @@ export button is for. Loads are merged over a default object, so a save
 written by an older build still opens instead of throwing, and every
 storage call is wrapped: private mode never breaks a lesson.
 
-Editor drafts are stored separately (`quest-draft.<zone>/<challenge>`),
-so closing the tab mid-challenge does not lose the code.
+Everything else the site remembers is kept under its own key, never
+inside that object:
+
+| Key | Holds |
+|---|---|
+| `quest-for-automation.v1` | The progress object above — the only thing export/import moves |
+| `quest-draft.<zone>/<challenge>` | Unsaved editor code, so closing the tab mid-challenge loses nothing |
+| `quest-for-automation.theme` | Light or dark |
+| `quest-for-automation.terrain` | Which map ground is showing |
+
+The split is deliberate. Progress is the file a learner hands in, so a
+display preference has no business travelling in it — and importing
+somebody else's progress should not change your scenery or your theme.
+
+### The map's ground
+
+Six backgrounds behind the same trail (`src/js/views/terrain.js`):
+`blueprint` (the default), `survey`, `contours`, `terminal`, `night`,
+`flat`. Only the default argues for anything — graph paper with the
+wireframes of a product grid, a form and a cart, because the quest is
+through *pages*, not mountains. The rest are scenery, and letting a
+learner pick is the cheapest fun in the product.
+
+All six are built once and switched with a `data-terrain` attribute on
+`.map-board`. Changing ground is a class flip, never a re-render: a
+re-render would restart the road's `qfa-dash` animation and re-read
+progress for nothing. Every layer is `aria-hidden` — a screen reader
+announcing hatching between the zone names would make the map worse.
+
+Nothing in those grounds uses `<svg:text>`. The board shares its 0–100
+coordinate space with the zones and is stretched to whatever aspect the
+flex layout gives it, so a glyph in that space becomes a wedge; the
+flavour lines are HTML captions positioned over the board instead.
 
 ---
 

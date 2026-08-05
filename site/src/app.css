@@ -1071,3 +1071,93 @@ a.zone-node:focus-visible {
   .code-gutter { padding-left: 8px; }
   .app-frame { height: 320px; }
 }
+
+/* ------------------------------------------------------- map backgrounds */
+/* Append to site/src/app.css, after the existing @media (min-width: 1100px)
+ * quest-map block. Tokens used are all ones app.css already defines:
+ * --terrain, --side, --quest, --dim, --muted, --border, --panel.
+ */
+
+/* Only one ground is ever painted. The switch is a data attribute rather
+ * than a re-render, so changing scenery never restarts the trail's
+ * animation or re-reads progress. */
+.terrain-layer { display: none; }
+.map-board[data-terrain="blueprint"] .t-blueprint,
+.map-board[data-terrain="survey"] .t-survey,
+.map-board[data-terrain="contours"] .t-contours,
+.map-board[data-terrain="terminal"] .t-terminal,
+.map-board[data-terrain="night"] .t-night { display: block; }
+/* data-terrain="flat" matches nothing on purpose. */
+
+/* The captions sit in the board, not the SVG, so type keeps its shape
+ * while the drawing stretches. */
+.terrain-captions { display: none; }
+.terrain-caption {
+  position: absolute; left: 18px; bottom: 14px; margin: 0;
+  font-family: var(--font-mono); font-size: .7rem; letter-spacing: .04em;
+  color: var(--muted); opacity: .5; pointer-events: none; display: none;
+}
+.map-board[data-terrain="survey"] .for-survey,
+.map-board[data-terrain="terminal"] .for-terminal,
+.map-board[data-terrain="night"] .for-night { display: block; }
+
+/* The picker lives beside "Trophy case". Below 1100px the scenery is not
+ * drawn at all, so a control for it would be a lie. */
+.terrain-picker { display: none; }
+@media (min-width: 1100px) {
+  .terrain-picker {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 0 12px 0 14px; border: 1px solid var(--border);
+    border-radius: var(--radius); background: var(--panel);
+  }
+  .terrain-picker-label {
+    font-family: var(--font-mono); font-size: .66rem; font-weight: 700;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+  }
+  .terrain-select {
+    appearance: none; border: 0; background: none; color: var(--text);
+    font: inherit; font-size: .88rem; padding: 9px 4px 9px 0; cursor: pointer;
+  }
+  .terrain-select:focus-visible { outline: 2px solid var(--quest); outline-offset: 3px; }
+
+  .terrain-captions { display: block; }
+
+  /* 1. Blueprint: the original ground, rules unchanged (.grid-dot and
+     .wire already styled above). */
+
+  /* 2. Survey chart. Gold throughout - the map's existing "scenery, not
+     road" colour - and washed back far enough that the mint trail is
+     still the brightest thing on the board. */
+  .t-survey .t-wash { fill: var(--side); opacity: .05; }
+  .t-survey .t-rule { stroke: var(--side); opacity: .16; stroke-width: 1; }
+  .t-survey .t-tick { stroke: var(--side); opacity: .3; stroke-width: 1; }
+  .t-survey .t-frame { stroke: var(--side); opacity: .38; stroke-width: 1.5; }
+  .t-survey .t-frame-thin { stroke: var(--side); opacity: .2; stroke-width: 1; }
+  .t-survey .t-hatch-line { stroke: var(--side); opacity: .5; stroke-width: .35; }
+  .t-survey .t-water { opacity: .5; }
+  .t-survey .t-coast { stroke: var(--side); opacity: .4; stroke-width: 1.5; }
+  .t-survey .t-ridge { stroke: var(--side); opacity: .32; stroke-width: 1.2; }
+  .t-survey .t-compass circle { stroke: var(--side); opacity: .4; stroke-width: 1; }
+  .t-survey .t-rose-ns { fill: var(--side); opacity: .5; }
+  .t-survey .t-rose-ew { fill: var(--side); opacity: .25; }
+
+  /* 3. Contours: the same faint token the wireframes use, so no ground
+     is louder than another. */
+  .t-contours .t-contour { stroke: var(--terrain); stroke-width: 1; }
+
+  /* 4. Terminal: mint, but at scanline strength - a tint on the ground,
+     never a second road. */
+  .t-terminal .t-scanline { fill: var(--quest); opacity: .05; }
+  .t-terminal .t-axis { stroke: var(--quest); opacity: .18; stroke-width: 1; }
+  .t-terminal .t-tick { stroke: var(--quest); opacity: .13; stroke-width: 1; }
+  .t-terminal .t-plot { stroke: var(--quest); opacity: .1; stroke-width: 1; }
+
+  /* 5. Constellation. The stars are dim on purpose: this is the one
+     ground that competes with the trail for "small glowing thing", and
+     the trail has to win. */
+  .t-night .t-glow { opacity: .045; }
+  .t-night .t-glow.quest { fill: var(--quest); }
+  .t-night .t-glow.side { fill: var(--side); }
+  .t-night .t-star { fill: var(--muted); opacity: .4; }
+  .t-night .t-constellation { stroke: var(--dim); opacity: .22; stroke-width: 1; }
+}
