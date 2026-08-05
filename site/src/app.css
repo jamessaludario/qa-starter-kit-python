@@ -66,6 +66,13 @@
                 "Times New Roman", serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Code", Consolas,
                Menlo, monospace;
+
+  /* Tells the browser which palette its OWN widgets are in - the
+     <select> drop-down, scrollbars, focus rings. Without it the
+     dark theme gets a white native popup under light text, which is
+     invisible. Not something CSS on <option> can fix on every
+     platform, because the popup is drawn by the OS. */
+  color-scheme: light;
 }
 
 :root[data-theme="dark"] {
@@ -97,6 +104,8 @@
 
   --tok-key: #c2a5f5; --tok-str: #dba36f; --tok-fn: #7fc0f0;
   --tok-cmt: #5f7370; --tok-num: #e08a6a; --tok-builtin: #8fd6c4;
+
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -444,13 +453,17 @@ a.zone-node:focus-visible {
      --terrain is its own token because it has to sit fainter than any
      border in both themes. */
   .grid-dot { fill: var(--terrain); }
-  .map-terrain .wire rect { fill: none; stroke: var(--terrain); }
-  .map-terrain .wire .wire-solid { fill: var(--terrain); stroke: none; }
-  .map-terrain .wire .wire-page { stroke: var(--terrain); }
+  /* Scoped to .t-blueprint, NOT to the wrapper these shapes are built
+     in: the terrain switcher lifts them out of it and into its own
+     layer, and an SVG <rect> with no fill rule is not invisible - it is
+     BLACK. That is how this first shipped broken. */
+  .t-blueprint .wire rect { fill: none; stroke: var(--terrain); }
+  .t-blueprint .wire .wire-solid { fill: var(--terrain); stroke: none; }
+  .t-blueprint .wire .wire-page { stroke: var(--terrain); }
   /* Dialled well back. At full strength the wireframes read as content
      and start competing with the zone names, which is the opposite of
      what a background is for. */
-  .map-terrain { opacity: .55; }
+  .t-blueprint { opacity: .55; }
   /* Out on the trail the lock REASON is dropped - it wraps onto three
      lines and lands on the next zone's name. The tooltip still has it,
      and so does the stacked layout. */

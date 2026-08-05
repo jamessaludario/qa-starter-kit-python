@@ -115,6 +115,57 @@ def test_the_scenery_choice_stays_out_of_the_progress_export(page: Page):
         == "terminal"
 
 
+def test_no_ground_paints_a_solid_black_shape(page: Page):
+    """An SVG shape with no fill rule is not invisible - it is BLACK.
+
+    That is exactly how the blueprint shipped broken: its wireframes
+    were styled through a wrapper class, the terrain switcher lifts them
+    into its own layer, the rules stopped matching, and three faint page
+    outlines became three black slabs. Nothing in the scenery should
+    ever be a solid dark block, on any ground.
+    """
+    quest_map = MapPage(page).open()
+
+    for ground in GROUNDS:
+        quest_map.choose_terrain(ground)
+        offenders = page.evaluate(
+            """(ground) => {
+                 const layer = document.querySelector('.map-board .t-' + ground);
+                 if (!layer) return [];
+                 return [...layer.querySelectorAll('rect, circle, ellipse, path, polygon')]
+                   .filter((el) => {
+                     const fill = getComputedStyle(el).fill;
+                     // Fully opaque black is the browser's default, and
+                     // never a colour this design asks for.
+                     return fill === 'rgb(0, 0, 0)';
+                   })
+                   .map((el) => el.tagName + '.' + (el.getAttribute('class') || '?'));
+               }""",
+            ground,
+        )
+        assert not offenders, f"{ground} paints solid black: {offenders[:5]}"
+
+
+def test_native_controls_follow_the_theme(page: Page):
+    """color-scheme, or the terrain drop-down is unreadable in the dark.
+
+    A <select>'s popup is drawn by the OS, not by our CSS, so styling
+    <option> does not reliably reach it. Without color-scheme the dark
+    theme gets light text on the platform's white popup - which is how
+    the picker shipped with an invisible list.
+    """
+    quest_map = MapPage(page).open()
+
+    for wanted in ["dark", "light"]:
+        if quest_map.theme() != wanted:
+            quest_map.theme_button.click()
+        assert quest_map.theme() == wanted
+        scheme = page.evaluate(
+            "() => getComputedStyle(document.documentElement).colorScheme"
+        )
+        assert scheme == wanted, f"theme is {wanted} but color-scheme is {scheme!r}"
+
+
 def test_the_grounds_are_scenery_to_a_screen_reader(page: Page):
     """Decorative by construction: every layer is aria-hidden.
 
