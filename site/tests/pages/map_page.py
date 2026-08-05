@@ -115,6 +115,32 @@ class MapPage(BasePage):
         """Up next / Daily run / Chasing."""
         return self.page.locator(".status-card")
 
+    # ------------------------------------------------------------------
+    # Scenery
+    # ------------------------------------------------------------------
+
+    @property
+    def terrain_select(self):
+        """The ground picker, beside "Trophy case"."""
+        return self.page.get_by_label("Terrain")
+
+    @property
+    def board(self):
+        return self.page.locator(".map-board")
+
+    def terrain(self) -> str:
+        """Which ground is showing, read off the board's data attribute."""
+        return self.board.get_attribute("data-terrain")
+
+    def choose_terrain(self, value: str):
+        self.terrain_select.select_option(value)
+        return self
+
+    @property
+    def terrain_layers(self):
+        """Every ground, all of which live in the DOM at once."""
+        return self.page.locator(".terrain-layer")
+
     def status_card(self, kind: str):
         return self.status_cards.filter(
             has=self.page.locator(".card-kind").get_by_text(kind, exact=True)

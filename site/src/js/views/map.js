@@ -21,6 +21,7 @@
 import { h, plural } from "../dom.js";
 import { Game } from "../game.js";
 import { Store } from "../store.js";
+import { savedTerrain, terrainCaptions, terrainLayers, terrainPicker } from "./terrain.js";
 
 var SVG_NS = "http://www.w3.org/2000/svg";
 
@@ -182,7 +183,11 @@ function scenery(zones) {
   var main = zones.filter(function (zone) { return !zone.sideQuest; }).map(pointOf);
   var sides = zones.filter(function (zone) { return zone.sideQuest; }).map(pointOf);
 
-  board.appendChild(terrain());
+  // Every ground is built once and switched with a data attribute on
+  // .map-board, so changing scenery never re-renders the trail - which
+  // would restart its animation and re-read progress for no reason.
+  // terrain() is passed in so map.js keeps owning the page wireframes.
+  terrainLayers(terrain()).forEach(function (layer) { board.appendChild(layer); });
 
   // How far along the trail the learner has actually reached. The
   // segment INTO a zone is lit when that zone is open, so the bright
@@ -323,7 +328,8 @@ function intro(content) {
           text: (cleared ? "Continue · " : "Start · ") + next.zone.title
         })
       : null,
-    h("a", { class: "btn ghost", href: "#/badges", text: "Trophy case" })
+    h("a", { class: "btn ghost", href: "#/badges", text: "Trophy case" }),
+    terrainPicker()
   ]);
 
   return h("section", { class: "map-intro" }, [
@@ -428,9 +434,15 @@ function legend() {
 
 export function renderMap(content) {
   var zones = content.zones;
-  var board = h("div", { class: "map-board" }, [
+  var board = h("div", {
+    class: "map-board",
+    // Which ground is showing. Read once here; the picker flips it in
+    // place afterwards rather than re-rendering the map.
+    dataset: { terrain: savedTerrain() }
+  }, [
     scenery(zones),
     h("ol", { class: "quest-map" }, zones.map(zoneNode)),
+    terrainCaptions(),
     legend()
   ]);
 
