@@ -561,6 +561,10 @@ a.zone-node:focus-visible {
 .rail-card {
   border: 1px solid var(--border); border-radius: var(--radius);
   background: var(--panel); padding: 14px 16px;
+  /* The rail is 300px wide and everything in it quotes something -
+     method names, file paths, locators. None of those have spaces to
+     break at, so they need permission to break anywhere. */
+  min-width: 0; overflow-wrap: anywhere;
 }
 .rail-card .panel-kind { margin: 0 0 10px; color: var(--muted); }
 
@@ -1389,6 +1393,10 @@ a.zone-node:focus-visible {
 
 .hint-body {
   margin: 0; font-size: .86rem; line-height: 1.5; color: var(--muted);
+  /* Hints quote code, and code has no spaces to break at. Without this
+     a line like expect(page).to_have_url("https://...") is one
+     unbreakable token that paints straight out of a 300px card. */
+  overflow-wrap: anywhere;
   filter: blur(4.5px);
   /* Belt and braces with the blur: no text cursor, and nothing to
      select and paste out. */
