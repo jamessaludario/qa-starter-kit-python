@@ -250,8 +250,75 @@ class ChallengePage(BasePage):
         return self.page.locator("details.stdout")
 
     # ------------------------------------------------------------------
+    # The banner
+    # ------------------------------------------------------------------
+
+    @property
+    def banner(self):
+        """The sticky verdict at the top. data-state says which of
+        pass / fail / review it is."""
+        return self.page.locator(".verdict-banner")
+
+    @property
+    def banner_headline(self):
+        return self.banner.locator(".banner-words strong")
+
+    @property
+    def banner_detail(self):
+        return self.banner.locator(".banner-detail")
+
+    @property
+    def banner_xp(self):
+        return self.banner.locator(".banner-xp")
+
+    @property
+    def banner_action(self):
+        """The primary control: "Next: ..." or "Fix & run again"."""
+        return self.banner.locator(".banner-actions .btn.primary")
+
+    # ------------------------------------------------------------------
     # Hints
     # ------------------------------------------------------------------
+
+    @property
+    def hints(self):
+        """The tiered hint cards. Each is a button until it is spent."""
+        return self.page.locator(".hint")
+
+    def spend_hint(self, index: int):
+        self.hints.nth(index).click()
+        return self
+
+    def hint_blur(self, index: int) -> str:
+        """The CSS filter on a hint's text - "none" once it is paid for."""
+        return self.hints.nth(index).locator(".hint-body").evaluate(
+            "el => getComputedStyle(el).filter"
+        )
+
+    def wait_for_hint_revealed(self, index: int):
+        """Wait until the blur has actually gone.
+
+        Not the same as waiting for the `spent` class: the class flips
+        the instant you click, and the blur is a .18s transition. An
+        assertion that samples the computed style once will catch it
+        part-way and fail on a fast machine and pass on a slow one -
+        which is the flake this whole site teaches people to avoid.
+        """
+        self.page.wait_for_function(
+            """(index) => {
+                 const body = document.querySelectorAll('.hint')[index]
+                   .querySelector('.hint-body');
+                 return getComputedStyle(body).filter === 'none';
+               }""",
+            arg=index,
+            timeout=5000,
+        )
+        return self
+
+    def hints_spent_label(self) -> str:
+        return self.page.locator(".hints-spent").inner_text()
+
+
 
     def reveal_hint(self, label: str):
         """Open a tiered hint. The button says what it will cost."""

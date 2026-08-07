@@ -69,6 +69,15 @@ export function renderChallenge(content, zoneId, challengeId, navigate) {
   if (!challenge) return h("p", { text: "No such challenge." });
 
   var record = Store.record(zoneId, challengeId);
+
+  // The verdict, said once at the top and stuck there. The detail below
+  // is worth reading, but the two things a learner wants immediately -
+  // did it pass, and what now - should never be a scroll away.
+  var banner = h("div", {
+    class: "verdict-banner", hidden: true,
+    role: "status", "aria-live": "polite"
+  });
+
   var results = h("div", { class: "results", role: "status", "aria-live": "polite" }, [
     // An empty panel looks broken. Say what it is waiting for.
     h("p", { class: "small muted results-idle",
@@ -156,6 +165,21 @@ export function renderChallenge(content, zoneId, challengeId, navigate) {
     var verdict = grade(challenge, outcome, Runner);
     if (challenge.kind === "locator-match") highlightLast(outcome);
     showVerdict(outcome, verdict);
+
+    // A failure gets its banner here; finish() writes the pass one,
+    // because only it knows the XP and what comes next.
+    if (!verdict.passed) {
+      var said = failureHeadline(outcome, verdict);
+      showBanner(verdict.stage === "rubric" ? "review" : "fail", said[0], said[1], {
+        actions: [
+          h("button", {
+            class: "btn primary", type: "button",
+            onclick: function () { run(); }
+          }, ["Fix & run again"]),
+          reviewButton("Read the review")
+        ]
+      });
+    }
     finish(verdict.passed, null, verdict, outcome);
   }
 
@@ -252,6 +276,67 @@ export function renderChallenge(content, zoneId, challengeId, navigate) {
 
   // --- scoring ---------------------------------------------------------
 
+  /**
+   * Put the outcome in the sticky banner.
+   *
+   * `state` decides the colour and the wording, and comes from the same
+   * verdict the panel below renders - so the two can never disagree
+   * about whether you passed.
+   */
+  function showBanner(state, headline, detail, extras) {
+    clear(banner);
+    banner.hidden = false;
+    banner.dataset.state = state;
+
+    var actions = h("div", { class: "banner-actions" }, (extras || {}).actions || []);
+    banner.appendChild(h("span", {
+      class: "banner-mark", "aria-hidden": "true",
+      text: state === "pass" ? "✓" : "!"
+    }));
+    banner.appendChild(h("div", { class: "banner-words" }, [
+      h("strong", { text: headline }),
+      detail ? h("span", { class: "banner-detail", text: detail }) : null
+    ]));
+    if ((extras || {}).xp) {
+      banner.appendChild(h("span", { class: "banner-xp", text: extras.xp }));
+    }
+    banner.appendChild(actions);
+  }
+
+  /** Jump to the detail without leaving the page. */
+  function reviewButton(label) {
+    return h("button", {
+      class: "btn ghost small", type: "button",
+      onclick: function () {
+        results.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, [label || "See the review"]);
+  }
+
+  /** A one-line summary of why it did not pass, for the banner. */
+  function failureHeadline(outcome, verdict) {
+    if (outcome.syntax) {
+      return ["Not yet - Python could not read line " + outcome.syntax.line,
+              outcome.syntax.message + "."];
+    }
+    if (verdict.stage === "rubric") {
+      var first = verdict.findings[0];
+      return ["Not yet - " + first.title.charAt(0).toLowerCase() + first.title.slice(1),
+              "Line " + first.line + ". Stopped before running, as a reviewer would."];
+    }
+    if (outcome.error) {
+      // The first line of a Playwright error is the useful one.
+      var line = String(outcome.error).trim().split("\n").filter(function (l) {
+        return l.trim() && !l.startsWith("Traceback");
+      })[0] || "";
+      return ["Not yet - your test ran and failed", line.trim().slice(0, 120)];
+    }
+    var failed = verdict.checks.filter(function (check) { return !check.ok; });
+    return ["Not yet - " + failed.length + " of " + verdict.checks.length
+              + " checks did not pass",
+            failed.length ? failed[0].label : ""];
+  }
+
   function finish(passed, detail, verdict, outcome) {
     record.attempts += 1;
     record.sleepFlagged = record.sleepFlagged || !!(verdict && verdict.sleepFlagged);
@@ -278,6 +363,31 @@ export function renderChallenge(content, zoneId, challengeId, navigate) {
     var newBadges = Game.refreshBadges();
     Store.save();
     results.appendChild(successCard(zone, challenge, award, newBadges, detail, navigate));
+
+    // What comes next, in the banner, so clearing a challenge never
+    // means scrolling to find the way on.
+    var index = zone.challenges.indexOf(challenge);
+    var next = zone.challenges[index + 1];
+    var cleared = Game.zoneProgress(zone.id).complete;
+    var onwards = cleared
+      ? h("a", { class: "btn primary", href: "#/cleared/" + zone.id,
+                 text: zone.title + " cleared" })
+      : next
+        ? h("a", { class: "btn primary",
+                   href: "#/zone/" + zone.id + "/" + next.id,
+                   text: "Next: " + next.title })
+        : h("a", { class: "btn primary", href: "#/", text: "Back to the map" });
+
+    showBanner("pass",
+      "Cleared" + (detail ? " - " + detail : ""),
+      verdict && verdict.clean
+        ? "Clean solution - nothing a reviewer would change."
+        : "Passed, with review notes below.",
+      {
+        xp: award ? "+" + award.total + " XP" : null,
+        actions: [onwards, reviewButton("See the review")]
+      });
+
     announce("Challenge cleared" + (award ? ", " + award.total + " XP earned" : ""));
   }
 
@@ -342,6 +452,7 @@ export function renderChallenge(content, zoneId, challengeId, navigate) {
 
   return h("div", { class: "view view-challenge" }, [
     topBar,
+    banner,
     h("div", { class: "challenge-layout" }, [rail, centre, side])
   ]);
 }
@@ -594,21 +705,50 @@ function hintPanel(challenge, record) {
     text: "Each hint costs a little XP - not as a punishment, but because "
       + "the struggle before the hint is where the learning happens." }));
 
+  var counter = box.querySelector(".hints-spent");
+
   hints.forEach(function (hint, index) {
     var used = (record.hints || []).some(function (h2) { return h2.index === index; });
-    var body = h("p", { class: "hint-body", text: hint.text, hidden: !used });
-    var button = h("button", {
-      class: "btn ghost small", type: "button", hidden: used,
-      onclick: function () {
-        record.hints = record.hints || [];
-        record.hints.push({ index: index, cost: hint.cost });
-        Store.save();
-        body.hidden = false;
-        button.hidden = true;
-        announce("Hint revealed");
+
+    // The text is in the DOM and blurred out, not withheld. It reads as
+    // "there IS something here" rather than an empty promise - and the
+    // blur is a filter, so nothing legible is left for a curious learner
+    // to find in the markup without spending.
+    var body = h("p", { class: "hint-body", text: hint.text });
+    var card = h("button", {
+      class: "hint" + (used ? " spent" : ""),
+      type: "button",
+      // Locked, this is a control. Spent, it is just text, and a button
+      // that does nothing should not be in the tab order.
+      disabled: used || null,
+      "aria-label": used ? null
+        : "Reveal " + (hint.label || "hint " + (index + 1))
+          + ", costs " + hint.cost + " XP"
+    }, [
+      h("span", { class: "hint-head" }, [
+        h("span", { class: "hint-tier",
+          text: (hint.label || "Hint " + (index + 1)) + " · " + hint.cost + " XP" }),
+        h("span", { class: "hint-state", text: used ? "spent" : "tap to spend" })
+      ]),
+      body
+    ]);
+
+    card.addEventListener("click", function () {
+      if (card.disabled) return;
+      record.hints = record.hints || [];
+      record.hints.push({ index: index, cost: hint.cost });
+      Store.save();
+      card.classList.add("spent");
+      card.disabled = true;
+      card.removeAttribute("aria-label");
+      card.querySelector(".hint-state").textContent = "spent";
+      if (counter) {
+        counter.textContent = record.hints.length + " of " + hints.length + " spent";
       }
-    }, [(hint.label || "Hint " + (index + 1)) + " (-" + hint.cost + " XP)"]);
-    box.appendChild(h("div", { class: "hint" }, [button, body]));
+      announce(hint.text);
+    });
+
+    box.appendChild(card);
   });
   return box;
 }
