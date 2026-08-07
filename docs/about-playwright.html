@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About Playwright | QA Automation Docs</title>
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem("qa-docs-theme");
+    if (t === "light" || t === "dark") {
+      document.documentElement.setAttribute("data-theme", t);
+    }
+  } catch (e) { /* localStorage unavailable (e.g. privacy mode) - ignore */ }
+})();
+</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <a class="brand" href="index.html"><span>QA&nbsp;Automation</span></a>
+  <div class="navbar-right">
+    <nav class="navlinks">
+      <a href="about-playwright.html">Guide</a>
+      <a href="run-reports.html">Reports</a>
+      <a href="https://playwright.dev/python/docs/intro">Playwright&nbsp;Docs</a>
+      <a href="https://docs.pytest.org/">pytest&nbsp;Docs</a>
+    </nav>
+    <!-- Light/dark switch. The checkbox comes before the label so the CSS
+         sibling selector (~) can style the label from its checked state. -->
+    <input type="checkbox" id="theme-toggle" class="theme-toggle-input">
+    <label class="theme-toggle" for="theme-toggle" title="Toggle light / dark theme">
+      <span class="icon sun" aria-hidden="true">&#9728;</span>
+      <span class="track"><span class="knob"></span></span>
+      <span class="icon moon" aria-hidden="true">&#127769;</span>
+    </label>
+    <script>
+(function () {
+  var KEY = "qa-docs-theme";
+  var box = document.getElementById("theme-toggle");
+  if (!box) return;
+  var current = document.documentElement.getAttribute("data-theme");
+  if (!current) {
+    var prefersDark = window.matchMedia
+      && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    current = prefersDark ? "dark" : "light";
+  }
+  box.checked = current === "dark";
+  box.addEventListener("change", function () {
+    var theme = box.checked ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", theme);
+    try { localStorage.setItem(KEY, theme); } catch (e) { /* ignore */ }
+  });
+})();
+</script>
+  </div>
+</header>
+<div class="layout">
+<aside class="sidebar"><nav><p class="group">Getting Started</p><ul><li><a class="active" href="about-playwright.html">About Playwright</a></li><li><a href="prerequisites.html">Prerequisites</a></li><li><a href="installation.html">Installation &amp; Setup</a></li><li><a href="configurations.html">Configurations</a></li></ul><p class="group">Writing Tests</p><ul><li><a href="test-scripts.html">Creating Test Scripts</a></li><li><a href="locators.html">Locators</a></li><li><a href="assertions.html">Assertions</a></li><li><a href="setup-teardown.html">Setup &amp; Teardown</a></li></ul><p class="group">Running Tests</p><ul><li><a href="categorization.html">Categorizing Tests</a></li><li><a href="run-reports.html">Running Tests &amp; Reports</a></li><li><a href="additional-info.html">Additional Info</a></li></ul><p class="group">Beyond the Browser</p><ul><li><a href="desktop-apps.html">Testing Desktop Apps</a></li></ul></nav></aside>
+<main class="content">
+<details class="mobile-nav"><summary>Menu &#9662;</summary><ul><li><a href="about-playwright.html">About Playwright &#10004;</a></li><li><a href="prerequisites.html">Prerequisites</a></li><li><a href="installation.html">Installation &amp; Setup</a></li><li><a href="configurations.html">Configurations</a></li><li><a href="test-scripts.html">Creating Test Scripts</a></li><li><a href="locators.html">Locators</a></li><li><a href="assertions.html">Assertions</a></li><li><a href="setup-teardown.html">Setup &amp; Teardown</a></li><li><a href="categorization.html">Categorizing Tests</a></li><li><a href="run-reports.html">Running Tests &amp; Reports</a></li><li><a href="additional-info.html">Additional Info</a></li><li><a href="desktop-apps.html">Testing Desktop Apps</a></li></ul></details>
+<h1>About Playwright</h1>
+<h3 id="first-what-is-qa-automation">First: what is QA automation?</h3>
+<p>
+  When testers check a website by hand — clicking buttons, filling forms, and reading the
+  screen to confirm everything works — that is <strong>manual testing</strong>.
+  <strong>QA automation</strong> means writing small programs (called <em>test scripts</em>)
+  that do that clicking, typing, and checking for you. The computer repeats the same checks
+  perfectly, every time, in minutes instead of hours.
+</p>
+
+<h3 id="what-is-playwright">What is Playwright?</h3>
+<p>
+  <strong>Playwright</strong> is a free, open-source tool made by Microsoft that lets your
+  code control a real web browser: open pages, click, type, and read what appears on screen.
+  You write the instructions in Python (Playwright also supports JavaScript, Java, and C#,
+  but this guide uses Python).
+</p>
+
+<h3 id="why-do-people-choose-playwright">Why do people choose Playwright?</h3>
+<ul>
+  <li><strong>It controls all major browsers</strong> — Chromium (the engine behind Chrome and Edge),
+      Firefox, and WebKit (the engine behind Safari) — with the same code.</li>
+  <li><strong>Auto-waiting.</strong> Web pages take time to load. Older tools failed if a button
+      wasn't ready yet, forcing testers to add "sleep 5 seconds" everywhere. Playwright
+      automatically waits for elements to be ready before acting on them, which makes tests
+      far more reliable.</li>
+  <li><strong>Fast and modern.</strong> It handles today's dynamic, JavaScript-heavy websites well.</li>
+  <li><strong>Great tooling.</strong> It can record your clicks and generate code for you
+      (<code>codegen</code>), record a full "trace" of a test run you can replay later, and
+      take screenshots and videos automatically.</li>
+  <li><strong>Headless or headed.</strong> Tests can run with a visible browser window ("headed",
+      great for watching and debugging) or invisibly in the background ("headless", great for speed
+      and for servers with no screen).</li>
+</ul>
+
+<h3 id="how-playwright-compares-to-selenium">How Playwright compares to Selenium</h3>
+<p>
+  You may have heard of <strong>Selenium</strong>, the older and most widely known browser
+  automation tool. Both are good; Playwright is generally easier for beginners because
+  auto-waiting is built in, setup is simpler (browsers are installed with one command),
+  and its error messages are clearer. Selenium's advantages are its longer history and
+  larger ecosystem. For a new project in 2026, Playwright is a very safe choice.
+</p>
+
+<h3 id="the-pieces-you-will-use">The pieces you will use</h3>
+<div class="tablewrap">
+<table>
+  <tr><th>Tool</th><th>What it does</th></tr>
+  <tr><td><code>playwright</code></td><td>The library that drives the browser (click, type, read the page).</td></tr>
+  <tr><td><code>pytest</code></td><td>The <em>test runner</em>: it finds your test files, runs them, and reports pass/fail. It is the most popular test framework in Python.</td></tr>
+  <tr><td><code>pytest-playwright</code></td><td>A plugin that connects the two: it hands each test a ready-to-use browser page and adds handy command-line options like <code>--headed</code>.</td></tr>
+</table>
+</div>
+<div class="pager-row"><span></span><a class="pager next" href="prerequisites.html"><span>Next page</span><strong>Prerequisites</strong></a></div>
+<footer class="page-footer">QA Automation with Playwright &amp; Python - beginner's guide.
+Static HTML - no build step required.</footer>
+</main>
+<aside class="toc-right"><p>On this page</p><ul><li><a href="#first-what-is-qa-automation">First: what is QA automation?</a></li><li><a href="#what-is-playwright">What is Playwright?</a></li><li><a href="#why-do-people-choose-playwright">Why do people choose Playwright?</a></li><li><a href="#how-playwright-compares-to-selenium">How Playwright compares to Selenium</a></li><li><a href="#the-pieces-you-will-use">The pieces you will use</a></li></ul></aside>
+</div>
+</body>
+</html>

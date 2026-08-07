@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prerequisites | QA Automation Docs</title>
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem("qa-docs-theme");
+    if (t === "light" || t === "dark") {
+      document.documentElement.setAttribute("data-theme", t);
+    }
+  } catch (e) { /* localStorage unavailable (e.g. privacy mode) - ignore */ }
+})();
+</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <a class="brand" href="index.html"><span>QA&nbsp;Automation</span></a>
+  <div class="navbar-right">
+    <nav class="navlinks">
+      <a href="about-playwright.html">Guide</a>
+      <a href="run-reports.html">Reports</a>
+      <a href="https://playwright.dev/python/docs/intro">Playwright&nbsp;Docs</a>
+      <a href="https://docs.pytest.org/">pytest&nbsp;Docs</a>
+    </nav>
+    <!-- Light/dark switch. The checkbox comes before the label so the CSS
+         sibling selector (~) can style the label from its checked state. -->
+    <input type="checkbox" id="theme-toggle" class="theme-toggle-input">
+    <label class="theme-toggle" for="theme-toggle" title="Toggle light / dark theme">
+      <span class="icon sun" aria-hidden="true">&#9728;</span>
+      <span class="track"><span class="knob"></span></span>
+      <span class="icon moon" aria-hidden="true">&#127769;</span>
+    </label>
+    <script>
+(function () {
+  var KEY = "qa-docs-theme";
+  var box = document.getElementById("theme-toggle");
+  if (!box) return;
+  var current = document.documentElement.getAttribute("data-theme");
+  if (!current) {
+    var prefersDark = window.matchMedia
+      && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    current = prefersDark ? "dark" : "light";
+  }
+  box.checked = current === "dark";
+  box.addEventListener("change", function () {
+    var theme = box.checked ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", theme);
+    try { localStorage.setItem(KEY, theme); } catch (e) { /* ignore */ }
+  });
+})();
+</script>
+  </div>
+</header>
+<div class="layout">
+<aside class="sidebar"><nav><p class="group">Getting Started</p><ul><li><a href="about-playwright.html">About Playwright</a></li><li><a class="active" href="prerequisites.html">Prerequisites</a></li><li><a href="installation.html">Installation &amp; Setup</a></li><li><a href="configurations.html">Configurations</a></li></ul><p class="group">Writing Tests</p><ul><li><a href="test-scripts.html">Creating Test Scripts</a></li><li><a href="locators.html">Locators</a></li><li><a href="assertions.html">Assertions</a></li><li><a href="setup-teardown.html">Setup &amp; Teardown</a></li></ul><p class="group">Running Tests</p><ul><li><a href="categorization.html">Categorizing Tests</a></li><li><a href="run-reports.html">Running Tests &amp; Reports</a></li><li><a href="additional-info.html">Additional Info</a></li></ul><p class="group">Beyond the Browser</p><ul><li><a href="desktop-apps.html">Testing Desktop Apps</a></li></ul></nav></aside>
+<main class="content">
+<details class="mobile-nav"><summary>Menu &#9662;</summary><ul><li><a href="about-playwright.html">About Playwright</a></li><li><a href="prerequisites.html">Prerequisites &#10004;</a></li><li><a href="installation.html">Installation &amp; Setup</a></li><li><a href="configurations.html">Configurations</a></li><li><a href="test-scripts.html">Creating Test Scripts</a></li><li><a href="locators.html">Locators</a></li><li><a href="assertions.html">Assertions</a></li><li><a href="setup-teardown.html">Setup &amp; Teardown</a></li><li><a href="categorization.html">Categorizing Tests</a></li><li><a href="run-reports.html">Running Tests &amp; Reports</a></li><li><a href="additional-info.html">Additional Info</a></li><li><a href="desktop-apps.html">Testing Desktop Apps</a></li></ul></details>
+<h1>Prerequisites</h1>
+<h3 id="things-to-install-first">Things to install first</h3>
+<ol>
+  <li>
+    <strong>Python 3.9 or newer.</strong> Download from
+    <a href="https://www.python.org/downloads/">python.org/downloads</a>.
+    <div class="warn">
+      <strong>Windows users — important!</strong>
+      On the first screen of the Python installer, tick the checkbox
+      <em>"Add python.exe to PATH"</em>. If you skip this, the <code>python</code> command
+      won't work in your terminal.
+    </div>
+    Verify it installed by opening a terminal and running:
+    <pre><code>python --version</code></pre>
+    You should see something like <code>Python 3.12.x</code>.
+  </li>
+  <li>
+    <strong>pip</strong> — Python's package installer. It comes bundled with Python. Verify with:
+    <pre><code>pip --version</code></pre>
+  </li>
+  <li>
+    <strong>A code editor.</strong> <a href="https://code.visualstudio.com/">Visual Studio Code</a>
+    (free) is the usual choice. Install its <em>Python</em> extension from the Extensions panel.
+  </li>
+  <li>
+    <strong>A terminal.</strong> Windows: PowerShell (built in). macOS/Linux: Terminal.
+    You will type commands here; every command in this guide runs in a terminal.
+  </li>
+</ol>
+
+<h3 id="knowledge-that-helps-but-is-not-required">Knowledge that helps (but is not required)</h3>
+<ul>
+  <li><strong>Basic Python</strong> — variables, functions, <code>if</code> statements, imports.
+      If these are new, a few hours on any free Python tutorial is enough to start.</li>
+  <li><strong>Basic HTML</strong> — knowing that a page is made of elements like
+      <code>&lt;button&gt;</code>, <code>&lt;input&gt;</code>, and <code>&lt;a&gt;</code> (links)
+      makes locators (Section 6) much easier to understand.</li>
+  <li><strong>Browser DevTools</strong> — right-click any element on a web page and choose
+      <em>Inspect</em> to see its HTML. You will use this constantly to find elements.</li>
+</ul>
+<div class="pager-row"><a class="pager prev" href="about-playwright.html"><span>Previous page</span><strong>About Playwright</strong></a><a class="pager next" href="installation.html"><span>Next page</span><strong>Installation &amp; Setup</strong></a></div>
+<footer class="page-footer">QA Automation with Playwright &amp; Python - beginner's guide.
+Static HTML - no build step required.</footer>
+</main>
+<aside class="toc-right"><p>On this page</p><ul><li><a href="#things-to-install-first">Things to install first</a></li><li><a href="#knowledge-that-helps-but-is-not-required">Knowledge that helps (but is not required)</a></li></ul></aside>
+</div>
+<script>
+(function () {
+  document.querySelectorAll("pre").forEach(function (pre) {
+    var code = pre.querySelector("code");
+    if (!code) return;
+    var btn = document.createElement("button");
+    btn.className = "copy-btn"; btn.type = "button"; btn.textContent = "Copy";
+    btn.addEventListener("click", function () {
+      navigator.clipboard.writeText(code.textContent).then(function () {
+        btn.textContent = "Copied!"; btn.classList.add("copied");
+        setTimeout(function () { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 1600);
+      });
+    });
+    pre.appendChild(btn);
+  });
+})();
+</script>
+</body>
+</html>

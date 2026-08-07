@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to run tests and check reports | QA Automation Docs</title>
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem("qa-docs-theme");
+    if (t === "light" || t === "dark") {
+      document.documentElement.setAttribute("data-theme", t);
+    }
+  } catch (e) { /* localStorage unavailable (e.g. privacy mode) - ignore */ }
+})();
+</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <a class="brand" href="index.html"><span>QA&nbsp;Automation</span></a>
+  <div class="navbar-right">
+    <nav class="navlinks">
+      <a href="about-playwright.html">Guide</a>
+      <a href="run-reports.html">Reports</a>
+      <a href="https://playwright.dev/python/docs/intro">Playwright&nbsp;Docs</a>
+      <a href="https://docs.pytest.org/">pytest&nbsp;Docs</a>
+    </nav>
+    <!-- Light/dark switch. The checkbox comes before the label so the CSS
+         sibling selector (~) can style the label from its checked state. -->
+    <input type="checkbox" id="theme-toggle" class="theme-toggle-input">
+    <label class="theme-toggle" for="theme-toggle" title="Toggle light / dark theme">
+      <span class="icon sun" aria-hidden="true">&#9728;</span>
+      <span class="track"><span class="knob"></span></span>
+      <span class="icon moon" aria-hidden="true">&#127769;</span>
+    </label>
+    <script>
+(function () {
+  var KEY = "qa-docs-theme";
+  var box = document.getElementById("theme-toggle");
+  if (!box) return;
+  var current = document.documentElement.getAttribute("data-theme");
+  if (!current) {
+    var prefersDark = window.matchMedia
+      && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    current = prefersDark ? "dark" : "light";
+  }
+  box.checked = current === "dark";
+  box.addEventListener("change", function () {
+    var theme = box.checked ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", theme);
+    try { localStorage.setItem(KEY, theme); } catch (e) { /* ignore */ }
+  });
+})();
+</script>
+  </div>
+</header>
+<div class="layout">
+<aside class="sidebar"><nav><p class="group">Getting Started</p><ul><li><a href="about-playwright.html">About Playwright</a></li><li><a href="prerequisites.html">Prerequisites</a></li><li><a href="installation.html">Installation &amp; Setup</a></li><li><a href="configurations.html">Configurations</a></li></ul><p class="group">Writing Tests</p><ul><li><a href="test-scripts.html">Creating Test Scripts</a></li><li><a href="locators.html">Locators</a></li><li><a href="assertions.html">Assertions</a></li><li><a href="setup-teardown.html">Setup &amp; Teardown</a></li></ul><p class="group">Running Tests</p><ul><li><a href="categorization.html">Categorizing Tests</a></li><li><a class="active" href="run-reports.html">Running Tests &amp; Reports</a></li><li><a href="additional-info.html">Additional Info</a></li></ul><p class="group">Beyond the Browser</p><ul><li><a href="desktop-apps.html">Testing Desktop Apps</a></li></ul></nav></aside>
+<main class="content">
+<details class="mobile-nav"><summary>Menu &#9662;</summary><ul><li><a href="about-playwright.html">About Playwright</a></li><li><a href="prerequisites.html">Prerequisites</a></li><li><a href="installation.html">Installation &amp; Setup</a></li><li><a href="configurations.html">Configurations</a></li><li><a href="test-scripts.html">Creating Test Scripts</a></li><li><a href="locators.html">Locators</a></li><li><a href="assertions.html">Assertions</a></li><li><a href="setup-teardown.html">Setup &amp; Teardown</a></li><li><a href="categorization.html">Categorizing Tests</a></li><li><a href="run-reports.html">Running Tests &amp; Reports &#10004;</a></li><li><a href="additional-info.html">Additional Info</a></li><li><a href="desktop-apps.html">Testing Desktop Apps</a></li></ul></details>
+<h1>How to run tests and check reports</h1>
+<h3 id="running-tests-the-commands-you-ll-actually-use">Running tests — the commands you'll actually use</h3>
+<pre><code># Run EVERYTHING pytest can find
+pytest
+
+# Run one file
+pytest tests/test_login.py
+
+# Run one specific test inside a file
+pytest tests/test_login.py::test_login_with_wrong_password_shows_error
+
+# Run tests whose NAME contains a keyword
+pytest -k "cart"
+
+# Run a category (Section 9)
+pytest -m smoke
+
+# Watch the browser while it runs, slowed down
+pytest --headed --slowmo 500
+
+# More detail in the terminal (-v = verbose); -s shows print() output
+pytest -v -s
+
+# Stop at the first failure (handy while debugging)
+pytest -x
+
+# Re-run only the tests that failed last time
+pytest --lf</code></pre>
+
+<h3 id="reading-the-terminal-output">Reading the terminal output</h3>
+<pre><code>tests/test_login.py ..F.                                          [100%]
+
+=================== short test summary info ====================
+FAILED tests/test_login.py::test_login_shows_username - AssertionError: ...
+=============== 1 failed, 3 passed in 42.10s ====================</code></pre>
+<ul>
+  <li>Each <code>.</code> is a passing test; <code>F</code> is a failure; <code>s</code> means skipped;
+      <code>x</code> means expected failure (xfail); <code>R</code> means the test was retried.</li>
+  <li>Above the summary, every failure gets a full breakdown: the exact line that failed,
+      what was expected, and what was actually found.</li>
+</ul>
+
+<h3 id="the-html-report-pytest-html">The HTML report (pytest-html)</h3>
+<p>
+  If your <code>pytest.ini</code> includes
+  <code>--html=reports/report.html --self-contained-html</code> (Section 4), every run
+  writes a report automatically. Otherwise add those flags to any run by hand.
+</p>
+<ol>
+  <li>Run your tests as usual: <code>pytest</code></li>
+  <li>Open <code>reports/report.html</code> in any browser (double-click it in your file explorer).</li>
+</ol>
+<p>The report shows:</p>
+<ul>
+  <li>A <strong>summary bar</strong> — how many passed, failed, skipped, or were rerun, and total duration.</li>
+  <li>A <strong>results table</strong> — one row per test with its outcome and duration.</li>
+  <li><strong>Failure details</strong> — the full error text for every failed test, and (if you enabled
+      <code>--screenshot only-on-failure</code>) a screenshot of the page at the moment of failure.</li>
+</ul>
+<p>
+  Because of <code>--self-contained-html</code>, the report is a single file — you can attach
+  it to an email or a ticket and it will display anywhere.
+</p>
+
+<h3 id="allure-a-richer-dashboard-style-report-optional">Allure — a richer, dashboard-style report (optional)</h3>
+<p>
+  <a href="https://allurereport.org/">Allure</a> produces an interactive report with graphs,
+  history, and per-step timelines. Teams often adopt it once suites grow. Two-part setup:
+  the pytest plugin (<code>pip install allure-pytest</code>) records results, and the Allure
+  command-line tool renders them:
+</p>
+<pre><code># 1. Record results while testing
+pytest --alluredir=reports/allure-results
+
+# 2. Turn the results into a report and open it
+allure generate reports/allure-results -o reports/allure-report --clean
+allure open reports/allure-report</code></pre>
+<div class="note">
+  <strong>Note:</strong> the <code>allure</code> command itself is a separate install
+  (it needs Java, or on Windows: <code>scoop install allure</code>). Start with pytest-html;
+  add Allure when you feel the need for prettier analytics.
+</div>
+
+<h3 id="what-to-do-when-a-test-fails">What to do when a test fails</h3>
+<ol>
+  <li><strong>Read the error message.</strong> It names the assertion, the locator, and what was found instead.</li>
+  <li><strong>Look at the failure screenshot</strong> (if enabled) — often the page shows an
+      unexpected popup or error banner that explains everything.</li>
+  <li><strong>Re-run just that test with a visible browser:</strong>
+      <code>pytest tests/test_x.py::test_name --headed --slowmo 500</code> and watch what happens.</li>
+  <li><strong>Decide: bug or broken test?</strong> A failing test means <em>either</em> the app broke
+      (report a bug — automation just did its job!) <em>or</em> the app changed legitimately and
+      the test needs updating.</li>
+</ol>
+<div class="pager-row"><a class="pager prev" href="categorization.html"><span>Previous page</span><strong>Categorizing Tests</strong></a><a class="pager next" href="additional-info.html"><span>Next page</span><strong>Additional Info</strong></a></div>
+<footer class="page-footer">QA Automation with Playwright &amp; Python - beginner's guide.
+Static HTML - no build step required.</footer>
+</main>
+<aside class="toc-right"><p>On this page</p><ul><li><a href="#running-tests-the-commands-you-ll-actually-use">Running tests — the commands you'll actually use</a></li><li><a href="#reading-the-terminal-output">Reading the terminal output</a></li><li><a href="#the-html-report-pytest-html">The HTML report (pytest-html)</a></li><li><a href="#allure-a-richer-dashboard-style-report-optional">Allure — a richer, dashboard-style report (optional)</a></li><li><a href="#what-to-do-when-a-test-fails">What to do when a test fails</a></li></ul></aside>
+</div>
+<script>
+(function () {
+  document.querySelectorAll("pre").forEach(function (pre) {
+    var code = pre.querySelector("code");
+    if (!code) return;
+    var btn = document.createElement("button");
+    btn.className = "copy-btn"; btn.type = "button"; btn.textContent = "Copy";
+    btn.addEventListener("click", function () {
+      navigator.clipboard.writeText(code.textContent).then(function () {
+        btn.textContent = "Copied!"; btn.classList.add("copied");
+        setTimeout(function () { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 1600);
+      });
+    });
+    pre.appendChild(btn);
+  });
+})();
+</script>
+</body>
+</html>

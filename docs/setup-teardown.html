@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Setup and teardown | QA Automation Docs</title>
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem("qa-docs-theme");
+    if (t === "light" || t === "dark") {
+      document.documentElement.setAttribute("data-theme", t);
+    }
+  } catch (e) { /* localStorage unavailable (e.g. privacy mode) - ignore */ }
+})();
+</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <a class="brand" href="index.html"><span>QA&nbsp;Automation</span></a>
+  <div class="navbar-right">
+    <nav class="navlinks">
+      <a href="about-playwright.html">Guide</a>
+      <a href="run-reports.html">Reports</a>
+      <a href="https://playwright.dev/python/docs/intro">Playwright&nbsp;Docs</a>
+      <a href="https://docs.pytest.org/">pytest&nbsp;Docs</a>
+    </nav>
+    <!-- Light/dark switch. The checkbox comes before the label so the CSS
+         sibling selector (~) can style the label from its checked state. -->
+    <input type="checkbox" id="theme-toggle" class="theme-toggle-input">
+    <label class="theme-toggle" for="theme-toggle" title="Toggle light / dark theme">
+      <span class="icon sun" aria-hidden="true">&#9728;</span>
+      <span class="track"><span class="knob"></span></span>
+      <span class="icon moon" aria-hidden="true">&#127769;</span>
+    </label>
+    <script>
+(function () {
+  var KEY = "qa-docs-theme";
+  var box = document.getElementById("theme-toggle");
+  if (!box) return;
+  var current = document.documentElement.getAttribute("data-theme");
+  if (!current) {
+    var prefersDark = window.matchMedia
+      && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    current = prefersDark ? "dark" : "light";
+  }
+  box.checked = current === "dark";
+  box.addEventListener("change", function () {
+    var theme = box.checked ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", theme);
+    try { localStorage.setItem(KEY, theme); } catch (e) { /* ignore */ }
+  });
+})();
+</script>
+  </div>
+</header>
+<div class="layout">
+<aside class="sidebar"><nav><p class="group">Getting Started</p><ul><li><a href="about-playwright.html">About Playwright</a></li><li><a href="prerequisites.html">Prerequisites</a></li><li><a href="installation.html">Installation &amp; Setup</a></li><li><a href="configurations.html">Configurations</a></li></ul><p class="group">Writing Tests</p><ul><li><a href="test-scripts.html">Creating Test Scripts</a></li><li><a href="locators.html">Locators</a></li><li><a href="assertions.html">Assertions</a></li><li><a class="active" href="setup-teardown.html">Setup &amp; Teardown</a></li></ul><p class="group">Running Tests</p><ul><li><a href="categorization.html">Categorizing Tests</a></li><li><a href="run-reports.html">Running Tests &amp; Reports</a></li><li><a href="additional-info.html">Additional Info</a></li></ul><p class="group">Beyond the Browser</p><ul><li><a href="desktop-apps.html">Testing Desktop Apps</a></li></ul></nav></aside>
+<main class="content">
+<details class="mobile-nav"><summary>Menu &#9662;</summary><ul><li><a href="about-playwright.html">About Playwright</a></li><li><a href="prerequisites.html">Prerequisites</a></li><li><a href="installation.html">Installation &amp; Setup</a></li><li><a href="configurations.html">Configurations</a></li><li><a href="test-scripts.html">Creating Test Scripts</a></li><li><a href="locators.html">Locators</a></li><li><a href="assertions.html">Assertions</a></li><li><a href="setup-teardown.html">Setup &amp; Teardown &#10004;</a></li><li><a href="categorization.html">Categorizing Tests</a></li><li><a href="run-reports.html">Running Tests &amp; Reports</a></li><li><a href="additional-info.html">Additional Info</a></li><li><a href="desktop-apps.html">Testing Desktop Apps</a></li></ul></details>
+<h1>Setup and teardown</h1>
+<h3 id="the-concepts">The concepts</h3>
+<ul>
+  <li><strong>Setup</strong> — work done <em>before</em> a test runs: open a browser, log in,
+      create a test user, load data.</li>
+  <li><strong>Teardown</strong> — cleanup done <em>after</em> a test finishes (pass <em>or</em> fail):
+      delete the test user, log out, close the browser.</li>
+</ul>
+<p>
+  Good teardown is what keeps tests <em>independent</em>: every test starts from a clean
+  slate no matter what the previous test did.
+</p>
+
+<h3 id="pytest-fixtures-how-setup-teardown-is-written">pytest fixtures — how setup/teardown is written</h3>
+<p>
+  In pytest, setup and teardown live in <strong>fixtures</strong>: functions marked with
+  <code>@pytest.fixture</code>. A test "requests" a fixture simply by naming it as a
+  parameter. Everything <em>before</em> the <code>yield</code> line is setup; everything
+  <em>after</em> it is teardown.
+</p>
+<span class="filename">conftest.py</span>
+<pre><code>import pytest
+from playwright.sync_api import Page
+
+
+@pytest.fixture
+def logged_in_page(page: Page):
+    # ---------- SETUP (runs before the test) ----------
+    page.goto("https://automationexercise.com/login")
+    page.get_by_placeholder("Email Address").fill("tester@example.com")
+    page.get_by_placeholder("Password").fill("secret123")
+    page.get_by_role("button", name="Login").click()
+
+    # yield hands control to the test, passing it the ready page
+    yield page
+
+    # ---------- TEARDOWN (runs after the test, even if it FAILED) ----------
+    page.get_by_role("link", name="Logout").click()</code></pre>
+<span class="filename">tests/test_account.py</span>
+<pre><code>from playwright.sync_api import expect
+
+
+# Just naming "logged_in_page" as a parameter triggers the whole fixture.
+def test_dashboard_greets_the_user(logged_in_page):
+    expect(logged_in_page.get_by_text("Logged in as")).to_be_visible()</code></pre>
+<div class="note">
+  <strong>You've already been using a fixture!</strong>
+  The <code>page</code> parameter in every earlier example <em>is</em> a fixture, provided
+  by pytest-playwright. Its setup launches a fresh browser tab; its teardown closes it.
+  That's why you never wrote "open browser" or "close browser" yourself.
+</div>
+
+<h3 id="fixture-scope-how-often-setup-runs">Fixture scope — how often setup runs</h3>
+<div class="tablewrap">
+<table>
+  <tr><th>Scope</th><th>Setup/teardown runs...</th><th>Typical use</th></tr>
+  <tr><td><code>function</code> (default)</td><td>once per test</td><td>fresh page, fresh test data</td></tr>
+  <tr><td><code>class</code></td><td>once per test class</td><td>shared state for a group of related tests</td></tr>
+  <tr><td><code>module</code></td><td>once per file</td><td>expensive setup shared by one file's tests</td></tr>
+  <tr><td><code>session</code></td><td>once per entire run</td><td>start a mock server, load config</td></tr>
+</table>
+</div>
+<pre><code>@pytest.fixture(scope="session")
+def api_token():
+    # Fetched once, reused by every test in the run.
+    return fetch_token_from_api()</code></pre>
+<div class="tip">
+  <strong>Where fixtures live</strong>
+  Put fixtures used by many files in <code>conftest.py</code> — pytest auto-discovers them,
+  no import needed. Fixtures used by a single file can live at the top of that file.
+</div>
+<div class="pager-row"><a class="pager prev" href="assertions.html"><span>Previous page</span><strong>Assertions</strong></a><a class="pager next" href="categorization.html"><span>Next page</span><strong>Categorizing Tests</strong></a></div>
+<footer class="page-footer">QA Automation with Playwright &amp; Python - beginner's guide.
+Static HTML - no build step required.</footer>
+</main>
+<aside class="toc-right"><p>On this page</p><ul><li><a href="#the-concepts">The concepts</a></li><li><a href="#pytest-fixtures-how-setup-teardown-is-written">pytest fixtures — how setup/teardown is written</a></li><li><a href="#fixture-scope-how-often-setup-runs">Fixture scope — how often setup runs</a></li></ul></aside>
+</div>
+<script>
+(function () {
+  document.querySelectorAll("pre").forEach(function (pre) {
+    var code = pre.querySelector("code");
+    if (!code) return;
+    var btn = document.createElement("button");
+    btn.className = "copy-btn"; btn.type = "button"; btn.textContent = "Copy";
+    btn.addEventListener("click", function () {
+      navigator.clipboard.writeText(code.textContent).then(function () {
+        btn.textContent = "Copied!"; btn.classList.add("copied");
+        setTimeout(function () { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 1600);
+      });
+    });
+    pre.appendChild(btn);
+  });
+})();
+</script>
+</body>
+</html>

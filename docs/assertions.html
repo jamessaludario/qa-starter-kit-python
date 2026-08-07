@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assertions | QA Automation Docs</title>
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem("qa-docs-theme");
+    if (t === "light" || t === "dark") {
+      document.documentElement.setAttribute("data-theme", t);
+    }
+  } catch (e) { /* localStorage unavailable (e.g. privacy mode) - ignore */ }
+})();
+</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <a class="brand" href="index.html"><span>QA&nbsp;Automation</span></a>
+  <div class="navbar-right">
+    <nav class="navlinks">
+      <a href="about-playwright.html">Guide</a>
+      <a href="run-reports.html">Reports</a>
+      <a href="https://playwright.dev/python/docs/intro">Playwright&nbsp;Docs</a>
+      <a href="https://docs.pytest.org/">pytest&nbsp;Docs</a>
+    </nav>
+    <!-- Light/dark switch. The checkbox comes before the label so the CSS
+         sibling selector (~) can style the label from its checked state. -->
+    <input type="checkbox" id="theme-toggle" class="theme-toggle-input">
+    <label class="theme-toggle" for="theme-toggle" title="Toggle light / dark theme">
+      <span class="icon sun" aria-hidden="true">&#9728;</span>
+      <span class="track"><span class="knob"></span></span>
+      <span class="icon moon" aria-hidden="true">&#127769;</span>
+    </label>
+    <script>
+(function () {
+  var KEY = "qa-docs-theme";
+  var box = document.getElementById("theme-toggle");
+  if (!box) return;
+  var current = document.documentElement.getAttribute("data-theme");
+  if (!current) {
+    var prefersDark = window.matchMedia
+      && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    current = prefersDark ? "dark" : "light";
+  }
+  box.checked = current === "dark";
+  box.addEventListener("change", function () {
+    var theme = box.checked ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", theme);
+    try { localStorage.setItem(KEY, theme); } catch (e) { /* ignore */ }
+  });
+})();
+</script>
+  </div>
+</header>
+<div class="layout">
+<aside class="sidebar"><nav><p class="group">Getting Started</p><ul><li><a href="about-playwright.html">About Playwright</a></li><li><a href="prerequisites.html">Prerequisites</a></li><li><a href="installation.html">Installation &amp; Setup</a></li><li><a href="configurations.html">Configurations</a></li></ul><p class="group">Writing Tests</p><ul><li><a href="test-scripts.html">Creating Test Scripts</a></li><li><a href="locators.html">Locators</a></li><li><a class="active" href="assertions.html">Assertions</a></li><li><a href="setup-teardown.html">Setup &amp; Teardown</a></li></ul><p class="group">Running Tests</p><ul><li><a href="categorization.html">Categorizing Tests</a></li><li><a href="run-reports.html">Running Tests &amp; Reports</a></li><li><a href="additional-info.html">Additional Info</a></li></ul><p class="group">Beyond the Browser</p><ul><li><a href="desktop-apps.html">Testing Desktop Apps</a></li></ul></nav></aside>
+<main class="content">
+<details class="mobile-nav"><summary>Menu &#9662;</summary><ul><li><a href="about-playwright.html">About Playwright</a></li><li><a href="prerequisites.html">Prerequisites</a></li><li><a href="installation.html">Installation &amp; Setup</a></li><li><a href="configurations.html">Configurations</a></li><li><a href="test-scripts.html">Creating Test Scripts</a></li><li><a href="locators.html">Locators</a></li><li><a href="assertions.html">Assertions &#10004;</a></li><li><a href="setup-teardown.html">Setup &amp; Teardown</a></li><li><a href="categorization.html">Categorizing Tests</a></li><li><a href="run-reports.html">Running Tests &amp; Reports</a></li><li><a href="additional-info.html">Additional Info</a></li><li><a href="desktop-apps.html">Testing Desktop Apps</a></li></ul></details>
+<h1>Assertions</h1>
+<h3 id="what-is-an-assertion">What is an assertion?</h3>
+<p>
+  An <strong>assertion</strong> is the checking step — the moment your test says
+  <em>"I expect X to be true; if it isn't, fail this test."</em> Without assertions a script
+  just clicks around; assertions are what make it a <em>test</em>.
+</p>
+
+<h3 id="use-expect-it-waits-for-you">Use <code>expect()</code> — it waits for you</h3>
+<p>
+  Playwright's <code>expect()</code> assertions are <strong>web-first</strong>: they don't
+  check once and give up. They keep re-checking (by default for up to 5 seconds) until the
+  condition becomes true or time runs out. This absorbs the little delays that are normal
+  on real websites — a success message that takes 800&nbsp;ms to appear simply passes.
+</p>
+<pre><code>from playwright.sync_api import expect
+
+# Keeps checking for up to 5s until the element is visible - then passes.
+expect(page.get_by_text("Order placed!")).to_be_visible()
+
+# Need longer for a slow operation? Override per-assertion:
+expect(page.get_by_text("Report ready")).to_be_visible(timeout=15_000)</code></pre>
+<div class="warn">
+  <strong>Never use <code>time.sleep()</code> to wait</strong>
+  A fixed sleep is always wrong twice: too short on a slow day (test fails randomly)
+  and too long on a fast day (test wastes time). <code>expect()</code> waits exactly
+  as long as needed. If you're tempted to sleep, there is always an
+  <code>expect()</code> that says what you're really waiting for.
+</div>
+
+<h3 id="the-assertions-you-ll-use-most">The assertions you'll use most</h3>
+<div class="tablewrap">
+<table>
+  <tr><th>Assertion</th><th>Checks that...</th></tr>
+  <tr><td><code>expect(locator).to_be_visible()</code></td><td>the element is shown on screen.</td></tr>
+  <tr><td><code>expect(locator).to_have_text("Done")</code></td><td>its text is exactly "Done".</td></tr>
+  <tr><td><code>expect(locator).to_contain_text("Don")</code></td><td>its text contains "Don".</td></tr>
+  <tr><td><code>expect(locator).to_have_value("42")</code></td><td>an input box contains "42".</td></tr>
+  <tr><td><code>expect(locator).to_be_enabled()</code></td><td>it can be clicked (not grayed out).</td></tr>
+  <tr><td><code>expect(locator).to_be_checked()</code></td><td>a checkbox is ticked.</td></tr>
+  <tr><td><code>expect(locator).to_have_count(3)</code></td><td>exactly 3 elements match the locator.</td></tr>
+  <tr><td><code>expect(page).to_have_title("Home")</code></td><td>the browser tab title is "Home".</td></tr>
+  <tr><td><code>expect(page).to_have_url("https://site.com/cart")</code></td><td>the current address matches.</td></tr>
+</table>
+</div>
+
+<h3 id="negating-checking-something-is-not-there">Negating: checking something is NOT there</h3>
+<pre><code># After removing the item, the cart should show the empty message
+# and the product row should be gone:
+expect(page.get_by_text("Cart is empty!")).to_be_visible()
+expect(page.locator("#product-1")).not_to_be_visible()</code></pre>
+
+<h3 id="what-a-failure-looks-like">What a failure looks like</h3>
+<p>When an assertion fails, pytest prints exactly what was expected vs. what was found:</p>
+<pre><code>AssertionError: Locator expected to be visible
+Actual value: hidden
+Call log:
+  - expect(locator).to_be_visible with timeout 5000ms
+  - waiting for get_by_text("Order placed!")</code></pre>
+<p>Read these carefully — they usually tell you precisely what went wrong and where.</p>
+<div class="pager-row"><a class="pager prev" href="locators.html"><span>Previous page</span><strong>Locators</strong></a><a class="pager next" href="setup-teardown.html"><span>Next page</span><strong>Setup &amp; Teardown</strong></a></div>
+<footer class="page-footer">QA Automation with Playwright &amp; Python - beginner's guide.
+Static HTML - no build step required.</footer>
+</main>
+<aside class="toc-right"><p>On this page</p><ul><li><a href="#what-is-an-assertion">What is an assertion?</a></li><li><a href="#use-expect-it-waits-for-you">Use expect() — it waits for you</a></li><li><a href="#the-assertions-you-ll-use-most">The assertions you'll use most</a></li><li><a href="#negating-checking-something-is-not-there">Negating: checking something is NOT there</a></li><li><a href="#what-a-failure-looks-like">What a failure looks like</a></li></ul></aside>
+</div>
+<script>
+(function () {
+  document.querySelectorAll("pre").forEach(function (pre) {
+    var code = pre.querySelector("code");
+    if (!code) return;
+    var btn = document.createElement("button");
+    btn.className = "copy-btn"; btn.type = "button"; btn.textContent = "Copy";
+    btn.addEventListener("click", function () {
+      navigator.clipboard.writeText(code.textContent).then(function () {
+        btn.textContent = "Copied!"; btn.classList.add("copied");
+        setTimeout(function () { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 1600);
+      });
+    });
+    pre.appendChild(btn);
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Categorization of tests | QA Automation Docs</title>
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem("qa-docs-theme");
+    if (t === "light" || t === "dark") {
+      document.documentElement.setAttribute("data-theme", t);
+    }
+  } catch (e) { /* localStorage unavailable (e.g. privacy mode) - ignore */ }
+})();
+</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <a class="brand" href="index.html"><span>QA&nbsp;Automation</span></a>
+  <div class="navbar-right">
+    <nav class="navlinks">
+      <a href="about-playwright.html">Guide</a>
+      <a href="run-reports.html">Reports</a>
+      <a href="https://playwright.dev/python/docs/intro">Playwright&nbsp;Docs</a>
+      <a href="https://docs.pytest.org/">pytest&nbsp;Docs</a>
+    </nav>
+    <!-- Light/dark switch. The checkbox comes before the label so the CSS
+         sibling selector (~) can style the label from its checked state. -->
+    <input type="checkbox" id="theme-toggle" class="theme-toggle-input">
+    <label class="theme-toggle" for="theme-toggle" title="Toggle light / dark theme">
+      <span class="icon sun" aria-hidden="true">&#9728;</span>
+      <span class="track"><span class="knob"></span></span>
+      <span class="icon moon" aria-hidden="true">&#127769;</span>
+    </label>
+    <script>
+(function () {
+  var KEY = "qa-docs-theme";
+  var box = document.getElementById("theme-toggle");
+  if (!box) return;
+  var current = document.documentElement.getAttribute("data-theme");
+  if (!current) {
+    var prefersDark = window.matchMedia
+      && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    current = prefersDark ? "dark" : "light";
+  }
+  box.checked = current === "dark";
+  box.addEventListener("change", function () {
+    var theme = box.checked ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", theme);
+    try { localStorage.setItem(KEY, theme); } catch (e) { /* ignore */ }
+  });
+})();
+</script>
+  </div>
+</header>
+<div class="layout">
+<aside class="sidebar"><nav><p class="group">Getting Started</p><ul><li><a href="about-playwright.html">About Playwright</a></li><li><a href="prerequisites.html">Prerequisites</a></li><li><a href="installation.html">Installation &amp; Setup</a></li><li><a href="configurations.html">Configurations</a></li></ul><p class="group">Writing Tests</p><ul><li><a href="test-scripts.html">Creating Test Scripts</a></li><li><a href="locators.html">Locators</a></li><li><a href="assertions.html">Assertions</a></li><li><a href="setup-teardown.html">Setup &amp; Teardown</a></li></ul><p class="group">Running Tests</p><ul><li><a class="active" href="categorization.html">Categorizing Tests</a></li><li><a href="run-reports.html">Running Tests &amp; Reports</a></li><li><a href="additional-info.html">Additional Info</a></li></ul><p class="group">Beyond the Browser</p><ul><li><a href="desktop-apps.html">Testing Desktop Apps</a></li></ul></nav></aside>
+<main class="content">
+<details class="mobile-nav"><summary>Menu &#9662;</summary><ul><li><a href="about-playwright.html">About Playwright</a></li><li><a href="prerequisites.html">Prerequisites</a></li><li><a href="installation.html">Installation &amp; Setup</a></li><li><a href="configurations.html">Configurations</a></li><li><a href="test-scripts.html">Creating Test Scripts</a></li><li><a href="locators.html">Locators</a></li><li><a href="assertions.html">Assertions</a></li><li><a href="setup-teardown.html">Setup &amp; Teardown</a></li><li><a href="categorization.html">Categorizing Tests &#10004;</a></li><li><a href="run-reports.html">Running Tests &amp; Reports</a></li><li><a href="additional-info.html">Additional Info</a></li><li><a href="desktop-apps.html">Testing Desktop Apps</a></li></ul></details>
+<h1>Categorization of tests</h1>
+<h3 id="why-categorize">Why categorize?</h3>
+<p>
+  Once you have dozens of tests, you rarely want to run <em>all</em> of them every time.
+  After a small change you might run just the quick "smoke" checks (2 minutes) and save the
+  full "regression" suite (30+ minutes) for later. Categories make that possible.
+</p>
+
+<h3 id="markers-pytest-s-labels">Markers — pytest's labels</h3>
+<p>A <strong>marker</strong> is a label you stick on a test with a decorator:</p>
+<pre><code>import pytest
+
+
+@pytest.mark.smoke
+def test_homepage_loads(page):
+    ...
+
+@pytest.mark.regression
+def test_full_checkout_journey_with_new_address(page):
+    ...
+
+# A test can carry several markers:
+@pytest.mark.smoke
+@pytest.mark.cart
+def test_add_item_to_cart(page):
+    ...</code></pre>
+
+<h3 id="register-your-markers-avoid-typo-bugs">Register your markers (avoid typo bugs)</h3>
+<p>
+  Declare every marker in <code>pytest.ini</code>. Unregistered markers produce warnings,
+  and — worse — a typo like <code>@pytest.mark.smoek</code> would otherwise silently create
+  a new category and your test would stop running with the smoke suite.
+</p>
+<span class="filename">pytest.ini (excerpt)</span>
+<pre><code>[pytest]
+markers =
+    smoke: quick checks of the most critical user paths
+    regression: the full, thorough suite
+    cart: anything involving the shopping cart
+addopts = --strict-markers   ; turn unknown markers into ERRORS - highly recommended</code></pre>
+
+<h3 id="running-by-category">Running by category</h3>
+<pre><code># Only smoke tests
+pytest -m smoke
+
+# Everything EXCEPT slow regression tests
+pytest -m "not regression"
+
+# Smoke tests that also involve the cart
+pytest -m "smoke and cart"
+
+# Either category
+pytest -m "smoke or cart"</code></pre>
+
+<h3 id="common-suite-names-in-qa-teams">Common suite names in QA teams</h3>
+<div class="tablewrap">
+<table>
+  <tr><th>Suite</th><th>Purpose</th><th>When it runs</th></tr>
+  <tr><td><strong>Smoke</strong></td><td>"Is the app fundamentally alive?" 5-15 fast tests of the most critical paths (login, homepage, checkout).</td><td>On every code change / deployment.</td></tr>
+  <tr><td><strong>Regression</strong></td><td>"Did anything anywhere break?" The full suite.</td><td>Nightly, or before a release.</td></tr>
+  <tr><td><strong>Feature areas</strong> (cart, auth, search...)</td><td>Everything about one part of the app.</td><td>When that area changes.</td></tr>
+</table>
+</div>
+
+<h3 id="other-useful-built-in-markers">Other useful built-in markers</h3>
+<pre><code># Skip a test entirely (always give a reason!)
+@pytest.mark.skip(reason="Feature removed in v2, test pending rewrite")
+def test_old_wishlist(page): ...
+
+# Skip only under some condition
+@pytest.mark.skipif(sys.platform == "win32", reason="Safari not available on Windows")
+def test_webkit_specific(page): ...
+
+# "We KNOW this fails - there's an open bug." Reported as xfail, not failure.
+@pytest.mark.xfail(reason="BUG-1234: totals rounding error")
+def test_cart_total_rounding(page): ...</code></pre>
+<div class="pager-row"><a class="pager prev" href="setup-teardown.html"><span>Previous page</span><strong>Setup &amp; Teardown</strong></a><a class="pager next" href="run-reports.html"><span>Next page</span><strong>Running Tests &amp; Reports</strong></a></div>
+<footer class="page-footer">QA Automation with Playwright &amp; Python - beginner's guide.
+Static HTML - no build step required.</footer>
+</main>
+<aside class="toc-right"><p>On this page</p><ul><li><a href="#why-categorize">Why categorize?</a></li><li><a href="#markers-pytest-s-labels">Markers — pytest's labels</a></li><li><a href="#register-your-markers-avoid-typo-bugs">Register your markers (avoid typo bugs)</a></li><li><a href="#running-by-category">Running by category</a></li><li><a href="#common-suite-names-in-qa-teams">Common suite names in QA teams</a></li><li><a href="#other-useful-built-in-markers">Other useful built-in markers</a></li></ul></aside>
+</div>
+<script>
+(function () {
+  document.querySelectorAll("pre").forEach(function (pre) {
+    var code = pre.querySelector("code");
+    if (!code) return;
+    var btn = document.createElement("button");
+    btn.className = "copy-btn"; btn.type = "button"; btn.textContent = "Copy";
+    btn.addEventListener("click", function () {
+      navigator.clipboard.writeText(code.textContent).then(function () {
+        btn.textContent = "Copied!"; btn.classList.add("copied");
+        setTimeout(function () { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 1600);
+      });
+    });
+    pre.appendChild(btn);
+  });
+})();
+</script>
+</body>
+</html>

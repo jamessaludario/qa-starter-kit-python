@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Testing desktop apps | QA Automation Docs</title>
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem("qa-docs-theme");
+    if (t === "light" || t === "dark") {
+      document.documentElement.setAttribute("data-theme", t);
+    }
+  } catch (e) { /* localStorage unavailable (e.g. privacy mode) - ignore */ }
+})();
+</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <a class="brand" href="index.html"><span>QA&nbsp;Automation</span></a>
+  <div class="navbar-right">
+    <nav class="navlinks">
+      <a href="about-playwright.html">Guide</a>
+      <a href="run-reports.html">Reports</a>
+      <a href="https://playwright.dev/python/docs/intro">Playwright&nbsp;Docs</a>
+      <a href="https://docs.pytest.org/">pytest&nbsp;Docs</a>
+    </nav>
+    <!-- Light/dark switch. The checkbox comes before the label so the CSS
+         sibling selector (~) can style the label from its checked state. -->
+    <input type="checkbox" id="theme-toggle" class="theme-toggle-input">
+    <label class="theme-toggle" for="theme-toggle" title="Toggle light / dark theme">
+      <span class="icon sun" aria-hidden="true">&#9728;</span>
+      <span class="track"><span class="knob"></span></span>
+      <span class="icon moon" aria-hidden="true">&#127769;</span>
+    </label>
+    <script>
+(function () {
+  var KEY = "qa-docs-theme";
+  var box = document.getElementById("theme-toggle");
+  if (!box) return;
+  var current = document.documentElement.getAttribute("data-theme");
+  if (!current) {
+    var prefersDark = window.matchMedia
+      && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    current = prefersDark ? "dark" : "light";
+  }
+  box.checked = current === "dark";
+  box.addEventListener("change", function () {
+    var theme = box.checked ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", theme);
+    try { localStorage.setItem(KEY, theme); } catch (e) { /* ignore */ }
+  });
+})();
+</script>
+  </div>
+</header>
+<div class="layout">
+<aside class="sidebar"><nav><p class="group">Getting Started</p><ul><li><a href="about-playwright.html">About Playwright</a></li><li><a href="prerequisites.html">Prerequisites</a></li><li><a href="installation.html">Installation &amp; Setup</a></li><li><a href="configurations.html">Configurations</a></li></ul><p class="group">Writing Tests</p><ul><li><a href="test-scripts.html">Creating Test Scripts</a></li><li><a href="locators.html">Locators</a></li><li><a href="assertions.html">Assertions</a></li><li><a href="setup-teardown.html">Setup &amp; Teardown</a></li></ul><p class="group">Running Tests</p><ul><li><a href="categorization.html">Categorizing Tests</a></li><li><a href="run-reports.html">Running Tests &amp; Reports</a></li><li><a href="additional-info.html">Additional Info</a></li></ul><p class="group">Beyond the Browser</p><ul><li><a class="active" href="desktop-apps.html">Testing Desktop Apps</a></li></ul></nav></aside>
+<main class="content">
+<details class="mobile-nav"><summary>Menu &#9662;</summary><ul><li><a href="about-playwright.html">About Playwright</a></li><li><a href="prerequisites.html">Prerequisites</a></li><li><a href="installation.html">Installation &amp; Setup</a></li><li><a href="configurations.html">Configurations</a></li><li><a href="test-scripts.html">Creating Test Scripts</a></li><li><a href="locators.html">Locators</a></li><li><a href="assertions.html">Assertions</a></li><li><a href="setup-teardown.html">Setup &amp; Teardown</a></li><li><a href="categorization.html">Categorizing Tests</a></li><li><a href="run-reports.html">Running Tests &amp; Reports</a></li><li><a href="additional-info.html">Additional Info</a></li><li><a href="desktop-apps.html">Testing Desktop Apps &#10004;</a></li></ul></details>
+<h1>Testing desktop apps</h1>
+<p>
+  Everything up to here has been about <em>web</em> testing. This section is the one
+  place in the guide that steps outside the browser: how to automate a native
+  <strong>Windows application</strong> — Calculator, Notepad, an installed accounting
+  package — and keep those tests in the same pytest suite as your Playwright tests.
+</p>
+<div class="note">
+  <strong>Follow along in this repo</strong>
+  Every snippet below is real, working code from the <code>desktop/</code> folder.
+  Run the finished tests with <code>python desktop/run_tests.py</code>.
+</div>
+
+<h3 id="why-playwright-can-t-do-this">Why Playwright can't do this</h3>
+<p>
+  Playwright drives <em>browser engines</em>. It speaks to Chromium, Firefox, and WebKit
+  through their debugging protocols, and a native app's window simply isn't a web page —
+  there's no DOM, no CSS selectors, no <code>page.goto()</code>. No amount of Playwright
+  configuration reaches a desktop window, so you need a different tool.
+</p>
+<p>
+  On Windows, native apps expose their controls through <strong>UI Automation</strong> (UIA) —
+  the same accessibility layer that lets a screen reader announce "button, Login". That layer
+  is what desktop automation tools read, and it's why they can inspect and click an app's
+  controls without the app cooperating in any way.
+</p>
+<div class="tablewrap">
+<table>
+  <tr><th>Tool</th><th>How it works</th><th>When to pick it</th></tr>
+  <tr>
+    <td><strong>pywinauto</strong></td>
+    <td>A pure Python library that talks to UI Automation directly. Nothing extra to run.</td>
+    <td><strong>The default choice</strong> — and what this section uses. Simplest setup, installs with pip.</td>
+  </tr>
+  <tr>
+    <td><strong>Appium + WinAppDriver</strong></td>
+    <td>WebDriver protocol (the same model as Selenium), via a separate WinAppDriver service you start first.</td>
+    <td>Your team already runs Appium for mobile and wants one protocol for everything.</td>
+  </tr>
+  <tr>
+    <td><strong>pyautogui</strong> and friends</td>
+    <td>Moves the mouse to screen coordinates and matches screenshots. Ignores the control tree entirely.</td>
+    <td>Last resort — for canvas-drawn UIs and games that expose no controls. Very brittle.</td>
+  </tr>
+</table>
+</div>
+<div class="warn">
+  <strong>pywinauto is Windows-only</strong>
+  That's why this repo keeps it in its own <code>requirements-desktop.txt</code> instead of the
+  main <code>requirements.txt</code> — so the web tests still install and run on macOS and Linux.
+</div>
+
+<h3 id="installing-pywinauto">Installing pywinauto</h3>
+<span class="filename">requirements-desktop.txt</span>
+<pre><code>pywinauto</code></pre>
+<pre><code>pip install -r requirements-desktop.txt</code></pre>
+<p>
+  There is no browser-style download step (no <code>playwright install</code> equivalent) —
+  the apps you're testing are already on the machine. One optional extra: install
+  <strong>Pillow</strong> (<code>pip install pillow</code>) if you want screenshots on failure,
+  because pywinauto's <code>capture_as_image()</code> silently returns nothing without it.
+</p>
+<div class="warn">
+  <strong>Desktop tests need a real, unlocked desktop</strong>
+  UI Automation drives actual windows, so the screen must be logged in and awake. These tests
+  cannot run "headless" the way Playwright can — if the session is locked or the machine is
+  in a disconnected remote-desktop session, windows never become visible and everything times
+  out. On CI you need a dedicated interactive machine or VM.
+</div>
+
+<h3 id="the-two-backends-uia-and-win32">The two backends: <code>uia</code> and <code>win32</code></h3>
+<p>
+  pywinauto can read an app in two different ways, and picking the wrong one is the most
+  common reason a beginner "can't find any controls".
+</p>
+<div class="tablewrap">
+<table>
+  <tr><th>Backend</th><th>Reads</th><th>Use for</th></tr>
+  <tr>
+    <td><code>backend="uia"</code></td>
+    <td>UI Automation — the modern accessibility layer.</td>
+    <td><strong>Start here.</strong> Modern and Store apps (Calculator, Settings), WPF, WinForms, Qt.</td>
+  </tr>
+  <tr>
+    <td><code>backend="win32"</code></td>
+    <td>Classic Win32 window messages.</td>
+    <td>Old-school apps (MFC, Delphi, VB6) that expose nothing to UIA.</td>
+  </tr>
+</table>
+</div>
+<p>
+  A modern app inspected with <code>win32</code> often looks completely empty, which is
+  confusing but harmless. If you find no controls, switch backends before you doubt anything else.
+</p>
+
+<h3 id="opening-an-app">Opening an app</h3>
+<p>The straightforward version — launch the program, then wait for its window:</p>
+<pre><code>from pywinauto.application import Application
+
+app = Application(backend="uia").start("calc.exe")
+window = app.window(title="Calculator")
+window.wait("visible ready", timeout=10)</code></pre>
+<p>
+  <code>wait("visible ready")</code> is the desktop counterpart of Playwright's
+  <code>expect()</code>: it <em>polls</em> until the window is on screen and accepting input,
+  then continues the moment that's true — so it costs only as long as the app actually needs.
+</p>
+<div class="warn">
+  <strong>The launcher-handoff trap (this will bite you)</strong>
+  Several modern Windows apps — Calculator included — are started by a small stub process that
+  immediately hands off to the real app under a <em>different process id</em>. The code above
+  then fails with <code>TimeoutError: timed out</code> even though the window is plainly
+  visible on screen, because <code>app.window()</code> only searches inside the stub's
+  (now-dead) process. Launching <code>calc.exe</code> really runs
+  <code>CalculatorApp.exe</code> under a new pid.
+</div>
+<p>
+  Getting this right means solving three problems at once, so it's worth reading the finished
+  version as a whole. It launches the app, works out which window is <em>ours</em>, waits until
+  the UI inside it really exists, and only then hands it over:
+</p>
+<span class="filename">desktop/pages/base_app.py (abridged)</span>
+<pre><code>from pywinauto.application import Application
+from pywinauto.findwindows import find_elements
+from pywinauto.timings import wait_until_passes
+
+WAIT_TIMEOUT = 15
+RETRY_INTERVAL = 0.3
+
+
+class BaseApp:
+    app_path = None          # child classes set these, e.g. "calc.exe"
+    window_title = None
+    ready_control = None     # child_window() kwargs proving the UI loaded
+
+    def _matching_elements(self):
+        return find_elements(
+            title=self.window_title, backend="uia", top_level_only=True
+        )
+
+    def open(self):
+        # TRAP 1: note which windows exist BEFORE launching, so we never
+        # bind to one that was already open.
+        handles_before = {e.handle for e in self._matching_elements()}
+
+        # TRAP 2: ignore what start() returns - the pid usually changes.
+        Application(backend="uia").start(self.app_path)
+
+        def usable_window():
+            for info in self._matching_elements():
+                if info.handle in handles_before:
+                    continue
+                # Store the app as soon as our window appears, so close()
+                # can kill it even if the UI never finishes loading.
+                self.app = Application(backend="uia").connect(
+                    process=info.process_id
+                )
+                spec = self.app.window(handle=info.handle)
+                # TRAP 3: only accept a window that HAS the UI in it.
+                if self.ready_control and not spec.child_window(
+                    **self.ready_control
+                ).exists():
+                    raise LookupError("window is up, UI is not loaded yet")
+                return spec
+            raise LookupError("no new window yet")
+
+        self.window = wait_until_passes(
+            WAIT_TIMEOUT, RETRY_INTERVAL, usable_window,
+            exceptions=(LookupError,),
+        )
+        self.window.wait("visible ready", timeout=WAIT_TIMEOUT)
+        self.window.set_focus()
+        return self
+
+    def close(self):
+        if self.app is not None:
+            self.app.kill()
+            self.app = None</code></pre>
+<p>And the subclass declares what "loaded" means for its app:</p>
+<pre><code>class CalculatorPage(BaseApp):
+    app_path = "calc.exe"
+    window_title = "Calculator"
+    ready_control = {"auto_id": "num1Button", "control_type": "Button"}</code></pre>
+<div class="warn">
+  <strong>TRAP 3 is the one that will confuse you most: a window is not a UI</strong>
+  A modern Windows app's visible window is only an outer shell — its class name is literally
+  <code>ApplicationFrameWindow</code> — and the real interface lives in a <em>separate</em>
+  window created inside it a moment later. So <code>wait("visible ready")</code> can succeed
+  while the app is still empty: inspect the window at that instant and you see about seven
+  controls (minimise, maximise, close…) instead of Calculator's thirty-six, and asking for a
+  button raises <code>ElementNotFoundError</code> naming that frame as the parent. On an idle
+  machine the gap is too small to notice, which makes it a race that only appears under load.
+  Waiting for a control you know belongs to the real UI closes the gap.
+</div>
+<div class="tip">
+  <strong>Bind once, by handle</strong>
+  Notice <code>open()</code> ends up with <code>self.app.window(handle=...)</code>. A
+  <code>Desktop(...).window(title=...)</code> specification is <em>lazy</em> — it re-runs its
+  "any window called Calculator" search every single time you touch it. That's slower, and it
+  can drift onto a different (or dying) window of the same name. Resolving once to a handle made
+  this repo's two tests about 40% faster.
+</div>
+<p>
+  Not sure what an app's window is really called? List everything currently open:
+</p>
+<pre><code>from pywinauto import Desktop
+
+for w in Desktop(backend="uia").windows():
+    print(repr(w.window_text()), w.element_info.class_name)</code></pre>
+
+<h3 id="discovering-controls-the-desktop-inspect-element">Discovering controls — the desktop "Inspect element"</h3>
+<p>
+  On the web you right-click and choose Inspect. The desktop equivalent is to print the app's
+  control tree. Once you have a window, ask it to describe everything inside itself:
+</p>
+<pre><code>window.print_control_identifiers()</code></pre>
+<p>Which prints entries like this — note the ready-made <code>child_window(...)</code> line, your locator:</p>
+<pre><code>Dialog - 'Calculator'    (L601, T549, R937, B1090)
+['Calculator', 'CalculatorDialog', 'Dialog']
+child_window(title="Calculator", control_type="Window")
+   |
+   | Dialog - 'Calculator'    (L741, T550, R929, B582)
+   | child_window(title="Calculator", auto_id="TitleBar", control_type="Window")</code></pre>
+<p>
+  For a big app that output is enormous, so it's often easier to filter. This lists every
+  button with both of its possible addresses:
+</p>
+<pre><code>for control in window.descendants(control_type="Button"):
+    info = control.element_info
+    print(repr(info.name), "|", info.automation_id)</code></pre>
+<p>Run against Calculator, that prints its whole keypad:</p>
+<pre><code>'Clear'      | clearButton
+'Divide by'  | divideButton
+'Multiply by'| multiplyButton
+'Minus'      | minusButton
+'Plus'       | plusButton
+'Equals'     | equalButton
+'Zero'       | num0Button
+'One'        | num1Button
+'Two'        | num2Button</code></pre>
+<div class="tip">
+  <strong>Graphical inspectors</strong>
+  If you prefer clicking to printing, <strong>Accessibility Insights for Windows</strong>
+  (free, from Microsoft) highlights any control you hover and shows its name, automation id,
+  and control type. The older <strong>Inspect.exe</strong> from the Windows SDK does the same job.
+</div>
+
+<h3 id="locators-for-desktop-child-window">Locators for desktop: <code>child_window()</code></h3>
+<p>
+  <code>child_window()</code> is the desktop equivalent of <code>page.locator()</code>. You
+  describe the control by one or more properties, and pywinauto finds it:
+</p>
+<pre><code># By automation id (the developer's internal name) - most stable
+window.child_window(auto_id="num1Button", control_type="Button")
+
+# By the visible/spoken name
+window.child_window(title="One", control_type="Button")
+
+# By window class name (mostly for old win32 apps)
+window.child_window(class_name="Edit")</code></pre>
+<div class="tablewrap">
+<table>
+  <tr><th>Property</th><th>What it matches</th><th>Web equivalent</th></tr>
+  <tr><td><code>auto_id</code></td><td>The <code>AutomationId</code> the developer set — an internal, untranslated name.</td><td><code>data-testid</code></td></tr>
+  <tr><td><code>title</code></td><td>The control's accessible name — the words a screen reader speaks.</td><td>visible text / label</td></tr>
+  <tr><td><code>control_type</code></td><td>What kind of control it is: <code>Button</code>, <code>Text</code>, <code>Edit</code>, <code>CheckBox</code>, <code>ComboBox</code>, <code>ListItem</code>, <code>MenuItem</code>, <code>TabItem</code>...</td><td>ARIA role</td></tr>
+  <tr><td><code>class_name</code></td><td>The underlying Windows class. Implementation detail — brittle.</td><td>CSS class</td></tr>
+  <tr><td><code>found_index</code></td><td>Position among matches, counting from 0. Last resort.</td><td><code>.nth(0)</code></td></tr>
+</table>
+</div>
+<div class="tip">
+  <strong>Prefer <code>auto_id</code> — names are translated</strong>
+  This is the one place desktop advice differs sharply from the web. On the web you're told to
+  locate by visible text and role. On the desktop, that visible name is <em>localized</em>:
+  a test that clicks <code>title="Plus"</code> breaks the moment it runs on a Spanish or
+  Japanese Windows, while <code>auto_id="plusButton"</code> is identical everywhere. Always add
+  <code>control_type</code> too, so an id reused by two different control kinds stays unambiguous.
+</div>
+
+<h3 id="acting-on-controls-and-reading-values">Acting on controls and reading values</h3>
+<div class="tablewrap">
+<table>
+  <tr><th>Method</th><th>What it does</th></tr>
+  <tr><td><code>.click()</code></td><td>Asks UI Automation to invoke the control directly. <strong>The reliable default</strong> — see the warning below.</td></tr>
+  <tr><td><code>.click_input()</code></td><td>Moves the real mouse to the control's screen coordinates and clicks — what a person does, but see the warning below.</td></tr>
+  <tr><td><code>.double_click_input()</code> / <code>.right_click_input()</code></td><td>Double-click / right-click (for context menus).</td></tr>
+  <tr><td><code>.type_keys("hello", with_spaces=True)</code></td><td>Types on the keyboard. Spaces are ignored unless you pass <code>with_spaces</code>.</td></tr>
+  <tr><td><code>.set_edit_text("hello")</code></td><td>Sets a text box's contents in one go, without typing.</td></tr>
+  <tr><td><code>.window_text()</code></td><td>Reads the control's text — your main way to assert on what's displayed.</td></tr>
+  <tr><td><code>.is_enabled()</code> / <code>.is_visible()</code></td><td>State checks, for asserting a button is greyed out or a panel is shown.</td></tr>
+  <tr><td><code>.capture_as_image()</code></td><td>Screenshot of just that control or window (needs Pillow installed).</td></tr>
+</table>
+</div>
+<div class="warn">
+  <strong><code>click()</code> vs <code>click_input()</code> — a real flake we hit</strong>
+  <code>click_input()</code> clicks a screen <em>position</em>, so it hits whatever happens to be
+  there at that instant. Anything that steals the foreground mid-test — a notification, another
+  window opening — silently swallows the click, and the test fails with no hint of why: you get
+  a timeout on an assertion, not "the click missed". These two tests failed exactly that way
+  twice while this section was being written — both times while other windows were being opened
+  on the same machine, and never once when run undisturbed, which is the signature of this bug.
+  <code>.click()</code> targets the control itself and can't be intercepted. Reach for <code>click_input()</code> only when the realism <em>is</em>
+  the point (proving a button isn't covered by an overlay), and call
+  <code>window.set_focus()</code> first when you do.
+</div>
+<div class="note">
+  <strong>Reading a value isn't always obvious</strong>
+  A web input has a <code>value</code>. Many desktop controls don't — Calculator's display is
+  a <em>Text</em> control whose accessible name carries the number, so
+  <code>window_text()</code> returns the string <code>"Display is 12"</code>, not
+  <code>"12"</code>. Expect to do a little parsing, and keep that parsing in the page object
+  where the rest of the app's quirks live.
+</div>
+
+<h3 id="waiting-properly-still-never-time-sleep">Waiting properly — still never <code>time.sleep()</code></h3>
+<p>
+  Desktop apps are just as slow and unpredictable as websites, and the rule from Section 7
+  holds: never pause for a fixed number of seconds, always wait for a <em>condition</em>.
+</p>
+<pre><code>from pywinauto.timings import wait_until_passes
+
+# Wait for a window to be ready (states: exists, visible, enabled, ready, active)
+window.wait("visible ready", timeout=10)
+
+# Wait for a window to go away, e.g. after clicking Save
+window.wait_not("visible", timeout=10)
+
+# Retry an ASSERTION until it passes - the closest thing to expect().
+# Checks every 0.2s for up to 5s, re-raising the last failure on timeout.
+def result_is_12():
+    assert calculator.result_value() == "12"
+
+wait_until_passes(5, 0.2, result_is_12)</code></pre>
+<div class="tip">
+  <strong>Why wrap the assertion?</strong>
+  A bare <code>assert</code> checks once, the instant it runs — if the display needs another
+  50&nbsp;ms to update, the test fails for no real reason. <code>wait_until_passes</code> keeps
+  retrying until it's true, which is exactly what makes Playwright's <code>expect()</code> so
+  reliable. Use it for anything the app updates asynchronously.
+</div>
+
+<h3 id="page-objects-for-desktop">Page objects for desktop</h3>
+<p>
+  The architecture from Section 5 carries over unchanged — only the bottom layer differs.
+  Locators live in page objects, journeys live in helpers, assertions live in tests:
+</p>
+<pre><code>test  ->  desktop/helpers/  ->  desktop/pages/  ->  the app
+(WHAT to verify)  (the journey)   (WHERE things are)</code></pre>
+<p>
+  <code>CalculatorPage</code> inherits the launch-and-wait logic from <code>BaseApp</code> and
+  adds only what's specific to Calculator. Notice that <em>every</em> automation id in the whole
+  suite is in this one file — if a Windows update renames a button, this is the only file you touch:
+</p>
+<span class="filename">desktop/pages/calculator_page.py</span>
+<pre><code>import re
+
+from desktop.pages.base_app import BaseApp
+
+_OPERATOR_IDS = {
+    "+": "plusButton",   "-": "minusButton",
+    "*": "multiplyButton", "/": "divideButton",
+}
+
+
+class CalculatorPage(BaseApp):
+    app_path = "calc.exe"
+    window_title = "Calculator"
+
+    def _click(self, automation_id: str):
+        self.window.child_window(
+            auto_id=automation_id, control_type="Button"
+        ).click()
+
+    def press_number(self, number: int):
+        """Press each digit in order, e.g. press_number(42) -> 4, 2."""
+        for digit in str(number):
+            self._click(f"num{digit}Button")
+
+    def press_operator(self, operator: str):
+        self._click(_OPERATOR_IDS[operator])
+
+    def press_equals(self):
+        self._click("equalButton")
+
+    def result_text(self) -> str:
+        """The display's full text, e.g. "Display is 12"."""
+        return self.window.child_window(
+            auto_id="CalculatorResults", control_type="Text"
+        ).window_text()
+
+    def result_value(self) -> str:
+        """Just the number, e.g. "12" - the prefix is localized, so we
+        pull the trailing number out instead of stripping by name."""
+        match = re.search(r"-?[\d.,]+$", self.result_text())
+        return match.group().replace(",", "") if match else ""</code></pre>
+<p>And the journey layer, which knows no ids at all:</p>
+<span class="filename">desktop/helpers/flows.py</span>
+<pre><code>def compute(calculator, first, operator, second):
+    """Key in `first operator second =`."""
+    calculator.press_number(first)
+    calculator.press_operator(operator)
+    calculator.press_number(second)
+    calculator.press_equals()</code></pre>
+
+<h3 id="setup-and-teardown-with-a-fixture">Setup and teardown with a fixture</h3>
+<p>
+  Playwright's plugin hands you a fresh <code>page</code> for every test. There's no such gift
+  for desktop apps, so you write the equivalent yourself — a fixture that launches the app
+  before each test and, crucially, closes it afterwards:
+</p>
+<span class="filename">desktop/fixtures/calculator.py</span>
+<pre><code>import pytest
+
+from desktop.pages.calculator_page import CalculatorPage
+
+
+@pytest.fixture
+def calculator():
+    app = CalculatorPage()
+    try:
+        app.open()
+        yield app        # the test runs here
+    finally:
+        app.close()      # ...and this runs even if open() itself failed</code></pre>
+<div class="warn">
+  <strong><code>try</code>/<code>finally</code>, not just a line after <code>yield</code></strong>
+  This looks like fussy style until it bites. Code placed after <code>yield</code> only runs if
+  the fixture reached the <code>yield</code> — so if <code>open()</code> raises, the
+  half-started app is never closed and stays on screen. It then compounds: six failing runs
+  leave a dozen Calculators open, and now even <em>correct</em> code fails, because "the window
+  titled Calculator" is suddenly ambiguous
+  (<code>ElementAmbiguousError</code>). One broken test quietly poisons every later run — a
+  failure mode with no equivalent on the web, where pytest disposes of the browser for you.
+</div>
+
+<h3 id="writing-and-running-the-test">Writing and running the test</h3>
+<p>The test itself reads like any other pytest test — no pywinauto in sight:</p>
+<span class="filename">desktop/tests/test_calculator.py</span>
+<pre><code>from pywinauto.timings import wait_until_passes
+
+from desktop.helpers.flows import compute
+
+
+def test_add_two_numbers(calculator):
+    compute(calculator, 7, "+", 5)
+
+    def result_is_12():
+        assert calculator.result_value() == "12"
+
+    wait_until_passes(5, 0.2, result_is_12)</code></pre>
+<p>Run it with the wrapper script, which supplies the flags these tests need:</p>
+<pre><code>python desktop/run_tests.py                 # every desktop test
+python desktop/run_tests.py -k "add"        # just matching tests
+python desktop/run_tests.py -v              # verbose</code></pre>
+<pre><code>desktop/tests/test_calculator.py::test_add_two_numbers PASSED    [ 50%]
+============================== 2 passed in 4.30s ==============================</code></pre>
+<div class="warn">
+  <strong>Keep the two suites from colliding</strong>
+  Run desktop tests with plain <code>pytest</code> and they may fail in a baffling way: the
+  root <code>conftest.py</code>'s <em>autouse</em> browser fixtures apply to every test in the
+  repo, so pytest tries to open a browser for your Calculator test. Autouse fixtures aren't
+  scoped to the folder that defines them. Hence
+  <code>--confcutdir=desktop</code>, which stops pytest from loading conftest files above that
+  folder — <code>desktop/run_tests.py</code> passes it for you. Marking tests
+  (<code>@pytest.mark.desktop</code>, Section 9) is the other half of keeping the suites tidy.
+</div>
+
+<h3 id="web-vs-desktop-at-a-glance">Web vs desktop at a glance</h3>
+<div class="tablewrap">
+<table>
+  <tr><th>Concept</th><th>Playwright (web)</th><th>pywinauto (desktop)</th></tr>
+  <tr><td>Start a session</td><td><code>page.goto(url)</code></td><td><code>Application(backend="uia").start(exe)</code></td></tr>
+  <tr><td>Find something</td><td><code>page.get_by_role("button", name="OK")</code></td><td><code>window.child_window(auto_id="okButton", control_type="Button")</code></td></tr>
+  <tr><td>Most stable locator</td><td><code>data-testid</code></td><td><code>auto_id</code></td></tr>
+  <tr><td>Click</td><td><code>.click()</code></td><td><code>.click()</code> (or <code>.click_input()</code> for a real mouse)</td></tr>
+  <tr><td>Type</td><td><code>.fill("text")</code></td><td><code>.type_keys("text", with_spaces=True)</code></td></tr>
+  <tr><td>Read text</td><td><code>.inner_text()</code></td><td><code>.window_text()</code></td></tr>
+  <tr><td>Auto-waiting assertion</td><td><code>expect(...).to_be_visible()</code></td><td><code>wait_until_passes(...)</code>, <code>window.wait(...)</code></td></tr>
+  <tr><td>Inspect the UI</td><td>Browser DevTools, <code>playwright codegen</code></td><td><code>print_control_identifiers()</code>, Accessibility Insights</td></tr>
+  <tr><td>Per-test isolation</td><td><code>page</code> fixture (free)</td><td>your own fixture (write it)</td></tr>
+  <tr><td>Headless?</td><td>Yes, by default</td><td>No — needs a real logged-in desktop</td></tr>
+</table>
+</div>
+
+<h3 id="troubleshooting">Troubleshooting</h3>
+<div class="tablewrap">
+<table>
+  <tr><th>Symptom</th><th>Likely cause and fix</th></tr>
+  <tr>
+    <td><code>TimeoutError: timed out</code> on <code>wait()</code>, though the window is clearly open</td>
+    <td>The launcher-handoff trap. Find the window with <code>Desktop(...).window(title=...)</code> instead of <code>app.window(...)</code>. Also confirm the exact title by listing open windows.</td>
+  </tr>
+  <tr>
+    <td><code>ElementNotFoundError</code></td>
+    <td>Wrong <code>auto_id</code>, <code>title</code>, or <code>control_type</code>. Re-run <code>print_control_identifiers()</code> — and check the control isn't inside a dialog you haven't opened yet.</td>
+  </tr>
+  <tr>
+    <td><code>ElementAmbiguousError</code> ("found 2 elements")</td>
+    <td>Your description matches more than one control. Add <code>control_type</code>, or as a last resort <code>found_index=0</code>. If it names your whole <em>window</em>, you have leftover copies of the app open from earlier failed runs — close them, and fix teardown so they stop accumulating.</td>
+  </tr>
+  <tr>
+    <td><code>ElementNotFoundError</code> whose <code>parent</code> is an <code>ApplicationFrameWindow</code></td>
+    <td>You're asking the outer shell for a control that lives in the app's inner content window, which isn't built yet. Wait for a known control first (TRAP 3 above).</td>
+  </tr>
+  <tr>
+    <td>The window opens but stays empty; only ~7 controls are ever found</td>
+    <td>The app is never really shown, so its UI is never built. Something is covering it or holding the foreground (a maximised app, an always-on-top overlay), or the desktop is locked. Windows also refuses to let a background process steal focus, so <code>set_focus()</code> can't rescue you. Free the desktop and re-run.</td>
+  </tr>
+  <tr>
+    <td>No controls found at all</td>
+    <td>Wrong backend. Switch <code>win32</code> to <code>uia</code> (or the reverse for a very old app).</td>
+  </tr>
+  <tr>
+    <td>Works locally, times out on CI</td>
+    <td>No interactive desktop — the session is locked, or it's a headless agent. Desktop UI automation needs a real logged-in screen.</td>
+  </tr>
+  <tr>
+    <td>Everything fails against one particular app</td>
+    <td>It probably runs elevated (as administrator). A normal-privilege test process can't drive an elevated window; run the tests elevated too.</td>
+  </tr>
+  <tr>
+    <td>A test fails now and then, with an assertion timeout and no other clue</td>
+    <td>If you use <code>click_input()</code>, something stole the foreground and ate the click. Switch to <code>.click()</code>, or call <code>window.set_focus()</code> first.</td>
+  </tr>
+  <tr>
+    <td>Clicks land in the wrong place</td>
+    <td>Display scaling — <code>click_input()</code> works in screen coordinates. Make the Python process DPI-aware, test at 100% scaling, or use <code>.click()</code> instead.</td>
+  </tr>
+  <tr>
+    <td>Lookups are slow, or intermittently raise <code>ElementNotFoundError</code></td>
+    <td>You're re-using a lazy <code>Desktop(...)</code> specification, which re-searches every window on every access. Bind once to the window's handle (see "Opening an app").</td>
+  </tr>
+  <tr>
+    <td><code>capture_as_image()</code> returns nothing</td>
+    <td>Pillow isn't installed — <code>pip install pillow</code>.</td>
+  </tr>
+</table>
+</div>
+
+<h3 id="where-to-go-next">Where to go next</h3>
+<ul>
+  <li><a href="https://pywinauto.readthedocs.io/">pywinauto documentation</a> — the full reference, including its
+      <a href="https://pywinauto.readthedocs.io/en/latest/getting_started.html">getting started guide</a> on backends and control identifiers.</li>
+  <li><a href="https://accessibilityinsights.io/downloads/">Accessibility Insights for Windows</a> — free graphical control inspector.</li>
+  <li><a href="https://learn.microsoft.com/en-us/dotnet/framework/ui-automation/">Microsoft UI Automation overview</a> — the accessibility layer all of this is built on.</li>
+  <li>Good practice apps to try next: <strong>Notepad</strong> (text editing, dialogs, menus) and
+      <strong>Windows Settings</strong> (navigation, toggles, search).</li>
+</ul>
+<div class="pager-row"><a class="pager prev" href="additional-info.html"><span>Previous page</span><strong>Additional Info</strong></a><span></span></div>
+<footer class="page-footer">QA Automation with Playwright &amp; Python - beginner's guide.
+Static HTML - no build step required.</footer>
+</main>
+<aside class="toc-right"><p>On this page</p><ul><li><a href="#why-playwright-can-t-do-this">Why Playwright can't do this</a></li><li><a href="#installing-pywinauto">Installing pywinauto</a></li><li><a href="#the-two-backends-uia-and-win32">The two backends: uia and win32</a></li><li><a href="#opening-an-app">Opening an app</a></li><li><a href="#discovering-controls-the-desktop-inspect-element">Discovering controls — the desktop "Inspect element"</a></li><li><a href="#locators-for-desktop-child-window">Locators for desktop: child_window()</a></li><li><a href="#acting-on-controls-and-reading-values">Acting on controls and reading values</a></li><li><a href="#waiting-properly-still-never-time-sleep">Waiting properly — still never time.sleep()</a></li><li><a href="#page-objects-for-desktop">Page objects for desktop</a></li><li><a href="#setup-and-teardown-with-a-fixture">Setup and teardown with a fixture</a></li><li><a href="#writing-and-running-the-test">Writing and running the test</a></li><li><a href="#web-vs-desktop-at-a-glance">Web vs desktop at a glance</a></li><li><a href="#troubleshooting">Troubleshooting</a></li><li><a href="#where-to-go-next">Where to go next</a></li></ul></aside>
+</div>
+<script>
+(function () {
+  document.querySelectorAll("pre").forEach(function (pre) {
+    var code = pre.querySelector("code");
+    if (!code) return;
+    var btn = document.createElement("button");
+    btn.className = "copy-btn"; btn.type = "button"; btn.textContent = "Copy";
+    btn.addEventListener("click", function () {
+      navigator.clipboard.writeText(code.textContent).then(function () {
+        btn.textContent = "Copied!"; btn.classList.add("copied");
+        setTimeout(function () { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 1600);
+      });
+    });
+    pre.appendChild(btn);
+  });
+})();
+</script>
+</body>
+</html>

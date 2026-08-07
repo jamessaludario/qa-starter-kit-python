@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configurations | QA Automation Docs</title>
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem("qa-docs-theme");
+    if (t === "light" || t === "dark") {
+      document.documentElement.setAttribute("data-theme", t);
+    }
+  } catch (e) { /* localStorage unavailable (e.g. privacy mode) - ignore */ }
+})();
+</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <a class="brand" href="index.html"><span>QA&nbsp;Automation</span></a>
+  <div class="navbar-right">
+    <nav class="navlinks">
+      <a href="about-playwright.html">Guide</a>
+      <a href="run-reports.html">Reports</a>
+      <a href="https://playwright.dev/python/docs/intro">Playwright&nbsp;Docs</a>
+      <a href="https://docs.pytest.org/">pytest&nbsp;Docs</a>
+    </nav>
+    <!-- Light/dark switch. The checkbox comes before the label so the CSS
+         sibling selector (~) can style the label from its checked state. -->
+    <input type="checkbox" id="theme-toggle" class="theme-toggle-input">
+    <label class="theme-toggle" for="theme-toggle" title="Toggle light / dark theme">
+      <span class="icon sun" aria-hidden="true">&#9728;</span>
+      <span class="track"><span class="knob"></span></span>
+      <span class="icon moon" aria-hidden="true">&#127769;</span>
+    </label>
+    <script>
+(function () {
+  var KEY = "qa-docs-theme";
+  var box = document.getElementById("theme-toggle");
+  if (!box) return;
+  var current = document.documentElement.getAttribute("data-theme");
+  if (!current) {
+    var prefersDark = window.matchMedia
+      && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    current = prefersDark ? "dark" : "light";
+  }
+  box.checked = current === "dark";
+  box.addEventListener("change", function () {
+    var theme = box.checked ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", theme);
+    try { localStorage.setItem(KEY, theme); } catch (e) { /* ignore */ }
+  });
+})();
+</script>
+  </div>
+</header>
+<div class="layout">
+<aside class="sidebar"><nav><p class="group">Getting Started</p><ul><li><a href="about-playwright.html">About Playwright</a></li><li><a href="prerequisites.html">Prerequisites</a></li><li><a href="installation.html">Installation &amp; Setup</a></li><li><a class="active" href="configurations.html">Configurations</a></li></ul><p class="group">Writing Tests</p><ul><li><a href="test-scripts.html">Creating Test Scripts</a></li><li><a href="locators.html">Locators</a></li><li><a href="assertions.html">Assertions</a></li><li><a href="setup-teardown.html">Setup &amp; Teardown</a></li></ul><p class="group">Running Tests</p><ul><li><a href="categorization.html">Categorizing Tests</a></li><li><a href="run-reports.html">Running Tests &amp; Reports</a></li><li><a href="additional-info.html">Additional Info</a></li></ul><p class="group">Beyond the Browser</p><ul><li><a href="desktop-apps.html">Testing Desktop Apps</a></li></ul></nav></aside>
+<main class="content">
+<details class="mobile-nav"><summary>Menu &#9662;</summary><ul><li><a href="about-playwright.html">About Playwright</a></li><li><a href="prerequisites.html">Prerequisites</a></li><li><a href="installation.html">Installation &amp; Setup</a></li><li><a href="configurations.html">Configurations &#10004;</a></li><li><a href="test-scripts.html">Creating Test Scripts</a></li><li><a href="locators.html">Locators</a></li><li><a href="assertions.html">Assertions</a></li><li><a href="setup-teardown.html">Setup &amp; Teardown</a></li><li><a href="categorization.html">Categorizing Tests</a></li><li><a href="run-reports.html">Running Tests &amp; Reports</a></li><li><a href="additional-info.html">Additional Info</a></li><li><a href="desktop-apps.html">Testing Desktop Apps</a></li></ul></details>
+<h1>Configurations</h1>
+<h3 id="pytest-ini-the-control-panel">pytest.ini — the control panel</h3>
+<p>
+  <code>pytest.ini</code> sits in your project root and tells pytest how to behave
+  <em>every</em> time you run it, so you don't retype the same options. A practical example:
+</p>
+<span class="filename">pytest.ini</span>
+<pre><code>[pytest]
+; Which folder(s) contain the tests
+testpaths = tests
+
+; Options applied automatically on every run:
+;   --browser chromium        -&gt; run in Chromium
+;   --html=...                -&gt; write an HTML report
+;   --self-contained-html     -&gt; put CSS inside the one report file (easy to share)
+;   --reruns 2                -&gt; retry a failed test up to 2 more times
+;   --reruns-delay 2          -&gt; wait 2 seconds between retries
+addopts = --browser chromium --html=reports/report.html --self-contained-html --reruns 2 --reruns-delay 2
+
+; Named categories for tests (see Section 9)
+markers =
+    smoke: quick checks of the most critical paths
+    regression: the full, thorough suite</code></pre>
+
+<h3 id="useful-command-line-options-from-pytest-playwright">Useful command-line options from pytest-playwright</h3>
+<p>These can go in <code>addopts</code> (permanent) or be typed per-run (temporary):</p>
+<div class="tablewrap">
+<table>
+  <tr><th>Option</th><th>Effect</th></tr>
+  <tr><td><code>--browser chromium</code></td><td>Choose the browser: <code>chromium</code>, <code>firefox</code>, or <code>webkit</code>. Repeat the flag to run in several.</td></tr>
+  <tr><td><code>--headed</code></td><td>Show the browser window while tests run (default is invisible/headless).</td></tr>
+  <tr><td><code>--slowmo 500</code></td><td>Pause 500 ms between each action so you can watch what happens.</td></tr>
+  <tr><td><code>--screenshot only-on-failure</code></td><td>Save a screenshot whenever a test fails.</td></tr>
+  <tr><td><code>--video retain-on-failure</code></td><td>Record video, keep it only for failures.</td></tr>
+  <tr><td><code>--tracing retain-on-failure</code></td><td>Record a Playwright trace (replayable recording) for failures.</td></tr>
+  <tr><td><code>--base-url https://mysite.com</code></td><td>Set a base URL so tests can use <code>page.goto("/login")</code>.</td></tr>
+</table>
+</div>
+
+<h3 id="conftest-py-shared-setup-code">conftest.py — shared setup code</h3>
+<p>
+  <code>conftest.py</code> is a special file pytest loads automatically. It holds
+  <strong>fixtures</strong> (reusable setup/teardown blocks — explained fully in Section 8)
+  and project-wide hooks. Anything defined here is available to every test without imports.
+</p>
+
+<h3 id="constants-py-one-home-for-fixed-values">constants.py — one home for fixed values</h3>
+<span class="filename">constants.py</span>
+<pre><code># Every URL and timeout lives here, so changing an environment
+# (e.g. staging -&gt; production) is a one-line edit.
+BASE_URL = "https://automationexercise.com"
+DEFAULT_TIMEOUT = 10_000   # milliseconds - Playwright times are in ms</code></pre>
+<div class="pager-row"><a class="pager prev" href="installation.html"><span>Previous page</span><strong>Installation &amp; Setup</strong></a><a class="pager next" href="test-scripts.html"><span>Next page</span><strong>Creating Test Scripts</strong></a></div>
+<footer class="page-footer">QA Automation with Playwright &amp; Python - beginner's guide.
+Static HTML - no build step required.</footer>
+</main>
+<aside class="toc-right"><p>On this page</p><ul><li><a href="#pytest-ini-the-control-panel">pytest.ini — the control panel</a></li><li><a href="#useful-command-line-options-from-pytest-playwright">Useful command-line options from pytest-playwright</a></li><li><a href="#conftest-py-shared-setup-code">conftest.py — shared setup code</a></li><li><a href="#constants-py-one-home-for-fixed-values">constants.py — one home for fixed values</a></li></ul></aside>
+</div>
+<script>
+(function () {
+  document.querySelectorAll("pre").forEach(function (pre) {
+    var code = pre.querySelector("code");
+    if (!code) return;
+    var btn = document.createElement("button");
+    btn.className = "copy-btn"; btn.type = "button"; btn.textContent = "Copy";
+    btn.addEventListener("click", function () {
+      navigator.clipboard.writeText(code.textContent).then(function () {
+        btn.textContent = "Copied!"; btn.classList.add("copied");
+        setTimeout(function () { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 1600);
+      });
+    });
+    pre.appendChild(btn);
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to access elements (locators) | QA Automation Docs</title>
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem("qa-docs-theme");
+    if (t === "light" || t === "dark") {
+      document.documentElement.setAttribute("data-theme", t);
+    }
+  } catch (e) { /* localStorage unavailable (e.g. privacy mode) - ignore */ }
+})();
+</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <a class="brand" href="index.html"><span>QA&nbsp;Automation</span></a>
+  <div class="navbar-right">
+    <nav class="navlinks">
+      <a href="about-playwright.html">Guide</a>
+      <a href="run-reports.html">Reports</a>
+      <a href="https://playwright.dev/python/docs/intro">Playwright&nbsp;Docs</a>
+      <a href="https://docs.pytest.org/">pytest&nbsp;Docs</a>
+    </nav>
+    <!-- Light/dark switch. The checkbox comes before the label so the CSS
+         sibling selector (~) can style the label from its checked state. -->
+    <input type="checkbox" id="theme-toggle" class="theme-toggle-input">
+    <label class="theme-toggle" for="theme-toggle" title="Toggle light / dark theme">
+      <span class="icon sun" aria-hidden="true">&#9728;</span>
+      <span class="track"><span class="knob"></span></span>
+      <span class="icon moon" aria-hidden="true">&#127769;</span>
+    </label>
+    <script>
+(function () {
+  var KEY = "qa-docs-theme";
+  var box = document.getElementById("theme-toggle");
+  if (!box) return;
+  var current = document.documentElement.getAttribute("data-theme");
+  if (!current) {
+    var prefersDark = window.matchMedia
+      && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    current = prefersDark ? "dark" : "light";
+  }
+  box.checked = current === "dark";
+  box.addEventListener("change", function () {
+    var theme = box.checked ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", theme);
+    try { localStorage.setItem(KEY, theme); } catch (e) { /* ignore */ }
+  });
+})();
+</script>
+  </div>
+</header>
+<div class="layout">
+<aside class="sidebar"><nav><p class="group">Getting Started</p><ul><li><a href="about-playwright.html">About Playwright</a></li><li><a href="prerequisites.html">Prerequisites</a></li><li><a href="installation.html">Installation &amp; Setup</a></li><li><a href="configurations.html">Configurations</a></li></ul><p class="group">Writing Tests</p><ul><li><a href="test-scripts.html">Creating Test Scripts</a></li><li><a class="active" href="locators.html">Locators</a></li><li><a href="assertions.html">Assertions</a></li><li><a href="setup-teardown.html">Setup &amp; Teardown</a></li></ul><p class="group">Running Tests</p><ul><li><a href="categorization.html">Categorizing Tests</a></li><li><a href="run-reports.html">Running Tests &amp; Reports</a></li><li><a href="additional-info.html">Additional Info</a></li></ul><p class="group">Beyond the Browser</p><ul><li><a href="desktop-apps.html">Testing Desktop Apps</a></li></ul></nav></aside>
+<main class="content">
+<details class="mobile-nav"><summary>Menu &#9662;</summary><ul><li><a href="about-playwright.html">About Playwright</a></li><li><a href="prerequisites.html">Prerequisites</a></li><li><a href="installation.html">Installation &amp; Setup</a></li><li><a href="configurations.html">Configurations</a></li><li><a href="test-scripts.html">Creating Test Scripts</a></li><li><a href="locators.html">Locators &#10004;</a></li><li><a href="assertions.html">Assertions</a></li><li><a href="setup-teardown.html">Setup &amp; Teardown</a></li><li><a href="categorization.html">Categorizing Tests</a></li><li><a href="run-reports.html">Running Tests &amp; Reports</a></li><li><a href="additional-info.html">Additional Info</a></li><li><a href="desktop-apps.html">Testing Desktop Apps</a></li></ul></details>
+<h1>How to access elements (locators)</h1>
+<h3 id="what-is-a-locator">What is a locator?</h3>
+<p>
+  A web page is built from HTML <strong>elements</strong> — buttons, text boxes, links, images.
+  Before your script can click a button, it must first <em>find</em> that button among the
+  hundreds of elements on the page. A <strong>locator</strong> is the "address" you give
+  Playwright so it can find the right element.
+</p>
+<p>
+  Think of it like giving directions: "the button labeled <em>Login</em>" or "the text box
+  with placeholder <em>Email Address</em>". In code:
+</p>
+<pre><code># Create a locator (nothing happens on the page yet - it's just the address)
+login_button = page.get_by_role("button", name="Login")
+
+# Use it - NOW Playwright finds the element and clicks it
+login_button.click()</code></pre>
+<div class="note">
+  <strong>Locators are "lazy" and self-updating</strong>
+  A locator doesn't search the page when you create it — only when you act on it
+  (<code>.click()</code>, <code>.fill()</code>, or inside <code>expect()</code>).
+  Each action re-finds the element, so locators keep working even on pages that
+  redraw themselves.
+</div>
+
+<h3 id="the-recommended-locators-use-these-first">The recommended locators (use these first)</h3>
+<p>
+  Playwright's <code>get_by_*</code> methods find elements the way a <em>human</em> would —
+  by their visible label, role, or placeholder. They survive code refactors much better than
+  locators tied to HTML internals.
+</p>
+<div class="tablewrap">
+<table>
+  <tr><th>Locator</th><th>Finds elements by...</th><th>Example</th></tr>
+  <tr>
+    <td><code>get_by_role()</code></td>
+    <td>Their role (button, link, heading, checkbox...) and visible name. <strong>The best default choice.</strong></td>
+    <td><code>page.get_by_role("button", name="Sign up")</code></td>
+  </tr>
+  <tr>
+    <td><code>get_by_text()</code></td>
+    <td>The text they display.</td>
+    <td><code>page.get_by_text("Welcome back")</code></td>
+  </tr>
+  <tr>
+    <td><code>get_by_label()</code></td>
+    <td>The form label next to an input.</td>
+    <td><code>page.get_by_label("Password")</code></td>
+  </tr>
+  <tr>
+    <td><code>get_by_placeholder()</code></td>
+    <td>The gray hint text inside an empty input.</td>
+    <td><code>page.get_by_placeholder("Email Address")</code></td>
+  </tr>
+  <tr>
+    <td><code>get_by_title()</code></td>
+    <td>Their <code>title</code> attribute (tooltip text).</td>
+    <td><code>page.get_by_title("Close dialog")</code></td>
+  </tr>
+  <tr>
+    <td><code>get_by_alt_text()</code></td>
+    <td>An image's alternative text.</td>
+    <td><code>page.get_by_alt_text("Company logo")</code></td>
+  </tr>
+  <tr>
+    <td><code>get_by_test_id()</code></td>
+    <td>A <code>data-testid</code> attribute developers add specifically for tests. Very stable — ask your developers to add them!</td>
+    <td><code>page.get_by_test_id("submit-order")</code></td>
+  </tr>
+</table>
+</div>
+
+<h3 id="css-and-xpath-locators-when-the-above-aren-t-enough">CSS and XPath locators (when the above aren't enough)</h3>
+<p>
+  <code>page.locator()</code> accepts <strong>CSS selectors</strong> (the same syntax used to
+  style pages) and <strong>XPath</strong>. You'll need these for elements without good labels:
+</p>
+<pre><code># CSS: by id (the # symbol) - ids should be unique on a page
+page.locator("#susbcribe_email")
+
+# CSS: by class (the . symbol)
+page.locator(".shopping-cart")
+
+# CSS: by tag + attribute
+page.locator("input[name='search_product']")
+
+# CSS: element inside another element (a space means "descendant")
+page.locator("#cart_items .product-name")
+
+# XPath (starts with // ) - powerful but harder to read; prefer CSS
+page.locator("//button[text()='Checkout']")</code></pre>
+
+<h3 id="how-to-discover-an-element-s-address">How to discover an element's address</h3>
+<ol>
+  <li>Open the page in your browser.</li>
+  <li>Right-click the element and choose <strong>Inspect</strong>. DevTools opens with its HTML highlighted, e.g.
+      <code>&lt;button class="btn btn-primary" data-qa="login-button"&gt;Login&lt;/button&gt;</code></li>
+  <li>Pick the most stable, human-readable address: here, role <code>button</code> with name
+      <code>Login</code>, or the <code>data-qa</code> attribute via
+      <code>page.locator("[data-qa='login-button']")</code>.</li>
+</ol>
+<p>Or let Playwright suggest one for you — its recorder shows a recommended locator for anything you hover:</p>
+<pre><code>playwright codegen https://automationexercise.com</code></pre>
+
+<h3 id="narrowing-down-chaining-and-filtering">Narrowing down: chaining and filtering</h3>
+<p>When several elements match, get more specific:</p>
+<pre><code># Search INSIDE another element (chaining)
+page.locator(".navbar").get_by_role("link", name="Products")
+
+# Keep only matches that contain certain text (filtering)
+page.get_by_role("listitem").filter(has_text="Blue Top")
+
+# Pick by position - use as a last resort, order can change
+page.get_by_role("link", name="View Product").first
+page.get_by_role("row").nth(2)          # third match (counting starts at 0)</code></pre>
+
+<h3 id="common-actions-on-a-located-element">Common actions on a located element</h3>
+<div class="tablewrap">
+<table>
+  <tr><th>Action</th><th>What it does</th></tr>
+  <tr><td><code>.click()</code></td><td>Click it.</td></tr>
+  <tr><td><code>.fill("text")</code></td><td>Clear a text box and type the text.</td></tr>
+  <tr><td><code>.press("Enter")</code></td><td>Press a keyboard key while focused on it.</td></tr>
+  <tr><td><code>.check()</code> / <code>.uncheck()</code></td><td>Tick / untick a checkbox.</td></tr>
+  <tr><td><code>.select_option("USA")</code></td><td>Choose from a dropdown (<code>&lt;select&gt;</code>).</td></tr>
+  <tr><td><code>.hover()</code></td><td>Move the mouse over it (to open hover menus).</td></tr>
+  <tr><td><code>.inner_text()</code></td><td>Read the text it displays.</td></tr>
+  <tr><td><code>.scroll_into_view_if_needed()</code></td><td>Scroll until it is on screen.</td></tr>
+</table>
+</div>
+<div class="tip">
+  <strong>Priority order when choosing a locator</strong>
+  1) <code>get_by_role</code> &nbsp;2) other <code>get_by_*</code> methods
+  &nbsp;3) <code>get_by_test_id</code> &nbsp;4) simple CSS &nbsp;5) XPath (last resort).
+  The higher on this list, the less likely your test breaks when the page's internals change.
+</div>
+<div class="pager-row"><a class="pager prev" href="test-scripts.html"><span>Previous page</span><strong>Creating Test Scripts</strong></a><a class="pager next" href="assertions.html"><span>Next page</span><strong>Assertions</strong></a></div>
+<footer class="page-footer">QA Automation with Playwright &amp; Python - beginner's guide.
+Static HTML - no build step required.</footer>
+</main>
+<aside class="toc-right"><p>On this page</p><ul><li><a href="#what-is-a-locator">What is a locator?</a></li><li><a href="#the-recommended-locators-use-these-first">The recommended locators (use these first)</a></li><li><a href="#css-and-xpath-locators-when-the-above-aren-t-enough">CSS and XPath locators (when the above aren't enough)</a></li><li><a href="#how-to-discover-an-element-s-address">How to discover an element's address</a></li><li><a href="#narrowing-down-chaining-and-filtering">Narrowing down: chaining and filtering</a></li><li><a href="#common-actions-on-a-located-element">Common actions on a located element</a></li></ul></aside>
+</div>
+<script>
+(function () {
+  document.querySelectorAll("pre").forEach(function (pre) {
+    var code = pre.querySelector("code");
+    if (!code) return;
+    var btn = document.createElement("button");
+    btn.className = "copy-btn"; btn.type = "button"; btn.textContent = "Copy";
+    btn.addEventListener("click", function () {
+      navigator.clipboard.writeText(code.textContent).then(function () {
+        btn.textContent = "Copied!"; btn.classList.add("copied");
+        setTimeout(function () { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 1600);
+      });
+    });
+    pre.appendChild(btn);
+  });
+})();
+</script>
+</body>
+</html>

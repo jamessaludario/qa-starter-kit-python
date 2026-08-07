@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Additional info | QA Automation Docs</title>
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem("qa-docs-theme");
+    if (t === "light" || t === "dark") {
+      document.documentElement.setAttribute("data-theme", t);
+    }
+  } catch (e) { /* localStorage unavailable (e.g. privacy mode) - ignore */ }
+})();
+</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <a class="brand" href="index.html"><span>QA&nbsp;Automation</span></a>
+  <div class="navbar-right">
+    <nav class="navlinks">
+      <a href="about-playwright.html">Guide</a>
+      <a href="run-reports.html">Reports</a>
+      <a href="https://playwright.dev/python/docs/intro">Playwright&nbsp;Docs</a>
+      <a href="https://docs.pytest.org/">pytest&nbsp;Docs</a>
+    </nav>
+    <!-- Light/dark switch. The checkbox comes before the label so the CSS
+         sibling selector (~) can style the label from its checked state. -->
+    <input type="checkbox" id="theme-toggle" class="theme-toggle-input">
+    <label class="theme-toggle" for="theme-toggle" title="Toggle light / dark theme">
+      <span class="icon sun" aria-hidden="true">&#9728;</span>
+      <span class="track"><span class="knob"></span></span>
+      <span class="icon moon" aria-hidden="true">&#127769;</span>
+    </label>
+    <script>
+(function () {
+  var KEY = "qa-docs-theme";
+  var box = document.getElementById("theme-toggle");
+  if (!box) return;
+  var current = document.documentElement.getAttribute("data-theme");
+  if (!current) {
+    var prefersDark = window.matchMedia
+      && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    current = prefersDark ? "dark" : "light";
+  }
+  box.checked = current === "dark";
+  box.addEventListener("change", function () {
+    var theme = box.checked ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", theme);
+    try { localStorage.setItem(KEY, theme); } catch (e) { /* ignore */ }
+  });
+})();
+</script>
+  </div>
+</header>
+<div class="layout">
+<aside class="sidebar"><nav><p class="group">Getting Started</p><ul><li><a href="about-playwright.html">About Playwright</a></li><li><a href="prerequisites.html">Prerequisites</a></li><li><a href="installation.html">Installation &amp; Setup</a></li><li><a href="configurations.html">Configurations</a></li></ul><p class="group">Writing Tests</p><ul><li><a href="test-scripts.html">Creating Test Scripts</a></li><li><a href="locators.html">Locators</a></li><li><a href="assertions.html">Assertions</a></li><li><a href="setup-teardown.html">Setup &amp; Teardown</a></li></ul><p class="group">Running Tests</p><ul><li><a href="categorization.html">Categorizing Tests</a></li><li><a href="run-reports.html">Running Tests &amp; Reports</a></li><li><a class="active" href="additional-info.html">Additional Info</a></li></ul><p class="group">Beyond the Browser</p><ul><li><a href="desktop-apps.html">Testing Desktop Apps</a></li></ul></nav></aside>
+<main class="content">
+<details class="mobile-nav"><summary>Menu &#9662;</summary><ul><li><a href="about-playwright.html">About Playwright</a></li><li><a href="prerequisites.html">Prerequisites</a></li><li><a href="installation.html">Installation &amp; Setup</a></li><li><a href="configurations.html">Configurations</a></li><li><a href="test-scripts.html">Creating Test Scripts</a></li><li><a href="locators.html">Locators</a></li><li><a href="assertions.html">Assertions</a></li><li><a href="setup-teardown.html">Setup &amp; Teardown</a></li><li><a href="categorization.html">Categorizing Tests</a></li><li><a href="run-reports.html">Running Tests &amp; Reports</a></li><li><a href="additional-info.html">Additional Info &#10004;</a></li><li><a href="desktop-apps.html">Testing Desktop Apps</a></li></ul></details>
+<h1>Additional info</h1>
+<h3 id="debugging-tools-built-into-playwright">Debugging tools built into Playwright</h3>
+<ul>
+  <li>
+    <strong>Codegen (test recorder).</strong> Opens a browser; as you click around it writes
+    Python code for every action. Great for learning locator syntax:
+    <pre><code>playwright codegen https://automationexercise.com</code></pre>
+  </li>
+  <li>
+    <strong>Playwright Inspector (step-through debugger).</strong> Runs your test one action
+    at a time with a live locator explorer:
+    <pre><code># Windows (PowerShell)
+$env:PWDEBUG = "1"; pytest tests/test_login.py
+
+# macOS / Linux
+PWDEBUG=1 pytest tests/test_login.py</code></pre>
+  </li>
+  <li>
+    <strong>Trace Viewer (flight recorder).</strong> Run with
+    <code>--tracing retain-on-failure</code> and each failure saves a <code>trace.zip</code>.
+    Open it to scrub through every step with before/after screenshots, console logs, and
+    network calls:
+    <pre><code>playwright show-trace path/to/trace.zip</code></pre>
+    This is the single most powerful way to diagnose a failure that only happens on the
+    CI server.
+  </li>
+</ul>
+
+<h3 id="dealing-with-flaky-tests">Dealing with flaky tests</h3>
+<p>
+  A <strong>flaky</strong> test passes sometimes and fails sometimes without any code change —
+  usually caused by timing (the site was slow) or shared state (two tests fighting over the
+  same account). Defenses, in order of preference:
+</p>
+<ol>
+  <li>Replace any fixed waits with <code>expect()</code> assertions (Section 7).</li>
+  <li>Make every test create its own data — e.g. register a fresh user with a unique,
+      timestamped email instead of sharing one account.</li>
+  <li>As a safety net, auto-retry failures with pytest-rerunfailures:
+      <code>--reruns 2 --reruns-delay 2</code>. Retried tests are flagged in reports, so
+      you can still spot and fix the flakiness rather than hide it.</li>
+</ol>
+
+<h3 id="generating-unique-test-data">Generating unique test data</h3>
+<span class="filename">utils/data.py</span>
+<pre><code>import uuid
+
+
+def unique_email() -> str:
+    """A fresh email every call, e.g. qa-3f2a1c@example.com,
+    so tests never collide over the same account."""
+    return f"qa-{uuid.uuid4().hex[:6]}@example.com"</code></pre>
+
+<h3 id="good-habits-checklist">Good habits checklist</h3>
+<ul>
+  <li>Keep <em>all</em> locators in page objects — never in tests.</li>
+  <li>Wait with <code>expect()</code>, never <code>time.sleep()</code>.</li>
+  <li>One behavior per test; name tests after that behavior.</li>
+  <li>Tests create their own data and clean up after themselves.</li>
+  <li>Register markers and use <code>--strict-markers</code>.</li>
+  <li>Add <code>.venv/</code>, <code>reports/</code>, and <code>__pycache__/</code> to <code>.gitignore</code>.</li>
+  <li>Start small: automate 5 solid smoke tests before attempting 50.</li>
+</ul>
+
+<h3 id="running-tests-automatically-ci-a-peek-ahead">Running tests automatically (CI) — a peek ahead</h3>
+<p>
+  Once your suite is stable, teams wire it into <strong>Continuous Integration</strong> (CI) —
+  a service like GitHub Actions or Jenkins that runs the tests automatically on every code
+  change and posts the report. Playwright runs headless on CI servers out of the box, so the
+  suite you built locally is already CI-ready. That's a topic for its own guide, but know
+  that it's the natural next step.
+</p>
+
+<h3 id="practice-websites-safe-to-test-against">Practice websites (safe to test against)</h3>
+<ul>
+  <li><a href="https://automationexercise.com">automationexercise.com</a> — a full fake e-commerce shop with 26 published test cases to practice on.</li>
+  <li><a href="https://the-internet.herokuapp.com">the-internet.herokuapp.com</a> — dozens of isolated tricky widgets (dropdowns, alerts, iframes...).</li>
+  <li><a href="https://www.saucedemo.com">saucedemo.com</a> — a small demo store with ready-made test accounts.</li>
+</ul>
+
+<h3 id="official-documentation">Official documentation</h3>
+<ul>
+  <li><a href="https://playwright.dev/python/docs/intro">Playwright for Python docs</a> — the definitive reference for locators, assertions, and APIs.</li>
+  <li><a href="https://docs.pytest.org/">pytest documentation</a> — fixtures, markers, and command-line options in depth.</li>
+  <li><a href="https://playwright.dev/python/docs/best-practices">Playwright best practices</a> — the official recommendations this guide is based on.</li>
+</ul>
+<div class="pager-row"><a class="pager prev" href="run-reports.html"><span>Previous page</span><strong>Running Tests &amp; Reports</strong></a><a class="pager next" href="desktop-apps.html"><span>Next page</span><strong>Testing Desktop Apps</strong></a></div>
+<footer class="page-footer">QA Automation with Playwright &amp; Python - beginner's guide.
+Static HTML - no build step required.</footer>
+</main>
+<aside class="toc-right"><p>On this page</p><ul><li><a href="#debugging-tools-built-into-playwright">Debugging tools built into Playwright</a></li><li><a href="#dealing-with-flaky-tests">Dealing with flaky tests</a></li><li><a href="#generating-unique-test-data">Generating unique test data</a></li><li><a href="#good-habits-checklist">Good habits checklist</a></li><li><a href="#running-tests-automatically-ci-a-peek-ahead">Running tests automatically (CI) — a peek ahead</a></li><li><a href="#practice-websites-safe-to-test-against">Practice websites (safe to test against)</a></li><li><a href="#official-documentation">Official documentation</a></li></ul></aside>
+</div>
+<script>
+(function () {
+  document.querySelectorAll("pre").forEach(function (pre) {
+    var code = pre.querySelector("code");
+    if (!code) return;
+    var btn = document.createElement("button");
+    btn.className = "copy-btn"; btn.type = "button"; btn.textContent = "Copy";
+    btn.addEventListener("click", function () {
+      navigator.clipboard.writeText(code.textContent).then(function () {
+        btn.textContent = "Copied!"; btn.classList.add("copied");
+        setTimeout(function () { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 1600);
+      });
+    });
+    pre.appendChild(btn);
+  });
+})();
+</script>
+</body>
+</html>
