@@ -137,6 +137,20 @@ class MapPage(BasePage):
         return self
 
     @property
+    def accent_select(self):
+        """The accent scheme picker, in the header beside the theme toggle."""
+        return self.page.get_by_label("Accent")
+
+    def accent(self):
+        """Which scheme is applied. None means mint - the stylesheet's
+        own palette, which deliberately carries no attribute."""
+        return self.page.locator("html").get_attribute("data-accent")
+
+    def choose_accent(self, value: str):
+        self.accent_select.select_option(value)
+        return self
+
+    @property
     def terrain_layers(self):
         """Every ground, all of which live in the DOM at once."""
         return self.page.locator(".terrain-layer")

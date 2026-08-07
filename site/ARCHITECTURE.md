@@ -389,10 +389,28 @@ inside that object:
 | `quest-draft.<zone>/<challenge>` | Unsaved editor code, so closing the tab mid-challenge loses nothing |
 | `quest-for-automation.theme` | Light or dark |
 | `quest-for-automation.terrain` | Which map ground is showing |
+| `quest-for-automation.accent` | Which accent scheme is applied |
 
 The split is deliberate. Progress is the file a learner hands in, so a
 display preference has no business travelling in it — and importing
 somebody else's progress should not change your scenery or your theme.
+
+### Accents
+
+Five schemes (`src/js/main.js`), and they are curated PAIRS rather than a
+colour wheel. The site uses two accents with jobs - the road you are on,
+and the detour off it - so a scheme has to supply both, and both have to
+hold up on warm cream *and* on green-black.
+
+Most pairs a free colour picker would let you build fail that in one
+theme or the other, which is the whole argument for a short list. Each
+scheme sets its own `--accent-ink`, because whether white or near-black
+belongs on the primary button flips between them.
+
+`tests/test_site_banner.py` computes the real contrast ratios for every
+scheme in both themes and fails under 4.5:1 for button text. It caught
+the default: the design's `#1c8a60` gives white only 4.33:1, so the light
+mint is a hair darker at `#1a845c`.
 
 ### The map's ground
 

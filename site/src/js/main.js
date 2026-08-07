@@ -81,6 +81,7 @@ function header(route) {
             h("span", { text: Store.data.streak.days + "d" })
           ])
         : null,
+      accentPicker(),
       themeToggle()
     ])
   ]);
@@ -108,6 +109,59 @@ function savedTheme() {
  */
 function applyTheme(theme) {
   document.documentElement.setAttribute("data-theme", theme || systemTheme());
+}
+
+// ------------------------------------------------------------------ accent
+
+var ACCENT_KEY = "quest-for-automation.accent";
+
+// Curated PAIRS, not a colour wheel. The site uses two accents with
+// jobs - the road, and the detour off it - and each pair has to stay
+// readable in both themes on two very different grounds. Most
+// combinations a free colour picker would allow fail that in one theme
+// or the other, which is why this is a short list.
+var ACCENTS = [
+  ["mint", "Mint"],
+  ["amber", "Amber"],
+  ["azure", "Azure"],
+  ["violet", "Violet"],
+  ["rose", "Rose"]
+];
+
+function savedAccent() {
+  try {
+    var value = window.localStorage.getItem(ACCENT_KEY);
+    return ACCENTS.some(function (a) { return a[0] === value; }) ? value : "mint";
+  } catch (error) { return "mint"; }
+}
+
+function applyAccent(accent) {
+  // "mint" is the stylesheet's own palette, so it carries no attribute
+  // at all - one less selector to keep in step with the base rules.
+  if (!accent || accent === "mint") {
+    document.documentElement.removeAttribute("data-accent");
+  } else {
+    document.documentElement.setAttribute("data-accent", accent);
+  }
+}
+
+function accentPicker() {
+  var current = savedAccent();
+  var select = h("select", {
+    class: "accent-select", id: "accent-select",
+    onchange: function (event) {
+      var value = event.target.value;
+      try { window.localStorage.setItem(ACCENT_KEY, value); } catch (error) { /* no storage */ }
+      applyAccent(value);
+    }
+  }, ACCENTS.map(function (a) {
+    return h("option", { value: a[0], text: a[1], selected: a[0] === current || null });
+  }));
+
+  return h("label", { class: "accent-picker", for: "accent-select" }, [
+    h("span", { class: "accent-picker-label", text: "Accent" }),
+    select
+  ]);
 }
 
 function themeToggle() {
@@ -399,6 +453,7 @@ function render() {
 Store.load();
 Game.init(content);
 applyTheme(savedTheme());
+applyAccent(savedAccent());
 
 // Follow the system only while the learner has expressed no preference
 // of their own. Once they pick, their pick wins.

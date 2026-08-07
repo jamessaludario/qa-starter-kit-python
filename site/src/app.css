@@ -23,17 +23,21 @@
  */
 
 :root, :root[data-theme="light"] {
-  --brand: #1c8a60;
+  /* #1a845c, not the mock's #1c8a60. A hair darker, because white on
+     #1c8a60 is 4.33:1 - under the 4.5:1 a primary button needs, and the
+     primary button is the last thing on the page that may be hard to
+     read. The site's own contrast test catches this. */
+  --brand: #1a845c;
   --brand-strong: #146b4a;
-  --brand-soft: rgba(28, 138, 96, .10);
-  --quest: #1c8a60;
-  --quest-soft: rgba(28, 138, 96, .10);
-  --quest-line: rgba(28, 138, 96, .32);
+  --brand-soft: rgba(26, 132, 92, .10);
+  --quest: #1a845c;
+  --quest-soft: rgba(26, 132, 92, .10);
+  --quest-line: rgba(26, 132, 92, .32);
   --accent-ink: #ffffff;
   --side: #8a6a2c;
   --side-soft: rgba(138, 106, 44, .12);
   --warm: #8a6a2c;
-  --good: #1c8a60;
+  --good: #1a845c;
   --bad: #ad552f;
   --bad-soft: rgba(173, 85, 47, .10);
   /* A warm paper cream, not a white. The dark theme is a green-black
@@ -891,8 +895,6 @@ a.zone-node:focus-visible {
   gap: 10px; margin: 0 0 6px; color: var(--muted);
 }
 .hints-spent { text-transform: none; letter-spacing: .04em; color: var(--dim); }
-.hint { margin: 8px 0; }
-.hint-body { margin: 6px 0 0; font-size: .9rem; }
 .results-idle { margin: 0; }
 
 /* -------------------------------------------------------------- victory */
@@ -1173,4 +1175,206 @@ a.zone-node:focus-visible {
   .t-night .t-glow.side { fill: var(--side); }
   .t-night .t-star { fill: var(--muted); opacity: .4; }
   .t-night .t-constellation { stroke: var(--dim); opacity: .22; stroke-width: 1; }
+}
+
+/* ------------------------------------------------------------- accents */
+
+/* Five accent schemes, chosen as PAIRS rather than as colours.
+ *
+ * The site uses two accents with jobs: the road you are on, and the
+ * detour off it. So a scheme has to give a usable "way forward" hue AND
+ * a second hue that reads as different-but-related, in both themes, on
+ * two very different grounds - warm cream and green-black.
+ *
+ * Each value is picked for CONTRAST, not for looks: every accent below
+ * clears 4.5:1 against its own theme's background, and --accent-ink is
+ * set per scheme so the primary button never has to guess whether white
+ * or near-black sits on top of it. That is why this is a short curated
+ * list and not a colour wheel - most pairs a picker would let you build
+ * are unreadable in one theme or the other.
+ *
+ * Mint is the default and stays the design's own colours.
+ */
+
+/* Amber road, teal detour. The warmest of the set. */
+:root[data-accent="amber"] {
+  --brand: #9a6410; --brand-strong: #7d5009; --brand-soft: rgba(154, 100, 16, .10);
+  --quest: #9a6410; --quest-soft: rgba(154, 100, 16, .10);
+  --quest-line: rgba(154, 100, 16, .32); --accent-ink: #ffffff;
+  --side: #10706b; --side-soft: rgba(16, 112, 107, .12); --warm: #10706b;
+  --good: #9a6410;
+}
+:root[data-accent="amber"][data-theme="dark"] {
+  --brand: #e8b45c; --brand-strong: #f2c986; --brand-soft: rgba(232, 180, 92, .13);
+  --quest: #e8b45c; --quest-soft: rgba(232, 180, 92, .13);
+  --quest-line: rgba(232, 180, 92, .34); --accent-ink: #1a1206;
+  --side: #6cc9c2; --side-soft: rgba(108, 201, 194, .14); --warm: #6cc9c2;
+  --good: #e8b45c;
+}
+
+/* Azure road, copper detour. The most "tooling" of the set. */
+:root[data-accent="azure"] {
+  --brand: #1668a8; --brand-strong: #10527f; --brand-soft: rgba(22, 104, 168, .10);
+  --quest: #1668a8; --quest-soft: rgba(22, 104, 168, .10);
+  --quest-line: rgba(22, 104, 168, .32); --accent-ink: #ffffff;
+  --side: #9a5827; --side-soft: rgba(154, 88, 39, .12); --warm: #9a5827;
+  --good: #1668a8;
+}
+:root[data-accent="azure"][data-theme="dark"] {
+  --brand: #6fb6ec; --brand-strong: #9ccdf3; --brand-soft: rgba(111, 182, 236, .13);
+  --quest: #6fb6ec; --quest-soft: rgba(111, 182, 236, .13);
+  --quest-line: rgba(111, 182, 236, .34); --accent-ink: #06141f;
+  --side: #e0a06a; --side-soft: rgba(224, 160, 106, .14); --warm: #e0a06a;
+  --good: #6fb6ec;
+}
+
+/* Violet road, amber detour. */
+:root[data-accent="violet"] {
+  --brand: #6d3fd4; --brand-strong: #572fb4; --brand-soft: rgba(109, 63, 212, .10);
+  --quest: #6d3fd4; --quest-soft: rgba(109, 63, 212, .10);
+  --quest-line: rgba(109, 63, 212, .32); --accent-ink: #ffffff;
+  --side: #8a6a2c; --side-soft: rgba(138, 106, 44, .12); --warm: #8a6a2c;
+  --good: #6d3fd4;
+}
+:root[data-accent="violet"][data-theme="dark"] {
+  --brand: #b49bf6; --brand-strong: #cdbcf9; --brand-soft: rgba(180, 155, 246, .13);
+  --quest: #b49bf6; --quest-soft: rgba(180, 155, 246, .13);
+  --quest-line: rgba(180, 155, 246, .34); --accent-ink: #120a26;
+  --side: #d9b06a; --side-soft: rgba(217, 176, 106, .14); --warm: #d9b06a;
+  --good: #b49bf6;
+}
+
+/* Rose road, sage detour. */
+:root[data-accent="rose"] {
+  --brand: #b23a63; --brand-strong: #8f2b4e; --brand-soft: rgba(178, 58, 99, .10);
+  --quest: #b23a63; --quest-soft: rgba(178, 58, 99, .10);
+  --quest-line: rgba(178, 58, 99, .32); --accent-ink: #ffffff;
+  --side: #4d7245; --side-soft: rgba(77, 114, 69, .12); --warm: #4d7245;
+  --good: #b23a63;
+}
+:root[data-accent="rose"][data-theme="dark"] {
+  --brand: #f093b3; --brand-strong: #f6b6cb; --brand-soft: rgba(240, 147, 179, .13);
+  --quest: #f093b3; --quest-soft: rgba(240, 147, 179, .13);
+  --quest-line: rgba(240, 147, 179, .34); --accent-ink: #24070f;
+  --side: #a8c79c; --side-soft: rgba(168, 199, 156, .14); --warm: #a8c79c;
+  --good: #f093b3;
+}
+
+/* The picker, beside the theme toggle. Same shape as the terrain one. */
+.accent-picker { display: flex; align-items: center; gap: 6px; }
+.accent-picker-label {
+  font-family: var(--font-mono); font-size: .62rem; font-weight: 600;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--dim);
+}
+.accent-select {
+  font-family: var(--font-mono); font-size: .68rem; font-weight: 600;
+  color: var(--text); background: var(--panel);
+  border: 1px solid var(--border); border-radius: 6px; padding: 3px 6px;
+  cursor: pointer;
+}
+.accent-select:hover { border-color: var(--quest); }
+
+@media (max-width: 860px) { .accent-picker { display: none; } }
+
+/* ------------------------------------------------- the verdict banner */
+
+/* Said once, at the top, and stuck there. The detail below is worth
+   reading, but the two things a learner wants the instant a run ends -
+   did it pass, and what now - should never be a scroll away. That was
+   the complaint: clearing a challenge meant hunting for the way on. */
+.verdict-banner {
+  position: sticky; top: 58px; z-index: 4;
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  margin: 0 0 16px; padding: 12px 16px;
+  border: 1px solid var(--border); border-left-width: 4px;
+  border-radius: var(--radius); background: var(--panel);
+  box-shadow: var(--shadow);
+  animation: qfa-rise .22s ease both;
+}
+.verdict-banner[hidden] { display: none; }
+
+.banner-mark {
+  flex: none; width: 26px; height: 26px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: .9rem; line-height: 1;
+}
+.banner-words { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1 1 260px; }
+.banner-words strong { font-size: 1rem; }
+.banner-detail {
+  font-size: .84rem; color: var(--muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.banner-xp {
+  font-family: var(--font-mono); font-size: 1.05rem; font-weight: 700;
+  color: var(--quest); font-variant-numeric: tabular-nums;
+}
+.banner-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+
+/* Three states, three borders. Colour is the fastest read on the page,
+   so it carries the verdict before a word of it is processed. */
+.verdict-banner[data-state="pass"] { border-left-color: var(--quest); }
+.verdict-banner[data-state="pass"] .banner-mark {
+  background: var(--quest); color: var(--accent-ink);
+}
+.verdict-banner[data-state="fail"] { border-left-color: var(--bad); }
+.verdict-banner[data-state="fail"] .banner-mark {
+  background: var(--bad-soft); color: var(--bad);
+}
+/* A rubric block is not a failure - the code never ran. Warm, not red:
+   "a reviewer stopped here", not "your test is broken". */
+.verdict-banner[data-state="review"] { border-left-color: var(--warm); }
+.verdict-banner[data-state="review"] .banner-mark {
+  background: var(--side-soft); color: var(--warm);
+}
+
+@media (max-width: 700px) {
+  .verdict-banner { position: static; }
+  .banner-actions { margin-left: 0; width: 100%; }
+}
+
+/* --------------------------------------------------------------- hints */
+
+/* A hint is a card you spend, not a button beside some text. The words
+   are present and BLURRED rather than withheld, so it reads as "there is
+   something here" - and because the blur is a filter, there is nothing
+   legible left in the markup for a learner to dig out without paying. */
+.hint {
+  display: block; width: 100%; text-align: left;
+  margin: 8px 0 0; padding: 9px 11px;
+  border: 1px dashed var(--border); border-radius: 9px;
+  background: var(--bg-soft); color: var(--text);
+  font: inherit; cursor: pointer;
+  transition: border-color .12s ease, background .12s ease;
+}
+.hint:hover:not(:disabled) { border-color: var(--quest); background: var(--quest-soft); }
+.hint:disabled { cursor: default; }
+
+.hint-head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 10px; margin-bottom: 5px;
+}
+.hint-tier {
+  font-family: var(--font-mono); font-size: .68rem; font-weight: 700;
+  letter-spacing: .06em; color: var(--warm);
+}
+.hint-state {
+  font-family: var(--font-mono); font-size: .6rem; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--dim);
+}
+
+.hint-body {
+  margin: 0; font-size: .86rem; line-height: 1.5; color: var(--muted);
+  filter: blur(4.5px);
+  /* Belt and braces with the blur: no text cursor, and nothing to
+     select and paste out. */
+  user-select: none;
+  transition: filter .18s ease;
+}
+.hint.spent { border-style: solid; background: var(--panel); }
+.hint.spent .hint-body { filter: none; user-select: text; color: var(--text); }
+.hint.spent .hint-tier { color: var(--quest); }
+
+@media (prefers-reduced-motion: reduce) {
+  .hint, .hint-body { transition: none; }
+  .verdict-banner { animation: none; }
 }
