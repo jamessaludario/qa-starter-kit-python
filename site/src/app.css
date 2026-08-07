@@ -657,7 +657,16 @@ a.zone-node:focus-visible {
   display: grid; gap: 20px; align-items: start;
   grid-template-columns: minmax(240px, 300px) minmax(0, 1.25fr) minmax(320px, 1fr);
 }
-.challenge-rail, .challenge-side { position: sticky; top: 74px; display: grid; gap: 14px; }
+/* minmax(0, 1fr), not the implicit `auto`. A grid item defaults to
+   min-width:auto, so an auto track will not shrink below its widest
+   content - here that made the cards 4px wider than the rail holding
+   them. Same family of bug as the fieldset in the quiz: a box that
+   refuses to shrink, pushing itself out of its column. */
+.challenge-rail, .challenge-side {
+  position: sticky; top: 74px;
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px;
+}
+.rail-card, .results-panel, .browser-frame { min-width: 0; }
 
 .challenge-bar {
   display: flex; flex-wrap: wrap; gap: 10px 18px;
@@ -832,13 +841,29 @@ a.zone-node:focus-visible {
 /* ----------------------------------------------------------------- quiz */
 
 .question { border: 1.5px solid var(--border); border-radius: var(--radius);
-  padding: 12px 16px; margin: 14px 0; background: var(--panel); }
+  padding: 12px 16px; margin: 14px 0; background: var(--panel);
+  /* min-width:0 is not tidying - it is the fix.
+     A <fieldset> defaults to min-width:min-content, which means it
+     REFUSES to shrink below its widest content. Give one a Playwright
+     call log to hold and it forces itself ~100px wider than the column
+     it lives in and slides under the shop panel. Every other element
+     here shrinks and lets its <pre> scroll; a fieldset will not until
+     it is told. */
+  min-width: 0;
+}
 .question legend { font-size: .74rem; font-weight: 800; text-transform: uppercase;
   letter-spacing: .06em; color: var(--muted); }
 .options { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 6px; }
 .options li { display: flex; gap: 9px; align-items: flex-start; }
 .options label { cursor: pointer; }
-.sample { margin: 8px 0; }
+/* The sample is a real failure message, so it must not be re-wrapped -
+   the line breaks carry meaning. It scrolls instead. */
+.sample { margin: 8px 0; max-width: 100%; overflow-x: auto; }
+
+/* The same guard, one level up: the quiz form and the work column are
+   flex/grid children, and both default to a min-width that content can
+   push past. */
+.quiz, .work, .challenge-work { min-width: 0; }
 
 /* --------------------------------------------------------------- results */
 
